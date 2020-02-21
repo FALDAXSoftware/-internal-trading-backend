@@ -45,9 +45,9 @@ var server = http.createServer(app);
 // process.on('uncaughtException', function (error) {}); // Ignore error
 
 // Start the server
-app.set('port', process.env.CRON_PORT);
+app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {
-  console.log(process.env.CRON_PROJECT_NAME + " Application is running on " + process.env.CRON_PORT + " port....");
+  console.log(process.env.PROJECT_NAME + " Application is running on " + process.env.PORT + " port....");
 });
 
 CronSendEmail = async (requestedData) => {
