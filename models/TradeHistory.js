@@ -4,7 +4,7 @@ var Cryptr = require('cryptr'),
   cryptr = new Cryptr(require('../config/secret')());
 const visibilityPlugin = require('objection-visibility');
 
-class Coins extends visibilityPlugin((AppModel)) {
+class TradeHistory extends visibilityPlugin((AppModel)) {
 
   constructor() {
     super();
@@ -15,7 +15,7 @@ class Coins extends visibilityPlugin((AppModel)) {
   }
 
   static get tableName() {
-    return 'news';
+    return 'trade_history';
   }
 
   /** Each model must have a column (or a set of columns) that uniquely
@@ -67,4 +67,4 @@ class Coins extends visibilityPlugin((AppModel)) {
   }
 }
 
-module.exports = Coins;
+module.exports = TradeHistory;
