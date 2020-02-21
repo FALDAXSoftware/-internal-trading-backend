@@ -90,56 +90,98 @@ var cancelPendingOrder = async (side, type, id) => {
 
         var fees = await feesValue.getFeesValue(pendingBookDetailsSell.settle_currency, pendingBookDetailsSell.currency);
 
-        var coinId = await Coins
+        var coinId = await CoinsModel
             .query()
-            .findOne({
-                where: {
-                    coin: pendingBookDetailsSell.settle_currency,
-                    deleted_at: null
-                }
-            });
+            .select()
+            .first()
+            .where('deleted_at', null)
+            .andWhere('coin', pendingBookDetailsSell.settle_currency)
+            .orderBy('id', 'DESC');
 
-        var walletDetails = await Wallet.findOne({
-            where: {
-                user_id: pendingBookDetailsSell.user_id,
-                coin_id: coinId.id,
-                deleted_at: null
-            }
-        });
+        var walletDetails = await WalletModel
+            .query()
+            .first()
+            .select()
+            .where('user_id', pendingBookDetailsSell.user_id)
+            .andWhere('coin_id', coinId.id)
+            .andWhere('deleted_at', null)
+            .orderBy('id', 'DESC');
+
 
         var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsSell.quantity);
 
-        var updateWalletDetails = await Wallet
-            .update({
-                user_id: pendingBookDetailsSell.user_id,
-                coin_id: coinId.id
-            })
-            .set({
+        var updateWalletDetails = await WalletModel
+            .query()
+            .where('user_id', pendingBookDetailsSell[i].user_id)
+            .andWhere('coin_id', coinId.id)
+            .andWhere('deleted_at', null)
+            .updateAndFetch({
                 placed_balance: userPlacedBalance
-            });
+            })
 
         if (pendingBookDetailsSell.length === 0) {
             // throw("No buy limit order found.")
-            return exits.noBuyLimitOrder();
+            return (0);
+        }
+
+        var activityCancel = await ActivityTableModel
+            .query()
+            .where('id', pendingBookDetailsSell.activity_id)
+            .andWhere('deleted_at', null)
+            .patch({
+                is_cancel: true
+            })
+
+        deletePending = await SellBookModel
+            .query()
+            .where('id', id)
+            .updateAndFetch({
+                deleted_at: now
+            })
+    } else {
+        var pendingDetails = await PendingBookModel
+            .query()
+            .select()
+            .first()
+            .where('id', id)
+            .andWhere('deleted_at', null)
+            .orderBy('id', 'DESC')
+
+        crypto = pendingDetails.settle_currency;
+        currency = pendingDetails.currency;
+        userIds.push(pendingDetails.user_id);
+
+        if (pendingDetails == undefined || pendingDetails.length == 0) {
+            // throw("No pending order found.")
+            return (0);
 
         }
 
-        var activityCancel = await ActivityTable
-            .update({
-                id: pendingBookDetailsSell.activity_id
-            })
-            .set({
+        var activityCancel = await ActivityTableModel
+            .query()
+            .where('id', pendingDetails.activity_id)
+            .andWhere('deleted_at', null)
+            .patch({
                 is_cancel: true
-            });
+            })
 
-        deletePending = await SellBook
-            .update({
-                id: inputs.id
-            })
-            .set({
+        deletePending = await PendingBookModel
+            .query()
+            .where('id', id)
+            .updateAndFetch({
                 deleted_at: now
-            })
-            .fetch();
+            });
+    }
+    if (deletePending) {
+        // Socket
+        // await sails
+        //     .helpers
+        //     .sockets
+        //     .tradeEmit(crypto, currency, userIds);
+        return ("Deleted Successfully")
+    } else {
+        // throw "Server Error";
+        return (0);
     }
 }
 
