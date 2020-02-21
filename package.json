@@ -1,13 +1,13 @@
 {
-  "name": "FaldaxCron",
+  "name": "Faldax-InternalTradding",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
     "dev": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./bin/www",
-    "debug": "nodemon --inspect ./bin/www"
+    "start": "node app.js",
+    "debug": "node app.js"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "express-group-routes": "^1.1.0",
     "express-mailer": "^0.3.1",
     "gelf-stream": "^1.1.1",
+    "i18n": "^0.8.5",
     "image-to-base64": "^2.0.1",
     "knex": "^0.14.6",
     "moment": "^2.22.2",

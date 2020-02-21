@@ -1,1 +1,16 @@
-{}
+{
+    "server error": {
+        "page": "Internal server error",
+        "context": "Error occured",
+        "message_type": "error",
+        "message_english": "An unexpected error occurred. Please try again or contact support if the problem persists.",
+        "message": "An unexpected error occurred. Please try again or contact support if the problem persists."
+    },
+    "Order Success": {
+        "page": "Trade success",
+        "context": "Order has been fulfilled successfully",
+        "message_type": "success",
+        "message_english": "Order has been fulfilled successfully.",
+        "message": "Order has been fulfilled successfully."
+    }
+}

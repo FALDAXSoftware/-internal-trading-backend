@@ -37,62 +37,28 @@ app.all('/*', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*"); // restrict it to the required domain
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   // Set custom headers for CORS
-  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token,X-Key,Client-Key,x-token');
+  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token');
 });
-
+//Routes
+// app.use('/', require('./routes/index'));
+// app.get("api/test", function(req, res){
+//   return res.json({status:1})
+// });
+app.get('/api/test', function (req, res) {
+  res.send('root')
+})
+// If no route is matched by now, it must be a 404
+app.use(function (req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
 var server = http.createServer(app);
 
-// process.on('uncaughtException', function (error) {}); // Ignore error
+process.on('uncaughtException', function (error) {}); // Ignore error
 
 // Start the server
 app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {
   console.log(process.env.PROJECT_NAME + " Application is running on " + process.env.PORT + " port....");
 });
-
-CronSendEmail = async (requestedData) => {
-  var template = requestedData.template;
-  var email = requestedData.email;
-  var body = requestedData.extraData;
-  var extraData = requestedData.extraData;
-  var subject = requestedData.subject;
-
-  await app.mailer
-    .send(template, {
-      to: email,
-      subject: process.env.EMAIL_DEFAULT_SENDING + ': ' + subject,
-      content: body,
-      data: extraData, // All additional properties are also passed to the template as local variables.
-      PRODUCT_NAME: "FALDAX",
-    }, function (err) {
-      console.log(err)
-      if (err) {
-
-        return 0;
-      } else {
-        return 1;
-      }
-    });
-}
-
-cronSend = async (content) => {
-
-  await app.mailer
-    .send('emails/general_mail', {
-      to: "mansi.gyastelwala@openxcellinc.com, nikita.prajapati@openxcellinc.com, jagdish.banda@openxcelltechnolabs.com",
-      subject: process.env.EMAIL_DEFAULT_SENDING + ': ' + "Testing For Cron",
-      content: "<p> Cron Test Email " + content + "</p>",
-      PRODUCT_NAME: "FALDAX",
-    }, function (err) {
-      console.log(err)
-      if (err) {
-
-        return 0;
-      } else {
-        return 1;
-      }
-    });
-}
-module.exports = { CronSendEmail: CronSendEmail, cronSend: cronSend };
-
-var cronjobFile = require("./services/cronJobs");
