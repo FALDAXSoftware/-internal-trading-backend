@@ -6,7 +6,7 @@ var Cryptr = require('cryptr'),
   cryptr = new Cryptr(require('../config/secret')());
 const visibilityPlugin = require('objection-visibility');
 
-class Wallets extends visibilityPlugin((AppModel)) {
+class SellBook extends visibilityPlugin((AppModel)) {
 
   constructor() {
     super();
@@ -17,7 +17,7 @@ class Wallets extends visibilityPlugin((AppModel)) {
   }
 
   static get tableName() {
-    return 'price_history';
+    return 'sell_book';
   }
 
   /** Each model must have a column (or a set of columns) that uniquely
@@ -63,12 +63,10 @@ class Wallets extends visibilityPlugin((AppModel)) {
 
     return {
       type: 'object',
-      required: [
-        // 'user_id'
-      ],
+      required: [],
       properties: {}
     };
   }
 }
 
-module.exports = Wallets;
+module.exports = SellBook;

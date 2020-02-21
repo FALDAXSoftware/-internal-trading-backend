@@ -6,7 +6,7 @@ var Cryptr = require('cryptr'),
     cryptr = new Cryptr(require('../config/secret')());
 const visibilityPlugin = require('objection-visibility');
 
-class ResidualTransactions extends visibilityPlugin((AppModel)) {
+class PendingBook extends visibilityPlugin((AppModel)) {
 
     constructor() {
         super();
@@ -17,7 +17,7 @@ class ResidualTransactions extends visibilityPlugin((AppModel)) {
     }
 
     static get tableName() {
-        return 'residual_transactions';
+        return 'pending_book';
     }
 
     /** Each model must have a column (or a set of columns) that uniquely
@@ -69,4 +69,4 @@ class ResidualTransactions extends visibilityPlugin((AppModel)) {
     }
 }
 
-module.exports = ResidualTransactions;
+module.exports = PendingBook;
