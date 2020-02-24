@@ -1,16 +1,37 @@
 {
-    "server error": {
-        "page": "Internal server error",
-        "context": "Error occured",
-        "message_type": "error",
-        "message_english": "An unexpected error occurred. Please try again or contact support if the problem persists.",
-        "message": "An unexpected error occurred. Please try again or contact support if the problem persists."
+	"server error": {
+		"page": "Internal server error",
+		"context": "Error occured",
+		"message_type": "error",
+		"message_english": "An unexpected error occurred. Please try again or contact support if the problem persists.",
+		"message": "An unexpected error occurred. Please try again or contact support if the problem persists."
+	},
+	"Order Success": {
+		"page": "Trade success",
+		"context": "Order has been fulfilled successfully",
+		"message_type": "success",
+		"message_english": "Order has been fulfilled successfully.",
+		"message": "Order has been fulfilled successfully."
+	},
+	"Create Currency Wallet": {
+		"page": "JST order create, Internal tradding - Market sell order, Internal tradding - Market buy order, Internal tradding - Limit sell order, Internal tradding - Limit buy order, Internal tradding - Stop limit sell order, Internal tradding - Stop limit buy order",
+		"context": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message_type": "error",
+		"message_english": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again."
     },
-    "Order Success": {
-        "page": "Trade success",
-        "context": "Order has been fulfilled successfully",
-        "message_type": "success",
-        "message_english": "Order has been fulfilled successfully.",
-        "message": "Order has been fulfilled successfully."
-    }
+    "Coin not found": {
+		"page": "Asset not found",
+		"context": "Asset Not Found",
+		"message_type": "error",
+		"message_english": "Asset could not be found.",
+		"message": "Asset could not be found."
+    },
+    "Insufficient balance to place order": {
+		"page": "Insufficent balance",
+		"context": "Insufficient balance to place order",
+		"message_type": "error",
+		"message_english": "Insufficient balance to place order.",
+		"message": "Insufficient balance to place order."
+	}
 }

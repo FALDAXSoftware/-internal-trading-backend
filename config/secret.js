@@ -1,3 +1,3 @@
 module.exports = function() {
-	return 'super.super.secret.ox.shhh';
+	return process.env.JWT_TOKEN_SECRET;
 };

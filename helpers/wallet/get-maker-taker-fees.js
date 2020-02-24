@@ -6,7 +6,7 @@ var getFeesValue = async (crypto, currency) => {
     var coin1 = await CoinsModel
         .query()
         .first()
-        .select()
+        .select("id")
         .where('is_active', true)
         .andWhere('deleted_at', null)
         .andWhere('coin', crypto);
@@ -14,7 +14,7 @@ var getFeesValue = async (crypto, currency) => {
     var coin2 = await CoinsModel
         .query()
         .first()
-        .select()
+        .select("id")
         .where('is_active', true)
         .andWhere('deleted_at', null)
         .andWhere('coin', currency);
@@ -24,15 +24,14 @@ var getFeesValue = async (crypto, currency) => {
             .query()
             .select()
             .first()
-            .where('coin_code1', coin1)
-            .andWhere('coin_code2', coin2)
+            .where('coin_code1', coin1.id)
+            .andWhere('coin_code2', coin2.id)
             .andWhere('deleted_at', null)
             .orderBy('id', 'DESC')
-
         if (pairData) {
             makerTakerFees = {
-                makerFee: pair.maker_fee,
-                takerFee: pair.taker_fee
+                makerFee: pairData.maker_fee,
+                takerFee: pairData.taker_fee
             }
         }
     }

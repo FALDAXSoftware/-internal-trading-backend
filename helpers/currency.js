@@ -2,7 +2,7 @@
 Used to get currency and crypto from pair
 */
 let get_currencies = async function( pair ){
-    var currencies;
+    var currencies={};
     var data = pair.split("-");
     currencies = {
       crypto: data[0],

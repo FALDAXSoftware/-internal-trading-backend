@@ -1,5 +1,5 @@
 {
-  "name": "Faldax-InternalTradding",
+  "name": "faldax-internal_tradding",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -24,6 +24,7 @@
     "express": "^4.16.3",
     "express-group-routes": "^1.1.0",
     "express-mailer": "^0.3.1",
+    "express-session": "^1.17.0",
     "gelf-stream": "^1.1.1",
     "i18n": "^0.8.5",
     "image-to-base64": "^2.0.1",
