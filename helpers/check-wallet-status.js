@@ -25,9 +25,9 @@ var checkWalletStatus = async (asset, user_id) => {
             .andWhere('coin_id', coin.id)
             .andWhere('user_id', user_id)
             .orderBy('id', 'DESC')
-        if( wallet_data != undefined && (wallet_data.receive_address != "" || wallet_data.receive_address != null ) ){
+        if (wallet_data != undefined && (wallet_data.receive_address != "" || wallet_data.receive_address != null)) {
             return (wallet_data)
-        }else{
+        } else {
             return (0);
         }
     } else {

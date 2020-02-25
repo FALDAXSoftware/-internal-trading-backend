@@ -14,10 +14,15 @@ var updateActivityData = async (id, orderData) => {
     var updateActivityHistory = await ActivityTableModel
         .query()
         .where('deleted_at', null)
-        .andWhere('id', 'DESC')
-        .updateAndFetch({
+        .andWhere('id', id)
+        .update({
             'quantity': quantityValue
         });
+
+    updateActivityHistory = await ActivityTableModel
+        .query()
+        .where('deleted_at', null)
+        .andWhere('id', id)
 
     return (updateActivityHistory)
 }

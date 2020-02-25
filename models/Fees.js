@@ -6,7 +6,7 @@ var Cryptr = require('cryptr'),
     cryptr = new Cryptr(require('../config/secret')());
 const visibilityPlugin = require('objection-visibility');
 
-class AdminSetting extends visibilityPlugin((AppModel)) {
+class Fees extends visibilityPlugin((AppModel)) {
 
     constructor() {
         super();
@@ -17,7 +17,7 @@ class AdminSetting extends visibilityPlugin((AppModel)) {
     }
 
     static get tableName() {
-        return 'simplex_trade_history';
+        return 'fees';
     }
 
     /** Each model must have a column (or a set of columns) that uniquely
@@ -69,4 +69,4 @@ class AdminSetting extends visibilityPlugin((AppModel)) {
     }
 }
 
-module.exports = AdminSetting;
+module.exports = Fees;
