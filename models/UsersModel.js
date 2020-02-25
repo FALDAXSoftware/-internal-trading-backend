@@ -1,6 +1,6 @@
 /**
  * USers Model to work with Objection
- * 
+ *
  */
 var { AppModel } = require('./AppModel');
 // For hidden any field from the select query
@@ -78,31 +78,6 @@ class UsersModel extends AppModel {
 			'fullname'
 		];
 	}
-
-	// Relationship 
-	static get relationMappings() {
-		const Roles = require('./RolesModel');
-		const UserDetails = require('./UserdetailsModel');
-		return {
-			roles: {
-				relation: AppModel.BelongsToOneRelation,
-				modelClass: Roles,
-				join: {
-					from: 'users.role_id',
-					to: 'roles.id'
-				}
-			},
-			user_details: {
-				relation: AppModel.BelongsToOneRelation,
-				modelClass: UserDetails,
-				join: {
-					from: 'user_details.user_id',
-					to: 'users.id'
-				}
-			}
-		};
-	}
-
 
 	// Get User Data
 	static async getUserdata(filter, select = "") {
