@@ -1,11 +1,17 @@
 var SellBookModel = require("../../models/SellBook");
 
 var updateSellBook = async (id, data) => {
+    console.log(data);
     var updatedBook = await SellBookModel
         .query()
         .where('deleted_at', null)
         .andWhere('id', id)
-        .updateAndFetch(data);
+        .update(data);
+
+    updatedBook = await SellBookModel
+        .query()
+        .where('deleted_at', null)
+        .andWhere('id', id)
 
     return (updatedBook);
 }

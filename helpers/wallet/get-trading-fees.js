@@ -3,18 +3,23 @@ Used to get Tradding Fees
 */
 var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var CoinsModel = require("../../models/Coins");
+var moment = require('moment')
+var TradeHistoryModel = require("../../models/TradeHistory");
+var Fees = require("../../models/Fees");
+var Wallet = require("../../models/Wallet");
 
 var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
     var makerTakerFees = {};
-    var coin1 = await CoinsModel
-        .query()
-        .first()
-        .select("id")
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', crypto);
+    // var coin1 = await CoinsModel
+    //     .query()
+    //     .first()
+    //     .select("id")
+    //     .where('is_active', true)
+    //     .andWhere('deleted_at', null)
+    //     .andWhere('coin', crypto);
 
     try {
+        var request = inputs;
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
 
@@ -74,17 +79,17 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         //             "<=": now
         //         }
         //     });
-        var currencyAmount = await TradeHistory
+        var currencyAmount = await TradeHistoryModel
             .query()
             .sum('quantity')
-            .where( function(){
-                this.where("user_id",user_id)
-                .orWhere("requested_user_id",user_id)
+            .where(function () {
+                this.where("user_id", user_id)
+                    .orWhere("requested_user_id", user_id)
             })
             .andWhere('deleted_at', null)
             .andWhere('created_at', '>=', yesterday)
             .andWhere('created_at', '<=', now);
-
+        console.log("CurrencyAmount", currencyAmount[0].sum)
         // Fetching Amount of trade done on the basis of time and usd value
         // var cryptoAmount = await TradeHistory
         //     .sum('quantity')
@@ -104,12 +109,12 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         //             "<=": now
         //         }
         //     });
-        var cryptoAmount = await TradeHistory
+        var cryptoAmount = await TradeHistoryModel
             .query()
             .sum('quantity')
-            .where( function(){
-                this.where("user_id",requested_user_id)
-                .orWhere("requested_user_id",requested_user_id)
+            .where(function () {
+                this.where("user_id", requested_user_id)
+                    .orWhere("requested_user_id", requested_user_id)
             })
             .andWhere('deleted_at', null)
             .andWhere('created_at', '>=', yesterday)
@@ -117,8 +122,10 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
 
 
 
-        var totalCurrencyAmount = currencyAmount * (getCurrencyPriceData.quote.USD.price);
-        var totalCryptoAmount = cryptoAmount * (getCryptoPriceData.quote.USD.price);
+
+        var totalCurrencyAmount = currencyAmount[0].sum * (getCurrencyPriceData.quote.USD.price);
+        console.log("totalCurrencyAmount", totalCurrencyAmount)
+        var totalCryptoAmount = cryptoAmount[0].sum * (getCryptoPriceData.quote.USD.price);
 
         // Fetching the fees on the basis of the total trade done in last 30 days
         // var currencyMakerFee = await Fees.findOne({
@@ -139,8 +146,8 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         var currencyMakerFee = await Fees
             .query()
             .first()
-            .select('maker_fee','taker_fee')
-            .wwere('deleted_at', null)
+            .select('maker_fee', 'taker_fee')
+            .where('deleted_at', null)
             .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
             .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
 
@@ -164,10 +171,12 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         var cryptoTakerFee = await Fees
             .query()
             .first()
-            .select('maker_fee','taker_fee')
-            .wwere('deleted_at', null)
+            .select('maker_fee', 'taker_fee')
+            .where('deleted_at', null)
             .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
-            .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
+            .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount))
+
+        console.log("cryptoTakerFee", cryptoTakerFee)
 
         // Just Replace inputs.makerFee and inputs.takerFee with following
         inputs.makerFee = cryptoTakerFee.maker_fee
@@ -178,7 +187,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .query()
             .first()
             .select()
-            .wwere('deleted_at', null)
+            .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere('coin_id', currencyData.id)
             .andWhere('user_id', inputs.user_id);
@@ -187,7 +196,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .query()
             .first()
             .select()
-            .wwere('deleted_at', null)
+            .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere('coin_id', cryptoData.id)
             .andWhere('user_id', inputs.requested_user_id);
@@ -196,7 +205,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .query()
             .first()
             .select()
-            .wwere('deleted_at', null)
+            .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere('coin_id', currencyData.id)
             .andWhere('user_id', inputs.requested_user_id);
@@ -205,7 +214,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .query()
             .first()
             .select()
-            .wwere('deleted_at', null)
+            .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere('coin_id', cryptoData.id)
             .andWhere('user_id', inputs.user_id);
@@ -221,7 +230,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var a = await Wallet
                 .query()
                 .where('id', cryptoWalletUser.id)
-                .updateAndFetch({
+                .update({
                     balance: cryptouserbalance,
                     placed_balance: cryptouserPlacedbalance
                 });
@@ -232,7 +241,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var a = await Wallet
                 .query()
                 .where('id', cryptoWalletRequested.id)
-                .updateAndFetch({
+                .update({
                     balance: cryptorequestedbalance
                 });
             // -----------------------currency-------------------------------------- //
@@ -244,7 +253,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var b = await Wallet
                 .query()
                 .where('id', currencyWalletUser.id)
-                .updateAndFetch({
+                .update({
                     balance: currencyuserbalance,
                     placed_balance: currencyuserplacedbalance
                 });
@@ -257,7 +266,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var b = await Wallet
                 .query()
                 .where('id', currencyWalletRequested.id)
-                .updateAndFetch({
+                .update({
                     balance: currencyrequestedbalance,
                     placed_balance: currencyrequestedplacedbalance
                 });
@@ -278,7 +287,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var a = await Wallet
                 .query()
                 .where('id', cryptoWalletUser.id)
-                .updateAndFetch({
+                .update({
                     balance: cryptouserbalance,
                     placed_balance: cryptouserPlacedbalance
                 });
@@ -291,7 +300,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var a = await Wallet
                 .query()
                 .where('id', cryptoWalletRequested.id)
-                .updateAndFetch({
+                .update({
                     balance: cryptorequestedbalance,
                     placed_balance: cryptorequestedplacedbalance
                 });
@@ -306,7 +315,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var b = await Wallet
                 .query()
                 .where('id', currencyWalletUser.id)
-                .updateAndFetch({
+                .update({
                     balance: currencyuserbalance,
                     placed_balance: currencyuserplacedbalance
                 });
@@ -316,7 +325,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var b = await Wallet
                 .query()
                 .where('id', currencyWalletRequested.id)
-                .updateAndFetch({
+                .update({
                     balance: currencyrequestedbalance
                 });
             var requestedFee = (((inputs.quantity)) * ((inputs.makerFee / 100)).toFixed(8))
@@ -324,10 +333,10 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             user_usd = ((inputs.quantity) * inputs.fill_price) * (resultData);
         }
 
-        return exits.success({
+        return ({
             'userFee': userFee,
             'requestedFee': requestedFee
-          })
+        })
     } catch (err) {
         console.log("fees Error", err);
         return exits.serverError();

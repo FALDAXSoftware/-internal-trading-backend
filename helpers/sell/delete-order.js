@@ -1,17 +1,21 @@
 var SellBookModel = require("../../models/SellBook");
 
 var deleteSellOrder = async (id) => {
-    let now = Date.now();
+    let now = new Date();
 
     var details = await SellBookModel
         .query()
         .where('deleted_at', null)
         .andWhere('id', id)
-        .updateAndFetch({
+        .update({
             deleted_at: now
         });
 
-    return deleteSellOrder;
+    var details = await SellBookModel
+        .query()
+        .andWhere('id', id)
+        .orderBy('id', 'DESC');
+    return details;
 }
 
 module.exports = {
