@@ -271,6 +271,7 @@ class TradeController extends AppController {
   //     return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
   //   }
   // }
+  // async marketSell(req, res, next) {
   async marketSell(req, res, next) {
     try {
       let {
@@ -304,174 +305,188 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
       // Make Market Sell order
-      let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
-      console.log("buy_book_data", buy_book_data);
-      let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
-      console.log("maker_taker_fees", maker_taker_fees);
+      let object = {
+        crypto: crypto,
+        currency: currency,
+        symbol: symbol,
+        side: side,
+        order_type: order_type,
+        orderQuantity: orderQuantity,
+        user_id: user_id,
+        crypto_wallet_data: crypto_wallet_data,
+        // currency_wallet_data: currency_wallet_data,
+        userIds: userIds
+      };
+      // let this=$this;
+      let market_sell_order = await module.exports.makeMarketSellOrder(object);
+      // let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+      // console.log("buy_book_data", buy_book_data);
+      // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
+      // console.log("maker_taker_fees", maker_taker_fees);
 
-      var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
+      // var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
 
-      if (buy_book_data && buy_book_data.length > 0) {
-        var availableQty = buy_book_data[0].quantity;
-        var currentBuyBookDetails = buy_book_data[0];
-        var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
-        var now = new Date();
-        var orderData = {
-          user_id: user_id,
-          symbol: symbol,
-          side: side,
-          order_type: order_type,
-          created_at: now,
-          updated_at: now,
-          maximum_time: now,
-          fill_price: priceValue,
-          limit_price: 0,
-          stop_price: 0,
-          price: 0,
-          quantity: quantityValue,
-          order_status: "partially_filled",
-          currency: currency,
-          settle_currency: crypto
-        }
+      // if (buy_book_data && buy_book_data.length > 0) {
+      //   var availableQty = buy_book_data[0].quantity;
+      //   var currentBuyBookDetails = buy_book_data[0];
+      //   var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
+      //   var now = new Date();
+      //   var orderData = {
+      //     user_id: user_id,
+      //     symbol: symbol,
+      //     side: side,
+      //     order_type: order_type,
+      //     created_at: now,
+      //     updated_at: now,
+      //     maximum_time: now,
+      //     fill_price: priceValue,
+      //     limit_price: 0,
+      //     stop_price: 0,
+      //     price: 0,
+      //     quantity: quantityValue,
+      //     order_status: "partially_filled",
+      //     currency: currency,
+      //     settle_currency: crypto
+      //   }
 
-        var resultData = {
-          ...orderData
-        }
-        resultData.is_market = true;
-        resultData.fix_quantity = quantityValue;
-        resultData.maker_fee = maker_taker_fees.makerFee;
-        resultData.taker_fee = maker_taker_fees.takerFee;
-        // Log this in Activity
-        await ActivityAdd.addActivityData(resultData)
+      //   var resultData = {
+      //     ...orderData
+      //   }
+      //   resultData.is_market = true;
+      //   resultData.fix_quantity = quantityValue;
+      //   resultData.maker_fee = maker_taker_fees.makerFee;
+      //   resultData.taker_fee = maker_taker_fees.takerFee;
+      //   // Log this in Activity
+      //   await ActivityAdd.addActivityData(resultData)
 
-        if (quantityValue <= availableQty) {
-          if ((priceValue * quantityValue).toFixed(process.envl.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
-            var trade_history_data = {
-              ...orderData
-            };
-            trade_history_data.maker_fee = maker_taker_fees.makerFee;
-            trade_history_data.taker_fee = maker_taker_fees.takerFee;
-            trade_history_data.quantity = quantityValue;
-            trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
-            trade_history_data.created_at = now;
-            trade_history_data.fix_quantity = quantityValue;
-            let updatedActivity = await sails
-              .helpers
-              .tradding
-              .activity
-              .update(currentBuyBookDetails.activity_id, trade_history_data);
-            // Update activity
-            await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
-            userIds.push(parseInt(trade_history_data.requested_user_id));
-            var request = {
-              requested_user_id: trade_history_data.requested_user_id,
-              user_id: user_id,
-              currency: currency,
-              side: side,
-              settle_currency: crypto,
-              quantity: quantityValue,
-              fill_price: priceValue
-            }
+      //   if (quantityValue <= availableQty) {
+      //     if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+      //       var trade_history_data = {
+      //         ...orderData
+      //       };
+      //       trade_history_data.maker_fee = maker_taker_fees.makerFee;
+      //       trade_history_data.taker_fee = maker_taker_fees.takerFee;
+      //       trade_history_data.quantity = quantityValue;
+      //       trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
+      //       trade_history_data.created_at = now;
+      //       trade_history_data.fix_quantity = quantityValue;
+      //       // let updatedActivity = await sails
+      //       //   .helpers
+      //       //   .tradding
+      //       //   .activity
+      //       //   .update(currentBuyBookDetails.activity_id, trade_history_data);
+      //       // Update activity
+      //       await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
+      //       userIds.push(parseInt(trade_history_data.requested_user_id));
+      //       var request = {
+      //         requested_user_id: trade_history_data.requested_user_id,
+      //         user_id: user_id,
+      //         currency: currency,
+      //         side: side,
+      //         settle_currency: crypto,
+      //         quantity: quantityValue,
+      //         fill_price: priceValue
+      //       }
 
-            // var tradingFees = await sails
-            //   .helpers
-            //   .wallet
-            //   .tradingFees(request, fees.makerFee, fees.takerFee)
-            //   .intercept("serverError", () => {
-            //     return new Error("serverError")
-            //   });
-            var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
+      //       // var tradingFees = await sails
+      //       //   .helpers
+      //       //   .wallet
+      //       //   .tradingFees(request, fees.makerFee, fees.takerFee)
+      //       //   .intercept("serverError", () => {
+      //       //     return new Error("serverError")
+      //       //   });
+      //       var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
 
-            trade_history_data.user_fee = (tradingFees.userFee);
-            trade_history_data.requested_fee = (tradingFees.requestedFee);
-            trade_history_data.user_coin = crypto;
-            trade_history_data.requested_coin = currency;
-            // Log into trade history
-            let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-            let remainigQuantity = availableQty - quantityValue;
+      //       trade_history_data.user_fee = (tradingFees.userFee);
+      //       trade_history_data.requested_fee = (tradingFees.requestedFee);
+      //       trade_history_data.user_coin = crypto;
+      //       trade_history_data.requested_coin = currency;
+      //       // Log into trade history
+      //       let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+      //       let remainigQuantity = availableQty - quantityValue;
 
-            if (remainigQuantity > 0) {
-              let updatedBuyBook = await OrderUpdate.updateBuyBook(currentBuyBookDetails.id, {
-                quantity: (remainigQuantity).toFixed(sails.config.local.QUANTITY_PRECISION)
-              })
-            } else {
-              let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
-            }
+      //       if (remainigQuantity > 0) {
+      //         let updatedBuyBook = await OrderUpdate.updateBuyBook(currentBuyBookDetails.id, {
+      //           quantity: (remainigQuantity).toFixed(process.env.QUANTITY_PRECISION)
+      //         })
+      //       } else {
+      //         let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
+      //       }
 
-          } else {
-            // return exits.insufficientBalance();
-          }
-        } else {
-          var remainingQty = quantityValue - availableQty;
-          if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (wallet.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
-            var trade_history_data = {
-              ...orderData
-            };
-            trade_history_data.maker_fee = maker_taker_fees.makerFee;
-            trade_history_data.taker_fee = maker_taker_fees.takerFee;
-            trade_history_data.quantity = availableQty;
-            trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
-            trade_history_data.created_at = now;
+      //     } else {
+      //       // return exits.insufficientBalance();
+      //     }
+      //   } else {
+      //     var remainingQty = quantityValue - availableQty;
+      //     if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (wallet.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+      //       var trade_history_data = {
+      //         ...orderData
+      //       };
+      //       trade_history_data.maker_fee = maker_taker_fees.makerFee;
+      //       trade_history_data.taker_fee = maker_taker_fees.takerFee;
+      //       trade_history_data.quantity = availableQty;
+      //       trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
+      //       trade_history_data.created_at = now;
 
-            trade_history_data.fix_quantity = quantityValue;
+      //       trade_history_data.fix_quantity = quantityValue;
 
-            let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
-            userIds.push(parseInt(trade_history_data.requested_user_id));
-            var request = {
-              requested_user_id: trade_history_data.requested_user_id,
-              user_id: inputs.user_id,
-              currency: currency,
-              side: inputs.side,
-              settle_currency: crypto,
-              quantity: availableQty,
-              fill_price: priceValue
-            }
-            // var tradingFees = await sails
-            //   .helpers
-            //   .wallet
-            //   .tradingFees(request, fees.makerFee, fees.takerFee)
-            //   .intercept("serverError", () => {
-            //     return new Error("serverError")
-            //   });
+      //       let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
+      //       userIds.push(parseInt(trade_history_data.requested_user_id));
+      //       var request = {
+      //         requested_user_id: trade_history_data.requested_user_id,
+      //         user_id: inputs.user_id,
+      //         currency: currency,
+      //         side: inputs.side,
+      //         settle_currency: crypto,
+      //         quantity: availableQty,
+      //         fill_price: priceValue
+      //       }
+      //       // var tradingFees = await sails
+      //       //   .helpers
+      //       //   .wallet
+      //       //   .tradingFees(request, fees.makerFee, fees.takerFee)
+      //       //   .intercept("serverError", () => {
+      //       //     return new Error("serverError")
+      //       //   });
 
-            var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
-            trade_history_data.user_fee = (tradingFees.userFee);
-            trade_history_data.requested_fee = (tradingFees.requestedFee);
-            trade_history_data.user_coin = crypto;
-            trade_history_data.requested_coin = currency;
+      //       var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
+      //       trade_history_data.user_fee = (tradingFees.userFee);
+      //       trade_history_data.requested_fee = (tradingFees.requestedFee);
+      //       trade_history_data.user_coin = crypto;
+      //       trade_history_data.requested_coin = currency;
 
-            let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-            let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
+      //       let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+      //       let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
 
-            let requestData = {
-              ...inputs
-            }
-            requestData.orderQuantity = remainingQty;
-            // let response = await sails
-            //   .helpers
-            //   .tradding
-            //   .marketSell(requestData.symbol, requestData.user_id, requestData.side, requestData.order_type, requestData.orderQuantity)
-            //   .intercept("coinNotFound", () => {
-            //     return new Error("coinNotFound");
-            //   })
-            //   .intercept("serverError", () => {
-            //     return new Error("serverError");
-            //   })
-            //   .intercept("insufficientBalance", () => {
-            //     return new Error("insufficientBalance");
-            //   })
-            //   .intercept("orderBookEmpty", () => {
-            //     return new Error("orderBookEmpty");
-            //   });
-          } else {
-            // return exits.insufficientBalance();
-          }
+      //       let requestData = {
+      //         ...inputs
+      //       }
+      //       requestData.orderQuantity = remainingQty;
+      //       // let response = await sails
+      //       //   .helpers
+      //       //   .tradding
+      //       //   .marketSell(requestData.symbol, requestData.user_id, requestData.side, requestData.order_type, requestData.orderQuantity)
+      //       //   .intercept("coinNotFound", () => {
+      //       //     return new Error("coinNotFound");
+      //       //   })
+      //       //   .intercept("serverError", () => {
+      //       //     return new Error("serverError");
+      //       //   })
+      //       //   .intercept("insufficientBalance", () => {
+      //       //     return new Error("insufficientBalance");
+      //       //   })
+      //       //   .intercept("orderBookEmpty", () => {
+      //       //     return new Error("orderBookEmpty");
+      //       //   });
+      //     } else {
+      //       // return exits.insufficientBalance();
+      //     }
 
-        }
+      //   }
 
-      } else {
-        // return exits.orderBookEmpty();
-      }
+      // } else {
+      //   // return exits.orderBookEmpty();
+      // }
 
 
       return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
@@ -482,253 +497,238 @@ class TradeController extends AppController {
   }
 
   // Helper : Market Sell Order
-  // async makeMarketSellOrder( alldata ){
-  //   let {
-  //     crypto,
-  //     currency,
-  //     symbol,
-  //     side,
-  //     order_type,
-  //     orderQuantity,
-  //     user_id,
-  //     crypto_wallet_data,
-  //     currency_wallet_data,
-  //     userIds
-  //   } = alldata;
-  //   // Make Market Sell order
-  //   let buy_book_data = await BuyBookHelper.getBuyBookOrder( crypto, currency );
-  //   console.log("buy_book_data",buy_book_data);
-  //   let maker_taker_fees = await MakerTakerFees.getFeesValue( crypto, currency );
-  //   console.log("maker_taker_fees",maker_taker_fees);
+  async makeMarketSellOrder(alldata) {
+    let {
+      crypto,
+      currency,
+      symbol,
+      side,
+      order_type,
+      orderQuantity,
+      user_id,
+      crypto_wallet_data,
+      currency_wallet_data,
+      userIds
+    } = alldata;
+    // Make Market Sell order
+    let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+    console.log("buy_book_data", buy_book_data);
+    let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
+    console.log("maker_taker_fees", maker_taker_fees);
 
-  //   var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
+    var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
 
-  //   if (buy_book_data && buy_book_data.length > 0) {
-  //     var availableQty = buy_book_data[0].quantity;
-  //     var currentBuyBookDetails = buy_book_data[0];
-  //     var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
-  //     var now = new Date();
-  //     var orderData = {
-  //       user_id: user_id,
-  //       symbol: symbol,
-  //       side: side,
-  //       order_type: order_type,
-  //       created_at: now,
-  //       updated_at: now,
-  //       maximum_time: now,
-  //       fill_price: priceValue,
-  //       limit_price: 0,
-  //       stop_price: 0,
-  //       price: 0,
-  //       quantity: quantityValue,
-  //       order_status: "partially_filled",
-  //       currency: currency,
-  //       settle_currency: crypto
-  //     }
+    if (buy_book_data && buy_book_data.length > 0) {
+      var availableQty = buy_book_data[0].quantity;
+      var currentBuyBookDetails = buy_book_data[0];
+      var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
+      var now = new Date();
+      var orderData = {
+        user_id: user_id,
+        symbol: symbol,
+        side: side,
+        order_type: order_type,
+        created_at: now,
+        updated_at: now,
+        maximum_time: now,
+        fill_price: priceValue,
+        limit_price: 0,
+        stop_price: 0,
+        price: 0,
+        quantity: quantityValue,
+        order_status: "partially_filled",
+        currency: currency,
+        settle_currency: crypto
+      }
 
-  //     var resultData = {
-  //       ...orderData
-  //     }
-  //     resultData.is_market = true;
-  //     resultData.fix_quantity = quantityValue;
-  //     resultData.maker_fee = maker_taker_fees.makerFee;
-  //     resultData.taker_fee = maker_taker_fees.takerFee;
-  //     // Log this in Activity
-  //     await ActivityAdd.addActivityData( resultData )
+      var resultData = {
+        ...orderData
+      }
+      resultData.is_market = true;
+      resultData.fix_quantity = quantityValue;
+      resultData.maker_fee = maker_taker_fees.makerFee;
+      resultData.taker_fee = maker_taker_fees.takerFee;
+      // Log this in Activity
+      await ActivityAdd.addActivityData(resultData)
 
-  //     if (quantityValue <= availableQty) {
-  //       if ((priceValue * quantityValue).toFixed(process.envl.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
-  //         var trade_history_data = {
-  //           ...orderData
-  //         };
-  //         trade_history_data.maker_fee = maker_taker_fees.makerFee;
-  //         trade_history_data.taker_fee = maker_taker_fees.takerFee;
-  //         trade_history_data.quantity = quantityValue;
-  //         trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
-  //         trade_history_data.created_at = now;
-  //         trade_history_data.fix_quantity = quantityValue;
-  //         let updatedActivity = await sails
-  //           .helpers
-  //           .tradding
-  //           .activity
-  //           .update(currentBuyBookDetails.activity_id, trade_history_data);
-  //         // Update activity
-  //         await ActivityUpdate.updateActivityData( currentBuyBookDetails.activity_id, trade_history_data )
-  //         userIds.push(parseInt(trade_history_data.requested_user_id));
-  //         var request = {
-  //           requested_user_id: trade_history_data.requested_user_id,
-  //           user_id: user_id,
-  //           currency:currency,
-  //           side: side,
-  //           settle_currency: crypto,
-  //           quantity: quantityValue,
-  //           fill_price: priceValue
-  //         }
+      if (quantityValue <= availableQty) {
+        if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+          var trade_history_data = {
+            ...orderData
+          };
+          trade_history_data.maker_fee = maker_taker_fees.makerFee;
+          trade_history_data.taker_fee = maker_taker_fees.takerFee;
+          trade_history_data.quantity = quantityValue;
+          trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
+          trade_history_data.created_at = now;
+          trade_history_data.fix_quantity = quantityValue;
+          // let updatedActivity = await sails
+          //   .helpers
+          //   .tradding
+          //   .activity
+          //   .update(currentBuyBookDetails.activity_id, trade_history_data);
+          // Update activity
+          await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
+          userIds.push(parseInt(trade_history_data.requested_user_id));
+          var request = {
+            requested_user_id: trade_history_data.requested_user_id,
+            user_id: user_id,
+            currency: currency,
+            side: side,
+            settle_currency: crypto,
+            quantity: quantityValue,
+            fill_price: priceValue
+          }
 
-  //         // var tradingFees = await sails
-  //         //   .helpers
-  //         //   .wallet
-  //         //   .tradingFees(request, fees.makerFee, fees.takerFee)
-  //         //   .intercept("serverError", () => {
-  //         //     return new Error("serverError")
-  //         //   });
-  //         var tradingFees = await TradingFees.getTraddingFees( request, maker_taker_fees.makerFee, maker_taker_fees.takerFee )
+          // var tradingFees = await sails
+          //   .helpers
+          //   .wallet
+          //   .tradingFees(request, fees.makerFee, fees.takerFee)
+          //   .intercept("serverError", () => {
+          //     return new Error("serverError")
+          //   });
+          var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
 
-  //         trade_history_data.user_fee = (tradingFees.userFee);
-  //         trade_history_data.requested_fee = (tradingFees.requestedFee);
-  //         trade_history_data.user_coin = crypto;
-  //         trade_history_data.requested_coin = currency;
-  //         // Log into trade history
-  //         let tradeHistory = await TradeAdd.addTradeHistory( trade_history_data );
-  //         let remainigQuantity = availableQty - quantityValue;
+          trade_history_data.user_fee = (tradingFees.userFee);
+          trade_history_data.requested_fee = (tradingFees.requestedFee);
+          trade_history_data.user_coin = crypto;
+          trade_history_data.requested_coin = currency;
+          // Log into trade history
+          let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          let remainigQuantity = availableQty - quantityValue;
 
-  //         if (remainigQuantity > 0) {
-  //             let updatedBuyBook = await OrderUpdate.updateBuyBook( currentBuyBookDetails.id,  {
-  //               quantity: (remainigQuantity).toFixed(sails.config.local.QUANTITY_PRECISION)
-  //             })
-  //         } else {
-  //           let deleteBuyBook = await OrderDelete.deleteOrder( currentBuyBookDetails.id)
-  //         }
+          if (remainigQuantity > 0) {
+            let updatedBuyBook = await OrderUpdate.updateBuyBook(currentBuyBookDetails.id, {
+              quantity: (remainigQuantity).toFixed(process.env.QUANTITY_PRECISION)
+            })
+          } else {
+            let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
+          }
 
-  //       } else {
-  //         // return exits.insufficientBalance();
-  //         return {
-  //           status:2,
-  //           message:'insufficientBalance'
-  //         }
-  //       }
-  //     } else {
-  //       var remainingQty = quantityValue - availableQty;
-  //       if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (wallet.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
-  //         var trade_history_data = {
-  //           ...orderData
-  //         };
-  //         trade_history_data.maker_fee = maker_taker_fees.makerFee;
-  //         trade_history_data.taker_fee = maker_taker_fees.takerFee;
-  //         trade_history_data.quantity = availableQty;
-  //         trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
-  //         trade_history_data.created_at = now;
+        } else {
+          // return exits.insufficientBalance();
+          return {
+            status: 2,
+            message: 'insufficientBalance'
+          }
+        }
+      } else {
+        var remainingQty = quantityValue - availableQty;
+        if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (wallet.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+          var trade_history_data = {
+            ...orderData
+          };
+          trade_history_data.maker_fee = maker_taker_fees.makerFee;
+          trade_history_data.taker_fee = maker_taker_fees.takerFee;
+          trade_history_data.quantity = availableQty;
+          trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
+          trade_history_data.created_at = now;
 
-  //         trade_history_data.fix_quantity = quantityValue;
+          trade_history_data.fix_quantity = quantityValue;
 
-  //         let updatedActivity = await ActivityUpdate.updateActivityData( currentBuyBookDetails.activity_id, trade_history_data )
-  //         userIds.push(parseInt(trade_history_data.requested_user_id));
-  //         var request = {
-  //           requested_user_id: trade_history_data.requested_user_id,
-  //           user_id: inputs.user_id,
-  //           currency: currency,
-  //           side: inputs.side,
-  //           settle_currency: crypto,
-  //           quantity: availableQty,
-  //           fill_price: priceValue
-  //         }
-  //         // var tradingFees = await sails
-  //         //   .helpers
-  //         //   .wallet
-  //         //   .tradingFees(request, fees.makerFee, fees.takerFee)
-  //         //   .intercept("serverError", () => {
-  //         //     return new Error("serverError")
-  //         //   });
+          let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
+          userIds.push(parseInt(trade_history_data.requested_user_id));
+          var request = {
+            requested_user_id: trade_history_data.requested_user_id,
+            user_id: inputs.user_id,
+            currency: currency,
+            side: inputs.side,
+            settle_currency: crypto,
+            quantity: availableQty,
+            fill_price: priceValue
+          }
+          // var tradingFees = await sails
+          //   .helpers
+          //   .wallet
+          //   .tradingFees(request, fees.makerFee, fees.takerFee)
+          //   .intercept("serverError", () => {
+          //     return new Error("serverError")
+          //   });
 
-  //         var tradingFees = await TradingFees.getTraddingFees( request, maker_taker_fees.makerFee, maker_taker_fees.takerFee )
-  //         trade_history_data.user_fee = (tradingFees.userFee);
-  //         trade_history_data.requested_fee = (tradingFees.requestedFee);
-  //         trade_history_data.user_coin = crypto;
-  //         trade_history_data.requested_coin = currency;
+          var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
+          trade_history_data.user_fee = (tradingFees.userFee);
+          trade_history_data.requested_fee = (tradingFees.requestedFee);
+          trade_history_data.user_coin = crypto;
+          trade_history_data.requested_coin = currency;
 
-  //         let tradeHistory = await TradeAdd.addTradeHistory( trade_history_data );
-  //         let deleteBuyBook = await OrderDelete.deleteOrder( currentBuyBookDetails.id)
+          let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
 
-  //         let requestData = {
-  //           ...inputs
-  //         }
-  //         requestData.orderQuantity = remainingQty;
-  //         // let response = await sails
-  //         //   .helpers
-  //         //   .tradding
-  //         //   .marketSell(requestData.symbol, requestData.user_id, requestData.side, requestData.order_type, requestData.orderQuantity)
-  //         //   .intercept("coinNotFound", () => {
-  //         //     return new Error("coinNotFound");
-  //         //   })
-  //         //   .intercept("serverError", () => {
-  //         //     return new Error("serverError");
-  //         //   })
-  //         //   .intercept("insufficientBalance", () => {
-  //         //     return new Error("insufficientBalance");
-  //         //   })
-  //         //   .intercept("orderBookEmpty", () => {
-  //         //     return new Error("orderBookEmpty");
-  //         //   });
-  //           let object = {
-  //             symbol:requestData.symbol,
-  //             user_id:requestData.user_id,
-  //             side:requestData.side,
-  //             order_type:requestData.order_type,
-  //             orderQuantity:requestData.orderQuantity,
-  //           };
-  //           let market_sell_order = await this.makeMarketSellOrder( object );
+          let requestData = {
+            ...inputs
+          }
+          requestData.orderQuantity = remainingQty;
+          let object = {
+            symbol: requestData.symbol,
+            user_id: requestData.user_id,
+            side: requestData.side,
+            order_type: requestData.order_type,
+            orderQuantity: requestData.orderQuantity,
+          };
+          let market_sell_order = await module.exports.makeMarketSellOrder(object);
 
-  //       } else {
-  //         // return exits.insufficientBalance();
-  //         return {
-  //           status:2,
-  //           message:'insufficientBalance'
-  //         }
-  //       }
+        } else {
+          // return exits.insufficientBalance();
+          return {
+            status: 2,
+            message: 'insufficientBalance'
+          }
+        }
 
-  //     }
+      }
 
-  //   } else {
-  //     // return exits.orderBookEmpty();
-  //     return {
-  //       status:2,
-  //       message:'orderBookEmpty'
-  //     }
-  //   }
+    } else {
+      // return exits.orderBookEmpty();
+      return {
+        status: 2,
+        message: 'orderBookEmpty'
+      }
+    }
 
-  //   // console.log("----wallet", wallet);
-  //   for (var i = 0; i < userIds.length; i++) {
-  //     // Notification Sending for users
-  //     var userNotification = await UserNotifications.getSingleData({
-  //       user_id: userIds[i],
-  //       deleted_at: null,
-  //       slug: 'trade_execute'
-  //     })
-  //     var user_data = await Users.getSingleData({
-  //       deleted_at: null,
-  //       id: userIds[i],
-  //       is_active: true
-  //     });
-  //     if (user_data != undefined) {
-  //       if (userNotification != undefined) {
-  //         if (userNotification.email == true || userNotification.email == "true") {
-  //           if (user_data.email != undefined){
-  //             // await sails.helpers.notification.send.email("trade_execute", user_data)
-  //             // var allData = {
-  //             //   template: "emails/common.pug",
-  //             //   email: get_user.email,
-  //             //   extraData: {
-  //             //     html_template_content: parseHTML.parse(emailContent)
-  //             //   },
-  //             //   subject: ""
-  //             // }
-  //             // await Helper.SendEmail(res, )
-  //           }
-  //         }
-  //         if (userNotification.text == true || userNotification.text == "true") {
-  //           if (user_data.phone_number != undefined){
-  //             // await sails.helpers.notification.send.text("trade_execute", user_data)
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  //   await sails
-  //     .helpers
-  //     .sockets
-  //     .tradeEmit(crypto, currency, userIds);
-  //   return exits.success();
-  // }
+    // console.log("----wallet", wallet);
+    for (var i = 0; i < userIds.length; i++) {
+      // Notification Sending for users
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: userIds[i],
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: userIds[i],
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              // await sails.helpers.notification.send.email("trade_execute", user_data)
+              // var allData = {
+              //   template: "emails/common.pug",
+              //   email: get_user.email,
+              //   extraData: {
+              //     html_template_content: parseHTML.parse(emailContent)
+              //   },
+              //   subject: ""
+              // }
+              // await Helper.SendEmail(res, )
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+    }
+    await sails
+      .helpers
+      .sockets
+      .tradeEmit(crypto, currency, userIds);
+    return exits.success();
+  }
+  // Used for Buy Market order
   async marketBuy(req, res) {
     let {
       symbol,
@@ -889,6 +889,7 @@ class TradeController extends AppController {
           }
           requestData.orderQuantity = parseFloat(remainingQty).toFixed(8);
           console.log("requestData", requestData)
+          // Again call same api
           let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id)
           console.log(response);
         }

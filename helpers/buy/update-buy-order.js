@@ -3,10 +3,10 @@ var BuyBookModel = require("../../models/BuyBook");
 var updateBuyBook = async (id, orderData) => {
     var updateBook = await BuyBookModel
         .query()
-        .where('id', id)
-        .updateAndFetch({
+        // .where('id', id)
+        .patchAndFetchById(id,
             orderData
-        });
+        );
 
     return (updateBook)
 }
