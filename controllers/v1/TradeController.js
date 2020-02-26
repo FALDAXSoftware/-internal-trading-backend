@@ -422,7 +422,23 @@ class TradeController extends AppController {
     }
   }
 
+  async limitBuy(req, res) {
+    let {
+      symbol,
+      user_id,
+      side,
+      order_type,
+      orderQuantity,
+      limit_price
+    } = req.body;
 
+    let responseData = await module.exports.limitBuyOrder(symbol,
+      user_id,
+      side,
+      order_type,
+      orderQuantity,
+      limit_price);
+  }
 
 }
 
