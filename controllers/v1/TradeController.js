@@ -287,12 +287,12 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
       }
       // Get and check Currency Wallet details
-      let currency_wallet_data = await WalletHelper.checkWalletStatus(currency, user_id);
-      if (currency_wallet_data == 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-      } else if (currency_wallet_data == 2) {
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
-      }
+      // let currency_wallet_data = await WalletHelper.checkWalletStatus(currency, user_id);
+      // if (currency_wallet_data == 0) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      // } else if (currency_wallet_data == 2) {
+      //   return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+      // }
       // Check balance sufficient or not
       if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
@@ -731,7 +731,7 @@ class TradeController extends AppController {
       orderQuantity,
       user_id
     } = req.body;
-    var responseData = await module.exports.marektBuy(symbol,
+    var responseData = await module.exports.makeMarketBuyOrder(symbol,
       side,
       order_type,
       orderQuantity,
@@ -740,7 +740,8 @@ class TradeController extends AppController {
     console.log(responseData)
   }
 
-  async marektBuy(symbol, side, order_type, orderQuantity, user_id) {
+  // Used for function to make Market Buy order
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id) {
     var userIds = [];
     userIds.push(user_id);
     console.log("userIds", userIds)
@@ -882,13 +883,13 @@ class TradeController extends AppController {
           }
           requestData.orderQuantity = parseFloat(remainingQty).toFixed(8);
           console.log("requestData", requestData)
-          let response = await module.exports.marektBuy(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id)
+          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id)
           console.log(response);
         }
       }
     }
   }
-
+  // Used to Create Buy Limit order
   async limitBuy(req, res) {
     let {
       symbol,
