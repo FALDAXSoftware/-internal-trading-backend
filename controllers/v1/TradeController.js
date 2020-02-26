@@ -29,12 +29,14 @@ var ActivityAdd = require("../../helpers/activity/add");
 var ActivityUpdate = require("../../helpers/activity/update");
 var TradingFees = require("../../helpers/wallet/get-trading-fees");
 var TradeAdd = require("../../helpers/trade/add");
+var BuyAdd = require("../../helpers/buy/add-buy-order");
 var OrderUpdate = require("../../helpers/buy/update-buy-order");
 var OrderDelete = require("../../helpers/buy/delete-order");
 var ActivityHelper = require("../../helpers/activity/add");
 var ActivityUpdateHelper = require("../../helpers/activity/update");
 var sellUpdate = require("../../helpers/sell/update");
 var sellDelete = require("../../helpers/sell/delete-order");
+var limitMatch = require("../../helpers/limit/limit-buy-match");
 
 /**
  * Trade Controller : Used for live tradding
@@ -44,9 +46,8 @@ class TradeController extends AppController {
   constructor() {
     super();
   }
-
   // Used to Sell market order
-  async marketSell(req, res, next) {
+  async marketSell(req, res) {
     try {
       let {
         symbol,
@@ -438,6 +439,84 @@ class TradeController extends AppController {
       order_type,
       orderQuantity,
       limit_price);
+  }
+
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price) {
+    var userIds = [];
+    userIds.push(parseInt(user_id));
+    let { crypto, currency } = await Currency.get_currencies(symbol);
+    let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+    let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+    var now = new Date();
+    var quantityValue = parseFloat(orderQuantity).toFixed(8);
+    var priceValue = parseFloat(limit_price).toFixed(8);
+
+    var buyLimitOrderData = {
+      'user_id': user_id,
+      'symbol': symbol,
+      'side': side,
+      'order_type': order_type,
+      'created': now,
+      'updated': now,
+      'fill_price': 0.0,
+      'limit_price': priceValue,
+      'stop_price': 0.0,
+      'price': priceValue,
+      'quantity': quantityValue,
+      'fix_quantity': quantityValue,
+      'order_status': "open",
+      'currency': currency,
+      'settle_currency': crypto,
+      'maximum_time': now,
+      'is_partially_fulfilled': false
+    };
+
+    var resultData = {
+      ...buyLimitOrderData
+    }
+    resultData.isMarket = false;
+    resultData.fix_quantity = quantityValue
+
+    var activity = await ActivityHelper.addActivityData(resultData);
+    resultData.maker_fee = fees.makerFee;
+    resultData.taker_fee = fees.takerFee;
+
+    if (sellBook && sellBook.length > 0) {
+      var currentPrice = sellBook[0].price;
+      if (priceValue >= currentPrice) {
+        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity);
+
+        // Send Notification to users
+        // Emit Socket Event
+      } else {
+        buyLimitOrderData.activity_id = activity.id;
+        var total_price = buyLimitOrderData.quantity * buyLimitOrderData.limit_price;
+        if (total_price <= wallet.placed_balance) {
+          buyLimitOrderData.is_partially_fulfilled = true;
+          buyLimitOrderData.is_filled = false;
+          buyLimitOrderData.added = true;
+          var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
+          addBuyBook.added = true;
+
+          // Send Notification to users
+          // Emit Socket Event
+        }
+      }
+    } else {
+      buyLimitOrderData.activity_id = activity.id;
+      var total_price = parseFloat(buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8);
+      if (total_price <= wallet.placed_balance) {
+        buyLimitOrderData.is_partially_fulfilled = true;
+        buyLimitOrderData.is_filled = false;
+        buyLimitOrderData.added = true;
+        var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
+        addBuyBook.added = true;
+
+        // Send Notification to users
+        // Emit Socket Event
+      }
+    }
   }
 
 }
