@@ -37,6 +37,7 @@ var ActivityUpdateHelper = require("../../helpers/activity/update");
 var sellUpdate = require("../../helpers/sell/update");
 var sellDelete = require("../../helpers/sell/delete-order");
 var limitMatch = require("../../helpers/limit/limit-buy-match");
+var socketHelper = require("../../helpers/sockets/emit-trades");
 
 /**
  * Trade Controller : Used for live tradding
@@ -550,7 +551,9 @@ class TradeController extends AppController {
       resultData.taker_fee = maker_taker_fees.takerFee;
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData)
-
+      console.log("quantityValue",quantityValue);
+      console.log("availableQty",availableQty);
+      console.log(quantityValue <= availableQty);
       if (quantityValue <= availableQty) {
         if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
@@ -614,7 +617,7 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQty;
-        if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (wallet.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
             ...orderData
           };
@@ -630,9 +633,9 @@ class TradeController extends AppController {
           userIds.push(parseInt(trade_history_data.requested_user_id));
           var request = {
             requested_user_id: trade_history_data.requested_user_id,
-            user_id: inputs.user_id,
+            user_id: user_id,
             currency: currency,
-            side: inputs.side,
+            side: side,
             settle_currency: crypto,
             quantity: availableQty,
             fill_price: priceValue
@@ -655,16 +658,21 @@ class TradeController extends AppController {
           let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
 
           let requestData = {
-            ...inputs
+            symbol,
+            side,
+            order_type,
+            orderQuantity,
+            user_id
           }
           requestData.orderQuantity = remainingQty;
-          let object = {
-            symbol: requestData.symbol,
-            user_id: requestData.user_id,
-            side: requestData.side,
-            order_type: requestData.order_type,
-            orderQuantity: requestData.orderQuantity,
-          };
+          // let object = {
+          //   symbol: requestData.symbol,
+          //   user_id: requestData.user_id,
+          //   side: requestData.side,
+          //   order_type: requestData.order_type,
+          //   orderQuantity: requestData.orderQuantity,
+          // };
+          let object = alldata;
           let market_sell_order = await module.exports.makeMarketSellOrder(object);
 
         } else {
@@ -722,11 +730,12 @@ class TradeController extends AppController {
         }
       }
     }
-    await sails
-      .helpers
-      .sockets
-      .tradeEmit(crypto, currency, userIds);
-    return exits.success();
+
+    // await sails
+    //   .helpers
+    //   .sockets
+    //   .tradeEmit(crypto, currency, userIds);
+   let emit_socket = await socketHelper.emitTrades( crypto, currency, userIds )
   }
   // Used for Buy Market order
   async marketBuy(req, res) {

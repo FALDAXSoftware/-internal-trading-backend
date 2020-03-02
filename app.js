@@ -87,7 +87,18 @@ app.use('/api/v1/tradding/', require('./routes/index'));
 var server = http.createServer(app);
 
 // process.on('uncaughtException', function (error) {}); // Ignore error
-
+/* SOCKET  */
+var io = require('socket.io').listen(server);
+// Handle connection
+io.on('connection', function (socket) {
+  console.log("Connected succesfully to the socket ...");
+  // Send news on the socket
+  // socket.emit('news', {name:"faldax"});
+  socket.on('calltradding', function (data) {
+    return {code:200, message:"received"}
+    // socket.emit('custom', data);
+  });
+});
 // Start the server
 app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {

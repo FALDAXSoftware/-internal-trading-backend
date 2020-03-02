@@ -1,12 +1,12 @@
 var BuyBookModel = require("../../models/BuyBook");
 
 var deleteOrder = async (id) => {
-    var now = Date.now();
+    var now = new Date();
 
     await BuyBookModel
         .query()
         .where('deleted_at', null)
-        .andWher('id', id)
+        .andWhere('id', id)
         .patch({
             'deleted_at': now
         })
