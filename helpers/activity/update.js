@@ -21,6 +21,8 @@ var updateActivityData = async (id, orderData) => {
 
     updateActivityHistory = await ActivityTableModel
         .query()
+        .first()
+        .select()
         .where('deleted_at', null)
         .andWhere('id', id)
 

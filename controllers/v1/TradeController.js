@@ -38,6 +38,8 @@ var sellUpdate = require("../../helpers/sell/update");
 var sellDelete = require("../../helpers/sell/delete-order");
 var limitMatch = require("../../helpers/limit/limit-buy-match");
 var socketHelper = require("../../helpers/sockets/emit-trades");
+var WalletBalanceHelper = require("../../helpers/wallet/get-wallet-balance");
+var SellBookHelper = require("../../helpers/sell/get-sell-book-order");
 
 /**
  * Trade Controller : Used for live tradding
@@ -940,8 +942,8 @@ class TradeController extends AppController {
       'symbol': symbol,
       'side': side,
       'order_type': order_type,
-      'created': now,
-      'updated': now,
+      'created_at': now,
+      'updated_at': now,
       'fill_price': 0.0,
       'limit_price': priceValue,
       'stop_price': 0.0,
@@ -958,27 +960,33 @@ class TradeController extends AppController {
     var resultData = {
       ...buyLimitOrderData
     }
-    resultData.isMarket = false;
+    resultData.is_market = false;
     resultData.fix_quantity = quantityValue
 
     var activity = await ActivityHelper.addActivityData(resultData);
     resultData.maker_fee = fees.makerFee;
     resultData.taker_fee = fees.takerFee;
+    console.log(resultData);
+    console.log("sellBook.length", sellBook.length)
 
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
+      console.log("priceValue", priceValue)
+      console.log("currentPrice", currentPrice)
       if (priceValue >= currentPrice) {
         var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity);
 
         // Send Notification to users
         // Emit Socket Event
       } else {
+        console.log("INSIDE ELSE??????")
         buyLimitOrderData.activity_id = activity.id;
         var total_price = buyLimitOrderData.quantity * buyLimitOrderData.limit_price;
         if (total_price <= wallet.placed_balance) {
           buyLimitOrderData.is_partially_fulfilled = true;
           buyLimitOrderData.is_filled = false;
           buyLimitOrderData.added = true;
+          console.log(buyLimitOrderData);
           var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
           addBuyBook.added = true;
 
