@@ -82,7 +82,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity) => {
                         var remainigQuantity = availableQuantity - quantityValue;
                         console.log("remainigQuantity", remainigQuantity)
                         if (remainigQuantity > 0) {
-                            let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
+                            let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
                                 quantity: remainigQuantity
                             });
                             // Pass notification
@@ -225,7 +225,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity) => {
             }
         }
     } catch (error) {
-
+        console.log(error);
     }
 }
 

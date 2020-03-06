@@ -15,5 +15,6 @@ router.get("/api", function (req, res) {
 router.post('/orders/market-sell-create', TradeController.marketSell);
 router.post('/orders/market-buy-create', TradeController.marketBuy);
 router.post('/orders/limit-buy-order-create', TradeController.limitBuy);
+router.post('/orders/limit-sell-order-create', TradeController.limitSell);
 
 module.exports = router;

@@ -10,10 +10,13 @@ var http = require('http');
 var mailer = require('express-mailer');
 var i18n = require("i18n");
 var session = require('express-session')
+var server = http.createServer(app);
+var io = require('socket.io')(server);
+app.set('socketObject', io);
 
 app.use(session({
-  resave:false,
-  saveUninitialized:false,
+  resave: false,
+  saveUninitialized: false,
   secret: require("./config/secret")
 }));
 app.use(cors())
@@ -36,7 +39,7 @@ app.set('view engine', 'ejs');
 
 // Configure Locales
 i18n.configure({
-  locales:['en', 'de'],
+  locales: ['en', 'de'],
   directory: __dirname + '/locales',
   register: global
 });
@@ -62,8 +65,8 @@ app.all('/*', function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   // Set custom headers for CORS
   // res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token');
-  if( req.headers.language ){ // If header send language, then set to that language
-    i18n.setLocale(req.headers.language );
+  if (req.headers.language) { // If header send language, then set to that language
+    i18n.setLocale(req.headers.language);
   }
   if (req.method == 'OPTIONS') {
     res
@@ -73,32 +76,71 @@ app.all('/*', function (req, res, next) {
     next();
   }
 });
+
+app.set("pairData", {
+  crypto: "ETH",
+  currency: "BTC"
+});
+
+// Socket Implementation //Socket config
+io.on('connection', function (socket) {
+  // console.log(socket)
+  // console.log("socket conetcted", socket.handshake); var userId =
+  // socket.handshake.query['id']; console.log("Session User Id >>>>>>>>>>>>>>",
+  // userId);
+  // socket
+  //   .on("join", function (room) {
+  //     console.log(room)
+  //     socket
+  //       .on('home_card_coin', function () {
+  //         currencyConversion.getRecentValue(io);
+  //       })
+  //     socket.on('rising_falling', function () {
+  //       risingFalling.getRecentRisingFallingValue(io);
+  //     })
+  //     if (room.old) {
+  //       socket.leave(room.old);
+  //     }
+  //     socket.join(room.new);
+  //     socketData.getTradeDataSell(room.new, io, socket.id);
+  //   });
+  // socket.on('pending_history_userid',async function (data) {
+
+  //   var userid = User.decript_id(data.user_id);
+  //   var symbol = data.symbol;
+  //   var data = symbol.split("-");
+  //   var currency = data[1];
+  //   var crypto = data[0];
+  //   var pending_history = await pendingbook.get_PendingOrderDetailsPair(crypto, currency, userid);
+  //   var pending_array = {
+  //     data: [...pending_history],
+  //     status: 200
+  //   };
+  //   if (pending_history.length == 0) {
+  //     pending_array.message = "No Data Found",
+  //     pending_array.status = 204
+  //   }
+  //   io
+  //     .to(socket.id)
+  //     .emit('pending_history', pending_array);
+  //   // socketData.getUserPendingHistory(data.user_id, data.symbol, io, socket.id);
+  // })
+
+  // socket.on('card_data_userid', function (data) {
+  //   socketData.getUserCardData(data.user_id, io, socket.id);
+  // })
+  // // setTimeout(() => {   socket.emit("test", {data: true}); }, 2000);
+  // // setTimeout(() => {   socket.emit("test2", {data: false}); }, 3000);
+  // socket.on("change", function (data) {
+  // app.set("pairData", data);
+
+})
+// });
+
+
 //Routes
 app.use('/api/v1/tradding/', require('./routes/index'));
-// app.get("api/test", function(req, res){
-//   return res.json({status:1})
-// });
-// If no route is matched by now, it must be a 404
-// app.use(function (req, res, next) {
-//   var err = new Error('Not Found');
-//   err.status = 404;
-//   next(err);
-// });
-var server = http.createServer(app);
 
-// process.on('uncaughtException', function (error) {}); // Ignore error
-/* SOCKET  */
-var io = require('socket.io').listen(server);
-// Handle connection
-io.on('connection', function (socket) {
-  console.log("Connected succesfully to the socket ...");
-  // Send news on the socket
-  // socket.emit('news', {name:"faldax"});
-  socket.on('calltradding', function (data) {
-    return {code:200, message:"received"}
-    // socket.emit('custom', data);
-  });
-});
 // Start the server
 app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {
