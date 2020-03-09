@@ -24,20 +24,32 @@ var randomString = (length)=> {
 
 // Common Customized Mailer Function to send mail
 var SendEmail = async ( res, requestedData )=> {
-
-    var template = requestedData.template;
+    var EmailTemplate = require("../models/EmailTemplate");
+    var template_name = requestedData.template;
     var email = requestedData.email;
     // var body = requestedData.body;
-    var extraData = requestedData.extraData;
-    var subject = requestedData.subject;
+    // var extraData = requestedData.extraData;
+    // var subject = requestedData.subject;
+    var user_detail = requestedData.user_detail;
+    var format_data = requestedData.formatData;
+
+    let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
+
+    let template = await EmailTemplate.getSingleData({
+        slug:requestedData.templateSlug
+    });
+
+    let language_content = template.all_content[user_language].content;
+    let language_subject = template.all_content[user_language].subject;
+
+    language_content = await module.exports.formatEmail(language_content, format_data);
 
     try{
         await res.mailer
-        .send( template, {
+        .send( template_name, {
             to: email,
-            subject: process.env.MAIL_FROM_NAME + ': ' + subject,
-            // body: body,
-            data : extraData,// All additional properties are also passed to the template as local variables.
+            subject: language_subject,
+            content : (language_content),
             PROJECT_NAME: process.env.PROJECT_NAME,
             SITE_URL: process.env.SITE_URL
         }, function (err) {
@@ -53,9 +65,35 @@ var SendEmail = async ( res, requestedData )=> {
     }
 }
 
+// Format Email
+var formatEmail = async (emailContent, data) => {
+      let rex = /{{([^}]+)}}/g;
+      let key;
+      console.log("data",data);
+      if ("object" in data) {
+        data = data.object;
+      }
+      var tempEmailContent = emailContent;
+      while (key = rex.exec(emailContent)) {
+        var temp_var = '';
+        if (Array.isArray(data[key[1]])) {
+          temp_var = ''
+          data[key[1]].forEach(function (each, index) {
+            temp_var += JSON.stringify(each) + '<br>'
+          })
+        } else {
+          temp_var = data[key[1]];
+        }
+        // tempEmailContent = tempEmailContent.replace(key[0], data[key[1]] ? data[key[1]] : '');
+        tempEmailContent = tempEmailContent.replace(key[0], data[key[1]] ? temp_var : '');
+      }
+      return tempEmailContent;
+}
+
 module.exports = {
   jsonFormat,
   randomString,
   SendEmail,
+  formatEmail
 }
 
