@@ -40,5 +40,12 @@
 		"message_type": "error",
 		"message_english": "Order book is empty. Please try after some time.",
 		"message": "Order book is empty. Please try after some time."
+	},
+	"Create Crypto Wallet": {
+		"page": "JST order create, Internal tradding - Market sell order, Internal tradding - Market buy order, Internal tradding - Limit sell order, Internal tradding - Limit buy order, Internal tradding - Stop limit sell order, Internal tradding - Stop limit buy order",
+		"context": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message_type": "error",
+		"message_english": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again."
 	}
 }

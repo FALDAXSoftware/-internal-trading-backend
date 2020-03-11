@@ -43,6 +43,11 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var WalletBalanceHelper = require("../../helpers/wallet/get-wallet-balance");
 var SellBookHelper = require("../../helpers/sell/get-sell-book-order");
 var SellWalletBalanceHelper = require("../../helpers/wallet/get-sell-wallet-balance");
+var getPendingOrderDetails = require("../../helpers/pending/get-pending-order-details");
+var StopLimitBuyExecute = require("../../helpers/stop/stop-limit-buy");
+var StopLimitSellExecute = require("../../helpers/stop/stop-limit-sell");
+var CoinsModel = require("../../models/Coins");
+var WalletModel = require("../../models/Wallet");
 
 /**
  * Trade Controller : Used for live tradding
@@ -92,9 +97,9 @@ class TradeController extends AppController {
         userIds: userIds
       };
       let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
-      if( market_sell_order.status > 1 ){
+      if (market_sell_order.status > 1) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(market_sell_order.message).message, []);
-      }else{
+      } else {
         return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
       }
 
@@ -242,15 +247,15 @@ class TradeController extends AppController {
           let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
 
           let object = {
-            crypto:crypto,
-            currency:currency,
+            crypto: crypto,
+            currency: currency,
             symbol: symbol,
             user_id: user_id,
             side: side,
             order_type: order_type,
             orderQuantity: remainingQty,
-            crypto_wallet_data:crypto_wallet_data,
-            userIds:userIds
+            crypto_wallet_data: crypto_wallet_data,
+            userIds: userIds
           };
           let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
 
@@ -288,9 +293,9 @@ class TradeController extends AppController {
                 template: "emails/general_mail.ejs",
                 templateSlug: "trade_execute",
                 email: user_data.email,
-                user_detail:user_data,
-                formatData:{
-                  recipientName:user_data.first_name
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name
                 }
               }
               await Helper.SendEmail(res, allData)
@@ -480,6 +485,7 @@ class TradeController extends AppController {
       }
     }
   }
+
   // Used to Create Buy Limit order
   async limitBuy(req, res) {
     let {
@@ -499,6 +505,7 @@ class TradeController extends AppController {
       limit_price);
   }
 
+  // Used to execute Limit Buy Order
   async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price) {
     var userIds = [];
     userIds.push(parseInt(user_id));
@@ -583,6 +590,7 @@ class TradeController extends AppController {
     }
   }
 
+  // Used to create Sell Limit Order
   async limitSell(req, res) {
     let {
       symbol,
@@ -601,6 +609,7 @@ class TradeController extends AppController {
       limit_price);
   }
 
+  // Used to execute Limit Sell Order 
   async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price) {
     var userIds = [];
     userIds.push(parseInt(user_id));
@@ -667,6 +676,121 @@ class TradeController extends AppController {
         sellLimitOrderData.is_filled = false;
         sellLimitOrderData.added = true;
         var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData);
+      }
+    }
+  }
+
+  // Create Stop Limit Buy Order
+  async stopLimitSellOrder(req, res) {
+    try {
+      var {
+        symbol,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        stop_price,
+        user_id
+      } = req.allParams();
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
+      var coinValue = await CoinsModel
+        .query()
+        .first()
+        .where('is_active', true)
+        .andWhere('deleted_at', null)
+        .andWhere('coin', currency)
+        .orderBy('id', 'DESC');
+
+      var walletCurrency = await WalletModel
+        .query()
+        .select()
+        .first()
+        .where('deleted_at', null)
+        .andWhere('coin_id', coinValue.id)
+        .andWhere('is_active', true)
+        .andWhere('user_id', user_id)
+        .orderBy('id', 'DESC');
+
+      if (walletCurrency == undefined) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      }
+
+      var cryptoValue = await CoinsModel
+        .query()
+        .first()
+        .where('is_active', true)
+        .andWhere('deleted_at', null)
+        .andWhere('coin', crypto)
+        .orderBy('id', 'DESC');
+
+      var walletCrypto = await WalletModel
+        .query()
+        .select()
+        .first()
+        .where('deleted_at', null)
+        .andWhere('coin_id', coinValue.id)
+        .andWhere('is_active', true)
+        .andWhere('user_id', user_id)
+        .orderBy('id', 'DESC');
+
+      if (walletCrypto == undefined) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // Cron for Pending Order execution
+  async executeStopLimit() {
+    var now = moment();
+    var pendingData = await getPendingOrderDetails.getPendingOrderDetails();
+
+    for (var i = 0; i < pendingData.length; i++) {
+      var {
+        order_type,
+        side,
+        maximum_time,
+        id,
+        quantity,
+        stop_price,
+        limit_price,
+        settle_currency,
+        currency,
+        symbol,
+        user_id,
+        activity_id
+      } = pendingData[i];
+
+      var pendingOrderBook = {
+        'id': id,
+        'user_id': user_id,
+        'symbol': symbol,
+        'side': side,
+        'order_type': order_type,
+        'created': now.format(),
+        'updated': now.format(),
+        'maximum_time': now
+          .add(1, 'years')
+          .format(),
+        'fill_price': 0.0,
+        'limit_price': limit_price,
+        'stop_price': stop_price,
+        'price': 0.0,
+        'quantity': quantity,
+        'settle_currency': settle_currency,
+        'order_status': "open",
+        'currency': currency,
+        'activity_id': activity_id
+      }
+
+      if (pendingData.length > 0) {
+        if (order_type == "StopLimit" && side == "Buy") {
+          var pendigBuy = await StopLimitBuyExecute.stopLimitBuy(now, pendingOrderBook);
+        } else if (order_type == "StopLimit" && side == "Sell") {
+          var pendingSell = await StopLimitSellExecute.stopLimitSell(now, pendingOrderBook);
+        }
       }
     }
   }
