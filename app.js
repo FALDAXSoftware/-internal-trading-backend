@@ -55,8 +55,7 @@ mailer.extend(app, {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
   },
-  transportMethod: "SMTP",
-  // testMode: false
+  transportMethod: process.env.EMAIL_TRANSPORT_METHOD
 });
 
 app.all('/*', function (req, res, next) {
@@ -139,6 +138,11 @@ io.on('connection', function (socket) {
 
 
 //Routes
+app.use(function (req, res, next) {
+  res.header('X-Powered-By', 'FALDAX');
+  // res.removeHeader('X-Powered-By');
+  next();
+});
 app.use('/api/v1/tradding/', require('./routes/index'));
 
 // Start the server

@@ -89,7 +89,6 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .andWhere('deleted_at', null)
             .andWhere('created_at', '>=', yesterday)
             .andWhere('created_at', '<=', now);
-        console.log("CurrencyAmount", currencyAmount[0].sum)
         // Fetching Amount of trade done on the basis of time and usd value
         // var cryptoAmount = await TradeHistory
         //     .sum('quantity')
@@ -124,7 +123,6 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
 
 
         var totalCurrencyAmount = currencyAmount[0].sum * (getCurrencyPriceData.quote.USD.price);
-        console.log("totalCurrencyAmount", totalCurrencyAmount)
         var totalCryptoAmount = cryptoAmount[0].sum * (getCryptoPriceData.quote.USD.price);
 
         // Fetching the fees on the basis of the total trade done in last 30 days
@@ -174,9 +172,8 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .select('maker_fee', 'taker_fee')
             .where('deleted_at', null)
             .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
-            .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount))
+            .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
 
-        console.log("cryptoTakerFee", cryptoTakerFee)
 
         // Just Replace inputs.makerFee and inputs.takerFee with following
         inputs.makerFee = cryptoTakerFee.maker_fee

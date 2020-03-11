@@ -91,8 +91,13 @@ class TradeController extends AppController {
         // currency_wallet_data: currency_wallet_data,
         userIds: userIds
       };
-      let market_sell_order = await module.exports.makeMarketSellOrder(object);
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+      let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
+      if( market_sell_order.status > 1 ){
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(market_sell_order.message).message, []);
+      }else{
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+      }
+
     } catch (err) {
       console.log("err", err);
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
@@ -100,7 +105,7 @@ class TradeController extends AppController {
   }
 
   // Helper : Market Sell Order
-  async makeMarketSellOrder(alldata) {
+  async makeMarketSellOrder(res, alldata) {
     let {
       crypto,
       currency,
@@ -113,11 +118,11 @@ class TradeController extends AppController {
       currency_wallet_data,
       userIds
     } = alldata;
+
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
-    console.log("buy_book_data", buy_book_data);
+
     let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
-    console.log("maker_taker_fees", maker_taker_fees);
 
     var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
 
@@ -153,9 +158,6 @@ class TradeController extends AppController {
       resultData.taker_fee = maker_taker_fees.takerFee;
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData)
-      console.log("quantityValue", quantityValue);
-      console.log("availableQty", availableQty);
-      console.log(quantityValue <= availableQty);
       if (quantityValue <= availableQty) {
         if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
@@ -167,11 +169,6 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          // let updatedActivity = await sails
-          //   .helpers
-          //   .tradding
-          //   .activity
-          //   .update(currentBuyBookDetails.activity_id, trade_history_data);
           // Update activity
           await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -185,13 +182,6 @@ class TradeController extends AppController {
             fill_price: priceValue
           }
 
-          // var tradingFees = await sails
-          //   .helpers
-          //   .wallet
-          //   .tradingFees(request, fees.makerFee, fees.takerFee)
-          //   .intercept("serverError", () => {
-          //     return new Error("serverError")
-          //   });
           var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
 
           trade_history_data.user_fee = (tradingFees.userFee);
@@ -211,10 +201,9 @@ class TradeController extends AppController {
           }
 
         } else {
-          // return exits.insufficientBalance();
           return {
             status: 2,
-            message: 'insufficientBalance'
+            message: 'Insufficient balance to place order'
           }
         }
       } else {
@@ -242,13 +231,6 @@ class TradeController extends AppController {
             quantity: availableQty,
             fill_price: priceValue
           }
-          // var tradingFees = await sails
-          //   .helpers
-          //   .wallet
-          //   .tradingFees(request, fees.makerFee, fees.takerFee)
-          //   .intercept("serverError", () => {
-          //     return new Error("serverError")
-          //   });
 
           var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
           trade_history_data.user_fee = (tradingFees.userFee);
@@ -259,43 +241,33 @@ class TradeController extends AppController {
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
 
-          let requestData = {
-            symbol,
-            side,
-            order_type,
-            orderQuantity,
-            user_id
-          }
-          requestData.orderQuantity = remainingQty;
-          // let object = {
-          //   symbol: requestData.symbol,
-          //   user_id: requestData.user_id,
-          //   side: requestData.side,
-          //   order_type: requestData.order_type,
-          //   orderQuantity: requestData.orderQuantity,
-          // };
-          let object = alldata;
-          let market_sell_order = await module.exports.makeMarketSellOrder(object);
+          let object = {
+            crypto:crypto,
+            currency:currency,
+            symbol: symbol,
+            user_id: user_id,
+            side: side,
+            order_type: order_type,
+            orderQuantity: remainingQty,
+            crypto_wallet_data:crypto_wallet_data,
+            userIds:userIds
+          };
+          let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
 
         } else {
-          // return exits.insufficientBalance();
           return {
             status: 2,
-            message: 'insufficientBalance'
+            message: 'Insufficient balance to place order'
           }
         }
-
       }
-
     } else {
-      // return exits.orderBookEmpty();
       return {
         status: 2,
-        message: 'orderBookEmpty'
+        message: 'Order Book Empty'
       }
     }
 
-    // console.log("----wallet", wallet);
     for (var i = 0; i < userIds.length; i++) {
       // Notification Sending for users
       var userNotification = await UserNotifications.getSingleData({
@@ -312,16 +284,16 @@ class TradeController extends AppController {
         if (userNotification != undefined) {
           if (userNotification.email == true || userNotification.email == "true") {
             if (user_data.email != undefined) {
-              // await sails.helpers.notification.send.email("trade_execute", user_data)
-              // var allData = {
-              //   template: "emails/common.pug",
-              //   email: get_user.email,
-              //   extraData: {
-              //     html_template_content: parseHTML.parse(emailContent)
-              //   },
-              //   subject: ""
-              // }
-              // await Helper.SendEmail(res, )
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "trade_execute",
+                email: user_data.email,
+                user_detail:user_data,
+                formatData:{
+                  recipientName:user_data.first_name
+                }
+              }
+              await Helper.SendEmail(res, allData)
             }
           }
           if (userNotification.text == true || userNotification.text == "true") {
@@ -332,12 +304,13 @@ class TradeController extends AppController {
         }
       }
     }
-
-    // await sails
-    //   .helpers
-    //   .sockets
-    //   .tradeEmit(crypto, currency, userIds);
+    //Emit data in rooms
     let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+    console.log("FINALLLY");
+    return {
+      status: 1,
+      message: ''
+    }
   }
   // Used for Buy Market order
   async marketBuy(req, res) {
