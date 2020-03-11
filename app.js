@@ -88,22 +88,22 @@ io.on('connection', function (socket) {
   // console.log("socket conetcted", socket.handshake); var userId =
   // socket.handshake.query['id']; console.log("Session User Id >>>>>>>>>>>>>>",
   // userId);
-  // socket
-  //   .on("join", function (room) {
-  //     console.log(room)
-  //     socket
-  //       .on('home_card_coin', function () {
-  //         currencyConversion.getRecentValue(io);
-  //       })
-  //     socket.on('rising_falling', function () {
-  //       risingFalling.getRecentRisingFallingValue(io);
-  //     })
-  //     if (room.old) {
-  //       socket.leave(room.old);
-  //     }
-  //     socket.join(room.new);
-  //     socketData.getTradeDataSell(room.new, io, socket.id);
-  //   });
+  socket
+    .on("join", function (room) {
+      console.log(room)
+      socket
+        .on('home_card_coin', function () {
+          currencyConversion.getRecentValue(io);
+        })
+      socket.on('rising_falling', function () {
+        risingFalling.getRecentRisingFallingValue(io);
+      })
+      if (room.old) {
+        socket.leave(room.old);
+      }
+      socket.join(room.new);
+      socketData.getTradeDataSell(room.new, io, socket.id);
+    });
   // socket.on('pending_history_userid',async function (data) {
 
   //   var userid = User.decript_id(data.user_id);
