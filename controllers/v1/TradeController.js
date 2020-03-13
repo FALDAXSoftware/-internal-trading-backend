@@ -609,7 +609,7 @@ class TradeController extends AppController {
       limit_price);
   }
 
-  // Used to execute Limit Sell Order 
+  // Used to execute Limit Sell Order
   async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price) {
     var userIds = [];
     userIds.push(parseInt(user_id));

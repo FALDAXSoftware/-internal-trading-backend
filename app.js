@@ -83,26 +83,39 @@ app.set("pairData", {
 
 // Socket Implementation //Socket config
 io.on('connection', function (socket) {
-  // console.log(socket)
+  console.log("Socket connected.....");
   // console.log("socket conetcted", socket.handshake); var userId =
   // socket.handshake.query['id']; console.log("Session User Id >>>>>>>>>>>>>>",
   // userId);
-  socket
-    .on("join", function (room) {
-      console.log(room)
-      socket
-        .on('home_card_coin', function () {
-          currencyConversion.getRecentValue(io);
-        })
-      socket.on('rising_falling', function () {
-        risingFalling.getRecentRisingFallingValue(io);
-      })
-      if (room.old) {
-        socket.leave(room.old);
-      }
-      socket.join(room.new);
-      socketData.getTradeDataSell(room.new, io, socket.id);
-    });
+  socket.emit('custom', { hello: 'world' });
+  socket.on('custom', function (data) {
+    console.log(data);
+  });
+  // io.emit('broadcast', /* */); // emit an event to all connected sockets
+  // socket.on('custom', function(){
+  //   console.log("Testing.....");
+  //  }); // listen to the event
+
+  socket.on('custom', function (dsds) {
+    console.log("dsds",dsds);
+
+  })
+  // socket
+  //   .on("join", function (room) {
+  //     console.log("in",room)
+  //     socket
+  //       .on('home_card_coin', function () {
+  //         currencyConversion.getRecentValue(io);
+  //       })
+  //     socket.on('rising_falling', function () {
+  //       risingFalling.getRecentRisingFallingValue(io);
+  //     })
+  //     if (room.old) {
+  //       socket.leave(room.old);
+  //     }
+  //     socket.join(room.new);
+  //     socketData.getTradeDataSell(room.new, io, socket.id);
+  //   });
   // socket.on('pending_history_userid',async function (data) {
 
   //   var userid = User.decript_id(data.user_id);

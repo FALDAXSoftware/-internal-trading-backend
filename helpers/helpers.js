@@ -51,8 +51,10 @@ var SendEmail = async ( res, requestedData )=> {
             subject: language_subject,
             content : (language_content),
             PROJECT_NAME: process.env.PROJECT_NAME,
-            SITE_URL: process.env.SITE_URL
+            SITE_URL: process.env.SITE_URL,
+            homelink: process.env.SITE_URL
         }, function (err) {
+          console.log("err",err)
             if (err) {
                 return 0;
             } else {
