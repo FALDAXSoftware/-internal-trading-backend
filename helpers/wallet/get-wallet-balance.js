@@ -24,6 +24,7 @@ var getWalletBalance = async (crypto, currency, user_id) => {
             .orderBy('id', 'DESC')
         return (walletBalance)
     } else {
+        // Coin Not Found
         return (0)
     }
 }

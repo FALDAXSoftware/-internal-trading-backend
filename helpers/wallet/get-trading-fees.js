@@ -336,7 +336,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         })
     } catch (err) {
         console.log("fees Error", err);
-        return exits.serverError();
+        return (1);
     }
 }
 
