@@ -47,5 +47,33 @@
 		"message_type": "error",
 		"message_english": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
 		"message": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again."
+	},
+	"Order Palce Success": {
+		"page": "Trade place",
+		"context": "Order has been placed successfully",
+		"message_type": "success",
+		"message_english": "Order has been placed successfully.",
+		"message": "Order has been placed successfully."
+	},
+	"Invalid Quantity": {
+		"page": "Invalid quantity",
+		"context": "Invalid Order Quantity",
+		"message_type": "error",
+		"message_english": "Order Quantity should be greated than 0.",
+		"message": "Order Quantity should be greated than 0."
+	},
+	"Order Partially Fulfilled and Added to Buy Book": {
+		"page": "Order Partially fulfilled and added to buy book",
+		"context": "Order Partially fulfilled and added to buy book",
+		"message_type": "success",
+		"message_english": "Order Partially fulfilled and added to buy book",
+		"message": "Order Partially fulfilled and added to buy book"
+	},
+	"Order Partially Fulfilled and Added to Sell Book": {
+		"page": "Order Partially fulfilled and added to Sell book",
+		"context": "Order Partially fulfilled and added to Sell book",
+		"message_type": "success",
+		"message_english": "Order Partially fulfilled and added to Sell book",
+		"message": "Order Partially fulfilled and added to Sell book"
 	}
 }
