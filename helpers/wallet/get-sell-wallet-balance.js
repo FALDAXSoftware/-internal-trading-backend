@@ -24,6 +24,7 @@ var getSellWalletBalance = async (crypto, currency, user_id) => {
             .orderBy('id', 'DESC')
         return (walletBalance)
     } else {
+        // For Coin Not Found
         return (0)
     }
 }

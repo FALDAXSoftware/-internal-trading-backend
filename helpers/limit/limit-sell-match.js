@@ -8,17 +8,22 @@ var TradingFees = require("../../helpers/wallet/get-trading-fees");
 var TradeAdd = require("../../helpers/trade/add");
 var buyUpdate = require("../buy/update-buy-order");
 var buyDelete = require("../buy/delete-order");
+var UserNotifications = require("../../models/UserNotifications");
+var Helper = require("../../helpers/helpers");
+var Users = require("../../models/UsersModel");
+var socketHelper = require("../../helpers/sockets/emit-trades");
 
-var limitSellData = async (sellLimitOrderData, crypto, currency, activity) => {
+var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null) => {
     try {
         var quantityValue = sellLimitOrderData.quantity;
         var userIds = [];
         userIds.push(parseInt(sellLimitOrderData.user_id));
         if (sellLimitOrderData.orderQuantity) {
-            // Invalid Quantity
-            return (1);
+            return {
+                status: 3,
+                message: 'Invalid Quantity'
+            }
         }
-
         let wallet = await SellWalletBalanceHelper.getSellWalletBalance(sellLimitOrderData.settle_currency, sellLimitOrderData.currency, sellLimitOrderData.user_id);
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
@@ -71,16 +76,100 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity) => {
                             let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
                                 quantity: remainningQuantity
                             });
-                            // Pass User Notification
-                            // Emit Event
+                            for (var i = 0; i < userIds.length; i++) {
+                                // Notification Sending for users
+                                var userNotification = await UserNotifications.getSingleData({
+                                    user_id: userIds[i],
+                                    deleted_at: null,
+                                    slug: 'trade_execute'
+                                })
+                                var user_data = await Users.getSingleData({
+                                    deleted_at: null,
+                                    id: userIds[i],
+                                    is_active: true
+                                });
+                                if (user_data != undefined) {
+                                    if (userNotification != undefined) {
+                                        if (userNotification.email == true || userNotification.email == "true") {
+                                            if (user_data.email != undefined) {
+                                                var allData = {
+                                                    template: "emails/general_mail.ejs",
+                                                    templateSlug: "trade_execute",
+                                                    email: user_data.email,
+                                                    user_detail: user_data,
+                                                    formatData: {
+                                                        recipientName: user_data.first_name
+                                                    }
+                                                }
+                                                await Helper.SendEmail(res, allData)
+                                            }
+                                        }
+                                        if (userNotification.text == true || userNotification.text == "true") {
+                                            if (user_data.phone_number != undefined) {
+                                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            //Emit data in rooms
+                            let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                            return {
+                                status: 1,
+                                message: 'Order Success'
+                            }
                         } else {
                             await buyDelete.deleteOrder(buyBook[0].id)
-                            // Pass notification
-                            // Emit Event
+                            for (var i = 0; i < userIds.length; i++) {
+                                // Notification Sending for users
+                                var userNotification = await UserNotifications.getSingleData({
+                                    user_id: userIds[i],
+                                    deleted_at: null,
+                                    slug: 'trade_execute'
+                                })
+                                var user_data = await Users.getSingleData({
+                                    deleted_at: null,
+                                    id: userIds[i],
+                                    is_active: true
+                                });
+                                if (user_data != undefined) {
+                                    if (userNotification != undefined) {
+                                        if (userNotification.email == true || userNotification.email == "true") {
+                                            if (user_data.email != undefined) {
+                                                var allData = {
+                                                    template: "emails/general_mail.ejs",
+                                                    templateSlug: "trade_execute",
+                                                    email: user_data.email,
+                                                    user_detail: user_data,
+                                                    formatData: {
+                                                        recipientName: user_data.first_name
+                                                    }
+                                                }
+                                                await Helper.SendEmail(res, allData)
+                                            }
+                                        }
+                                        if (userNotification.text == true || userNotification.text == "true") {
+                                            if (user_data.phone_number != undefined) {
+                                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            //Emit data in rooms
+                            let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                            return {
+                                status: 1,
+                                message: 'Order Success'
+                            }
                         }
                     } else {
-                        // Insufficient Funds
-                        return (2);
+                        return {
+                            status: 3,
+                            message: 'Insufficient balance to place order'
+                        }
                     }
                 } else {
                     var remainningQuantity = sellLimitOrderData.quantity - buyBook[0].quantity;
@@ -145,6 +234,46 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity) => {
 
                         await buyDelete.deleteOrder(buyBook[0].id);
 
+                        for (var i = 0; i < userIds.length; i++) {
+                            // Notification Sending for users
+                            var userNotification = await UserNotifications.getSingleData({
+                                user_id: userIds[i],
+                                deleted_at: null,
+                                slug: 'trade_execute'
+                            })
+                            var user_data = await Users.getSingleData({
+                                deleted_at: null,
+                                id: userIds[i],
+                                is_active: true
+                            });
+                            if (user_data != undefined) {
+                                if (userNotification != undefined) {
+                                    if (userNotification.email == true || userNotification.email == "true") {
+                                        if (user_data.email != undefined) {
+                                            var allData = {
+                                                template: "emails/general_mail.ejs",
+                                                templateSlug: "trade_execute",
+                                                email: user_data.email,
+                                                user_detail: user_data,
+                                                formatData: {
+                                                    recipientName: user_data.first_name
+                                                }
+                                            }
+                                            await Helper.SendEmail(res, allData)
+                                        }
+                                    }
+                                    if (userNotification.text == true || userNotification.text == "true") {
+                                        if (user_data.phone_number != undefined) {
+                                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //Emit data in rooms
+                        let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+
                         var resendDataLimit = {
                             ...sellLimitOrderData
                         }
@@ -153,13 +282,15 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity) => {
                         resendDataLimit.activity_id = activityResult.id;
 
                         if (remainningQuantity > 0) {
-                            var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult);
+                            var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res);
                             return responseData
                         }
 
                     } else {
-                        // Insufficient funds
-                        return (2)
+                        return {
+                            status: 3,
+                            message: 'Insufficient balance to place order'
+                        }
                     }
                 }
             } else {
@@ -179,10 +310,54 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity) => {
                     sellAddedData.activity_id = activity.id;
                     sellLimitOrderData.added = true;
                     var addSellBook = await SellAdd.SellOrderAdd(sellAddedData);
-                    // Send Notification to users
+                    for (var i = 0; i < userIds.length; i++) {
+                        // Notification Sending for users
+                        var userNotification = await UserNotifications.getSingleData({
+                            user_id: userIds[i],
+                            deleted_at: null,
+                            slug: 'trade_execute'
+                        })
+                        var user_data = await Users.getSingleData({
+                            deleted_at: null,
+                            id: userIds[i],
+                            is_active: true
+                        });
+                        if (user_data != undefined) {
+                            if (userNotification != undefined) {
+                                if (userNotification.email == true || userNotification.email == "true") {
+                                    if (user_data.email != undefined) {
+                                        var allData = {
+                                            template: "emails/general_mail.ejs",
+                                            templateSlug: "trade_execute",
+                                            email: user_data.email,
+                                            user_detail: user_data,
+                                            formatData: {
+                                                recipientName: user_data.first_name
+                                            }
+                                        }
+                                        await Helper.SendEmail(res, allData)
+                                    }
+                                }
+                                if (userNotification.text == true || userNotification.text == "true") {
+                                    if (user_data.phone_number != undefined) {
+                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Emit Socket Event
+                    let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                    return {
+                        status: 2,
+                        message: 'Order Partially Fulfilled and Added to Sell Book'
+                    }
                 } else {
-                    return (2);
+                    return {
+                        status: 3,
+                        message: 'Insufficient balance to place order'
+                    }
                 }
             }
         } else {
@@ -202,9 +377,54 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity) => {
                 sellAddedData.activity_id = activity.id;
                 sellLimitOrderData.added = true;
                 var addSellBook = await SellAdd.SellOrderAdd(sellAddedData);
+                for (var i = 0; i < userIds.length; i++) {
+                    // Notification Sending for users
+                    var userNotification = await UserNotifications.getSingleData({
+                        user_id: userIds[i],
+                        deleted_at: null,
+                        slug: 'trade_execute'
+                    })
+                    var user_data = await Users.getSingleData({
+                        deleted_at: null,
+                        id: userIds[i],
+                        is_active: true
+                    });
+                    if (user_data != undefined) {
+                        if (userNotification != undefined) {
+                            if (userNotification.email == true || userNotification.email == "true") {
+                                if (user_data.email != undefined) {
+                                    var allData = {
+                                        template: "emails/general_mail.ejs",
+                                        templateSlug: "trade_execute",
+                                        email: user_data.email,
+                                        user_detail: user_data,
+                                        formatData: {
+                                            recipientName: user_data.first_name
+                                        }
+                                    }
+                                    await Helper.SendEmail(res, allData)
+                                }
+                            }
+                            if (userNotification.text == true || userNotification.text == "true") {
+                                if (user_data.phone_number != undefined) {
+                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Emit Socket Event
+                let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                return {
+                    status: 2,
+                    message: 'Order Partially Fulfilled and Added to Sell Book'
+                }
             } else {
-                // Insufficient Funds
-                return (2);
+                return {
+                    status: 3,
+                    message: 'Insufficient balance to place order'
+                }
             }
         }
     } catch (error) {
