@@ -1,3 +1,5 @@
+// import * as socket from "ejs";
+
 var express = require('express');
 var router = express.Router();
 
@@ -9,6 +11,11 @@ router.get("/soc", function (req, res) {
   return res.json({ status: 1 })
 });
 router.get("/api", function (req, res) {
+  console.log("socket",req.socket);
+
+  req.socket.on("incoming", function (data) {
+    console.log("Incoming Data", data);
+  })
   return res.json({ status: 1 })
 });
 

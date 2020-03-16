@@ -84,69 +84,14 @@ app.set("pairData", {
 // Socket Implementation //Socket config
 io.on('connection', function (socket) {
   console.log("Socket connected.....");
-  // console.log("socket conetcted", socket.handshake); var userId =
-  // socket.handshake.query['id']; console.log("Session User Id >>>>>>>>>>>>>>",
-  // userId);
-  socket.emit('custom', { hello: 'world' });
   socket.on('custom', function (data) {
-    console.log(data);
+    console.log("input====>>",data);
   });
-  // io.emit('broadcast', /* */); // emit an event to all connected sockets
-  // socket.on('custom', function(){
-  //   console.log("Testing.....");
-  //  }); // listen to the event
-
-  socket.on('custom', function (dsds) {
-    console.log("dsds",dsds);
-
-  })
-  // socket
-  //   .on("join", function (room) {
-  //     console.log("in",room)
-  //     socket
-  //       .on('home_card_coin', function () {
-  //         currencyConversion.getRecentValue(io);
-  //       })
-  //     socket.on('rising_falling', function () {
-  //       risingFalling.getRecentRisingFallingValue(io);
-  //     })
-  //     if (room.old) {
-  //       socket.leave(room.old);
-  //     }
-  //     socket.join(room.new);
-  //     socketData.getTradeDataSell(room.new, io, socket.id);
-  //   });
-  // socket.on('pending_history_userid',async function (data) {
-
-  //   var userid = User.decript_id(data.user_id);
-  //   var symbol = data.symbol;
-  //   var data = symbol.split("-");
-  //   var currency = data[1];
-  //   var crypto = data[0];
-  //   var pending_history = await pendingbook.get_PendingOrderDetailsPair(crypto, currency, userid);
-  //   var pending_array = {
-  //     data: [...pending_history],
-  //     status: 200
-  //   };
-  //   if (pending_history.length == 0) {
-  //     pending_array.message = "No Data Found",
-  //     pending_array.status = 204
-  //   }
-  //   io
-  //     .to(socket.id)
-  //     .emit('pending_history', pending_array);
-  //   // socketData.getUserPendingHistory(data.user_id, data.symbol, io, socket.id);
-  // })
-
-  // socket.on('card_data_userid', function (data) {
-  //   socketData.getUserCardData(data.user_id, io, socket.id);
-  // })
-  // // setTimeout(() => {   socket.emit("test", {data: true}); }, 2000);
-  // // setTimeout(() => {   socket.emit("test2", {data: false}); }, 3000);
-  // socket.on("change", function (data) {
-  // app.set("pairData", data);
-
+  // socket.emit('return_gift', { hello: 'world' });
+  socket.broadcast.emit('return_gift',"djkadjaljdlakdlkajksd");
+  module.exports.socket = socket;
 })
+
 // });
 
 
