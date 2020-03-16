@@ -8,9 +8,12 @@ var UserNotifications = require("../models/UserNotifications");
 var Helper = require("../helpers/helpers");
 var Users = require("../models/UsersModel");
 var socketHelper = require("../helpers/sockets/emit-trades");
+var moment = require('moment');
 
 
-var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price) => {
+var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res) => {
+    var userIds = [];
+    userIds.push(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     var now = new Date();
     var limitSellOrder = ({
@@ -50,7 +53,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
 
         limitSellOrder.activity_id = result.id;
         var data = await PendingAdd.addPendingBook(limitSellOrder);
-
+        console.log("data", data);
         // Send Notification to users
         for (var i = 0; i < userIds.length; i++) {
             // Notification Sending for users

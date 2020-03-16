@@ -12,7 +12,6 @@ fetch.Promise = Bluebird;
 var twilio = require('twilio');
 var request = require('request');
 var xmlParser = require('xml2json');
-var moment = require('moment');
 var i18n = require("i18n");
 var logger = require("./logger");
 // Files Inludes
@@ -50,6 +49,7 @@ var CoinsModel = require("../../models/Coins");
 var WalletModel = require("../../models/Wallet");
 var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
 var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
+var TradeHistoryModel = require("../../models/TradeHistory");
 
 /**
  * Trade Controller : Used for live tradding
@@ -1039,13 +1039,16 @@ class TradeController extends AppController {
         limit_price,
         stop_price,
         user_id
-      } = req.allParams();
+      } = req.body;
+
+      console.log(req.body)
 
       if (orderQuantity <= 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
       }
       let { crypto, currency } = await Currency.get_currencies(symbol);
       let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
+      console.log(wallet)
       if (wallet == 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Coin not found").message, []);
       }
@@ -1066,6 +1069,8 @@ class TradeController extends AppController {
         .andWhere('is_active', true)
         .andWhere('user_id', user_id)
         .orderBy('id', 'DESC');
+
+      console.log("walletCurrency", walletCurrency)
 
       if (walletCurrency == undefined) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
@@ -1089,13 +1094,15 @@ class TradeController extends AppController {
         .andWhere('user_id', user_id)
         .orderBy('id', 'DESC');
 
+      console.log("walletCrypto", walletCrypto)
+
       if (walletCrypto == undefined) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
 
       // Add Geofencing over here
-      var stop_limit_sell_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, orderQuantity, limit_price, stop_price);
-
+      var stop_limit_sell_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
+      console.log("stop_limit_sell_response", stop_limit_sell_response)
       if (stop_limit_sell_response.status > 1) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
       } else {
@@ -1117,7 +1124,9 @@ class TradeController extends AppController {
         limit_price,
         stop_price,
         user_id
-      } = req.allParams();
+      } = req.body;
+
+      console.log("req.body", req.body)
 
       if (orderQuantity <= 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
@@ -1126,6 +1135,8 @@ class TradeController extends AppController {
       let { crypto, currency } = await Currency.get_currencies(symbol);
 
       let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+
+      console.log("wallet", wallet)
 
       if (wallet == 0) {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
@@ -1149,6 +1160,8 @@ class TradeController extends AppController {
         .andWhere('user_id', user_id)
         .orderBy('id', 'DESC');
 
+      console.log("walletCurrency", walletCurrency)
+
       if (walletCurrency == undefined) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
       }
@@ -1171,12 +1184,16 @@ class TradeController extends AppController {
         .andWhere('user_id', user_id)
         .orderBy('id', 'DESC');
 
+      console.log("walletCrypto", walletCrypto)
+
       if (walletCrypto == undefined) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
 
       // Add Geofencing over here
-      var stop_limit_buy_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, orderQuantity, limit_price, stop_price);
+      var stop_limit_buy_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
+
+      console.log("stop_limit_buy_response", stop_limit_buy_response)
 
       if (stop_limit_buy_response.status > 1) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
@@ -1241,6 +1258,7 @@ class TradeController extends AppController {
       }
     }
   }
+
 
 }
 

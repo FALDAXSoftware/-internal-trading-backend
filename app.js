@@ -85,10 +85,10 @@ app.set("pairData", {
 io.on('connection', function (socket) {
   console.log("Socket connected.....");
   socket.on('custom', function (data) {
-    console.log("input====>>",data);
+    console.log("input====>>", data);
   });
   // socket.emit('return_gift', { hello: 'world' });
-  socket.broadcast.emit('return_gift',"djkadjaljdlakdlkajksd");
+  socket.broadcast.emit('return_gift', "djkadjaljdlakdlkajksd");
   module.exports.socket = socket;
 })
 

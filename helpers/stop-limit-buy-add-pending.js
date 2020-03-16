@@ -7,8 +7,12 @@ var UserNotifications = require("../models/UserNotifications");
 var Helper = require("../helpers/helpers");
 var Users = require("../models/UsersModel");
 var socketHelper = require("../helpers/sockets/emit-trades");
+var WalletBalanceChecking = require("./wallet-status");
+var moment = require('moment');
 
-var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price) => {
+var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res) => {
+    var userIds = [];
+    userIds.push(user_id)
     let { crypto, currency } = await Currency.get_currencies(symbol);
     var now = new Date();
     var limitBuyOrder = ({

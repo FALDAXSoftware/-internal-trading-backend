@@ -4,7 +4,7 @@ var addPendingBook = async (orderData) => {
     var addPendingData = await PendingBookModel
         .query()
         .insertAndFetch({
-            orderData
+            ...orderData
         });
 
     return (addPendingData);
