@@ -4,6 +4,11 @@ var MakerTakerFees = require("../helpers/wallet/get-maker-taker-fees");
 var WalletBalanceChecking = require("./wallet-status");
 var ActivityAdd = require("../helpers/activity/add");
 var PendingAdd = require("./pending/add-pending-order");
+var UserNotifications = require("../models/UserNotifications");
+var Helper = require("../helpers/helpers");
+var Users = require("../models/UsersModel");
+var socketHelper = require("../helpers/sockets/emit-trades");
+
 
 var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price) => {
     let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -46,12 +51,56 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         limitSellOrder.activity_id = result.id;
         var data = await PendingAdd.addPendingBook(limitSellOrder);
 
-        // Emit Socket Here
+        // Send Notification to users
+        for (var i = 0; i < userIds.length; i++) {
+            // Notification Sending for users
+            var userNotification = await UserNotifications.getSingleData({
+                user_id: userIds[i],
+                deleted_at: null,
+                slug: 'trade_execute'
+            })
+            var user_data = await Users.getSingleData({
+                deleted_at: null,
+                id: userIds[i],
+                is_active: true
+            });
+            if (user_data != undefined) {
+                if (userNotification != undefined) {
+                    if (userNotification.email == true || userNotification.email == "true") {
+                        if (user_data.email != undefined) {
+                            var allData = {
+                                template: "emails/general_mail.ejs",
+                                templateSlug: "trade_execute",
+                                email: user_data.email,
+                                user_detail: user_data,
+                                formatData: {
+                                    recipientName: user_data.first_name
+                                }
+                            }
+                            await Helper.SendEmail(res, allData)
+                        }
+                    }
+                    if (userNotification.text == true || userNotification.text == "true") {
+                        if (user_data.phone_number != undefined) {
+                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                        }
+                    }
+                }
+            }
+        }
 
-        return data;
+        // Emit Socket Event
+        let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+
+        return {
+            status: 1,
+            message: ''
+        };
     } else {
-        // Insufficient Balance
-        return 1;
+        return {
+            status: 2,
+            message: 'Insufficient balance to place order'
+        }
     }
 }
 
