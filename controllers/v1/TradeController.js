@@ -49,6 +49,7 @@ var StopLimitSellExecute = require("../../helpers/stop/stop-limit-sell");
 var CoinsModel = require("../../models/Coins");
 var WalletModel = require("../../models/Wallet");
 var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
+var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 
 /**
  * Trade Controller : Used for live tradding
@@ -1028,7 +1029,7 @@ class TradeController extends AppController {
   }
 
   // Create Stop Limit Buy Order
-  async stopLimitSellOrder(req, res) {
+  async stopLimitBuyOrder(req, res) {
     try {
       var {
         symbol,
@@ -1083,7 +1084,7 @@ class TradeController extends AppController {
         .select()
         .first()
         .where('deleted_at', null)
-        .andWhere('coin_id', coinValue.id)
+        .andWhere('coin_id', cryptoValue.id)
         .andWhere('is_active', true)
         .andWhere('user_id', user_id)
         .orderBy('id', 'DESC');
@@ -1095,11 +1096,94 @@ class TradeController extends AppController {
       // Add Geofencing over here
       var stop_limit_sell_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, orderQuantity, limit_price, stop_price);
 
-      if (stop_limit_sell_response == 1) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      if (stop_limit_sell_response.status > 1) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
       } else {
         return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // Create Stop Limit Sell Order
+  async stopLimitSellOrder(req, res) {
+    try {
+      var {
+        symbol,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        stop_price,
+        user_id
+      } = req.allParams();
+
+      if (orderQuantity <= 0) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+
+      if (wallet == 0) {
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+      }
+
+      var coinValue = await CoinsModel
+        .query()
+        .first()
+        .where('is_active', true)
+        .andWhere('deleted_at', null)
+        .andWhere('coin', currency)
+        .orderBy('id', 'DESC');
+
+      var walletCurrency = await WalletModel
+        .query()
+        .select()
+        .first()
+        .where('deleted_at', null)
+        .andWhere('coin_id', coinValue.id)
+        .andWhere('is_active', true)
+        .andWhere('user_id', user_id)
+        .orderBy('id', 'DESC');
+
+      if (walletCurrency == undefined) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      }
+
+      var cryptoValue = await CoinsModel
+        .query()
+        .first()
+        .where('is_active', true)
+        .andWhere('deleted_at', null)
+        .andWhere('coin', crypto)
+        .orderBy('id', 'DESC');
+
+      var walletCrypto = await WalletModel
+        .query()
+        .select()
+        .first()
+        .where('deleted_at', null)
+        .andWhere('coin_id', cryptoValue.id)
+        .andWhere('is_active', true)
+        .andWhere('user_id', user_id)
+        .orderBy('id', 'DESC');
+
+      if (walletCrypto == undefined) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+
+      // Add Geofencing over here
+      var stop_limit_buy_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, orderQuantity, limit_price, stop_price);
+
+      if (stop_limit_buy_response.status > 1) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
+      } else {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
+      }
+
     } catch (error) {
       console.log(error);
     }
