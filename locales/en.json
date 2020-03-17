@@ -75,5 +75,40 @@
 		"message_type": "success",
 		"message_english": "Order Partially fulfilled and added to Sell book",
 		"message": "Order Partially fulfilled and added to Sell book"
+	},
+	"panic button enabled": {
+		"page": "JST order create, Simplex payment, Withdraw assets",
+		"context": "As Panic button in enable you are not allowed to trade for 24 hours.",
+		"message_type": "error",
+		"message_english": "As Panic button in enable you are not allowed to trade for 24 hours.",
+		"message": "As Panic button in enable you are not allowed to trade for 24 hours."
+	},
+	"You are not allowed to trade in this regoin as your state is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as your state is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as your state is illegal",
+		"message": "You are not allowed to trade in this regoin as your state is illegal"
+	},
+	"You are not allowed to trade in this regoin as country is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as country is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as country is illegal",
+		"message": "You are not allowed to trade in this regoin as country is illegal"
+	},
+	"You are not allowed to trade in this regoin": {
+		"page": "KYC needed",
+		"context": "You are not allowed to trade in this regoin",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this region.",
+		"message": "You are not allowed to trade in this region."
+	},
+	"You need to complete your KYC to trade in FALDAX": {
+		"page": "KYC needed",
+		"context": "You need to complete your KYC to trade in FALDAX",
+		"message_type": "error",
+		"message_english": "You need to complete your ID verification to trade in FALDAX.",
+		"message": "You need to complete your ID verification to trade in FALDAX."
 	}
 }

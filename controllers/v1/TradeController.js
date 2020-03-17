@@ -50,6 +50,7 @@ var WalletModel = require("../../models/Wallet");
 var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
 var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var TradeStatusChecking = require("../../helpers/user-trade-checking");
 
 /**
  * Trade Controller : Used for live tradding
@@ -71,38 +72,48 @@ class TradeController extends AppController {
       } = req.body;
       let userIds = [];
       userIds.push(user_id);
-      orderQuantity = parseFloat(orderQuantity);
-      // Get Currency/Crypto each asset
-      let { crypto, currency } = await Currency.get_currencies(symbol);
-      // Get and check Crypto Wallet details
-      let crypto_wallet_data = await WalletHelper.checkWalletStatus(crypto, user_id);
-      if (crypto_wallet_data == 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-      } else if (crypto_wallet_data == 2) {
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
-      }
 
-      // Check balance sufficient or not
-      if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-      }
-      let object = {
-        crypto: crypto,
-        currency: currency,
-        symbol: symbol,
-        side: side,
-        order_type: order_type,
-        orderQuantity: orderQuantity,
-        user_id: user_id,
-        crypto_wallet_data: crypto_wallet_data,
-        // currency_wallet_data: currency_wallet_data,
-        userIds: userIds
-      };
-      let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
-      if (market_sell_order.status > 1) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(market_sell_order.message).message, []);
-      } else {
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+        orderQuantity = parseFloat(orderQuantity);
+        // Get Currency/Crypto each asset
+        let { crypto, currency } = await Currency.get_currencies(symbol);
+        // Get and check Crypto Wallet details
+        let crypto_wallet_data = await WalletHelper.checkWalletStatus(crypto, user_id);
+        if (crypto_wallet_data == 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        } else if (crypto_wallet_data == 2) {
+          return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+        }
+
+        // Check balance sufficient or not
+        if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        }
+        let object = {
+          crypto: crypto,
+          currency: currency,
+          symbol: symbol,
+          side: side,
+          order_type: order_type,
+          orderQuantity: orderQuantity,
+          user_id: user_id,
+          crypto_wallet_data: crypto_wallet_data,
+          // currency_wallet_data: currency_wallet_data,
+          userIds: userIds
+        };
+        let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
+        if (market_sell_order.status > 1) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(market_sell_order.message).message, []);
+        } else {
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+        }
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
       }
 
     } catch (err) {
@@ -332,31 +343,42 @@ class TradeController extends AppController {
 
       var userIds = [];
       userIds.push(user_id);
-      orderQuantity = parseFloat(orderQuantity);
-      // Get Currency/Crypto each asset
-      let { crypto, currency } = await Currency.get_currencies(symbol);
-      // Get and check Crypto Wallet details
-      let crypto_wallet_data = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-      // if (crypto_wallet_data == 0) {
-      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-      if (crypto_wallet_data == 0) {
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
-      }
 
-      // Check balance sufficient or not
-      if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-      }
-      var responseData = await module.exports.makeMarketBuyOrder(symbol,
-        side,
-        order_type,
-        orderQuantity,
-        user_id);
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if (responseData.status > 1) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
-      } else {
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+        orderQuantity = parseFloat(orderQuantity);
+
+        // Get Currency/Crypto each asset
+        let { crypto, currency } = await Currency.get_currencies(symbol);
+        // Get and check Crypto Wallet details
+        let crypto_wallet_data = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+        // if (crypto_wallet_data == 0) {
+        //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        if (crypto_wallet_data == 0) {
+          return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+        }
+
+        // Check balance sufficient or not
+        if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        }
+        var responseData = await module.exports.makeMarketBuyOrder(symbol,
+          side,
+          order_type,
+          orderQuantity,
+          user_id);
+
+        if (responseData.status > 1) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
+        } else {
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+        }
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
       }
 
       // console.log(responseData)
@@ -586,39 +608,48 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
-    orderQuantity = parseFloat(orderQuantity);
+    var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-    if (orderQuantity <= 0) {
-      return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
-    }
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-    let { crypto, currency } = await Currency.get_currencies(symbol);
-    // Get and check Crypto Wallet details
-    let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+      orderQuantity = parseFloat(orderQuantity);
 
-    if (wallet == 0) {
-      return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
-    }
+      if (orderQuantity <= 0) {
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      }
 
-    if (parseFloat(wallet.balance) <= orderQuantity) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-    }
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      // Get and check Crypto Wallet details
+      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
 
-    let responseData = await module.exports.limitBuyOrder(symbol,
-      user_id,
-      side,
-      order_type,
-      orderQuantity,
-      limit_price,
-      res);
+      if (wallet == 0) {
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+      }
 
-    if (responseData.status > 2) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
-    } else if (responseData.status == 2) {
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
-    }
-    else if (responseData.status == 1) {
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      if (parseFloat(wallet.balance) <= orderQuantity) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      }
+
+      let responseData = await module.exports.limitBuyOrder(symbol,
+        user_id,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        res);
+
+      if (responseData.status > 2) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
+      } else if (responseData.status == 2) {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      }
+      else if (responseData.status == 1) {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      }
+    } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+    } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
     }
 
   }
@@ -817,39 +848,48 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
-    orderQuantity = parseFloat(orderQuantity);
+    var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-    if (orderQuantity <= 0) {
-      return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
-    }
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-    let { crypto, currency } = await Currency.get_currencies(symbol);
-    // Get and check Crypto Wallet details
-    let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+      orderQuantity = parseFloat(orderQuantity);
 
-    if (wallet == 0) {
-      return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
-    }
+      if (orderQuantity <= 0) {
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      }
 
-    if (parseFloat(wallet.balance) <= orderQuantity) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-    }
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      // Get and check Crypto Wallet details
+      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
 
-    let responseData = await module.exports.limitSellOrder(symbol,
-      user_id,
-      side,
-      order_type,
-      orderQuantity,
-      limit_price,
-      res);
+      if (wallet == 0) {
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+      }
 
-    if (responseData.status > 2) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
-    } else if (responseData.status == 2) {
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
-    }
-    else if (responseData.status == 1) {
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      if (parseFloat(wallet.balance) <= orderQuantity) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      }
+
+      let responseData = await module.exports.limitSellOrder(symbol,
+        user_id,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        res);
+
+      if (responseData.status > 2) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
+      } else if (responseData.status == 2) {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      }
+      else if (responseData.status == 1) {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      }
+    } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+    } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
     }
   }
 
@@ -1041,72 +1081,81 @@ class TradeController extends AppController {
         user_id
       } = req.body;
 
-      console.log(req.body)
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if (orderQuantity <= 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      }
-      let { crypto, currency } = await Currency.get_currencies(symbol);
-      let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
-      console.log(wallet)
-      if (wallet == 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Coin not found").message, []);
-      }
-      var coinValue = await CoinsModel
-        .query()
-        .first()
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', currency)
-        .orderBy('id', 'DESC');
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-      var walletCurrency = await WalletModel
-        .query()
-        .select()
-        .first()
-        .where('deleted_at', null)
-        .andWhere('coin_id', coinValue.id)
-        .andWhere('is_active', true)
-        .andWhere('user_id', user_id)
-        .orderBy('id', 'DESC');
+        console.log(req.body)
 
-      console.log("walletCurrency", walletCurrency)
+        if (orderQuantity <= 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
+        let { crypto, currency } = await Currency.get_currencies(symbol);
+        let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
+        console.log(wallet)
+        if (wallet == 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Coin not found").message, []);
+        }
+        var coinValue = await CoinsModel
+          .query()
+          .first()
+          .where('is_active', true)
+          .andWhere('deleted_at', null)
+          .andWhere('coin', currency)
+          .orderBy('id', 'DESC');
 
-      if (walletCurrency == undefined) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-      }
+        var walletCurrency = await WalletModel
+          .query()
+          .select()
+          .first()
+          .where('deleted_at', null)
+          .andWhere('coin_id', coinValue.id)
+          .andWhere('is_active', true)
+          .andWhere('user_id', user_id)
+          .orderBy('id', 'DESC');
 
-      var cryptoValue = await CoinsModel
-        .query()
-        .first()
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', crypto)
-        .orderBy('id', 'DESC');
+        console.log("walletCurrency", walletCurrency)
 
-      var walletCrypto = await WalletModel
-        .query()
-        .select()
-        .first()
-        .where('deleted_at', null)
-        .andWhere('coin_id', cryptoValue.id)
-        .andWhere('is_active', true)
-        .andWhere('user_id', user_id)
-        .orderBy('id', 'DESC');
+        if (walletCurrency == undefined) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
 
-      console.log("walletCrypto", walletCrypto)
+        var cryptoValue = await CoinsModel
+          .query()
+          .first()
+          .where('is_active', true)
+          .andWhere('deleted_at', null)
+          .andWhere('coin', crypto)
+          .orderBy('id', 'DESC');
 
-      if (walletCrypto == undefined) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
-      }
+        var walletCrypto = await WalletModel
+          .query()
+          .select()
+          .first()
+          .where('deleted_at', null)
+          .andWhere('coin_id', cryptoValue.id)
+          .andWhere('is_active', true)
+          .andWhere('user_id', user_id)
+          .orderBy('id', 'DESC');
 
-      // Add Geofencing over here
-      var stop_limit_sell_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
-      console.log("stop_limit_sell_response", stop_limit_sell_response)
-      if (stop_limit_sell_response.status > 1) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
-      } else {
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
+        console.log("walletCrypto", walletCrypto)
+
+        if (walletCrypto == undefined) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+
+        // Add Geofencing over here
+        var stop_limit_sell_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
+        console.log("stop_limit_sell_response", stop_limit_sell_response)
+        if (stop_limit_sell_response.status > 1) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
+        } else {
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
+        }
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
       }
     } catch (error) {
       console.log(error);
@@ -1126,79 +1175,88 @@ class TradeController extends AppController {
         user_id
       } = req.body;
 
-      console.log("req.body", req.body)
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if (orderQuantity <= 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      }
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-      let { crypto, currency } = await Currency.get_currencies(symbol);
+        console.log("req.body", req.body)
 
-      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+        if (orderQuantity <= 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
 
-      console.log("wallet", wallet)
+        let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      if (wallet == 0) {
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
-      }
+        let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
 
-      var coinValue = await CoinsModel
-        .query()
-        .first()
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', currency)
-        .orderBy('id', 'DESC');
+        console.log("wallet", wallet)
 
-      var walletCurrency = await WalletModel
-        .query()
-        .select()
-        .first()
-        .where('deleted_at', null)
-        .andWhere('coin_id', coinValue.id)
-        .andWhere('is_active', true)
-        .andWhere('user_id', user_id)
-        .orderBy('id', 'DESC');
+        if (wallet == 0) {
+          return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+        }
 
-      console.log("walletCurrency", walletCurrency)
+        var coinValue = await CoinsModel
+          .query()
+          .first()
+          .where('is_active', true)
+          .andWhere('deleted_at', null)
+          .andWhere('coin', currency)
+          .orderBy('id', 'DESC');
 
-      if (walletCurrency == undefined) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-      }
+        var walletCurrency = await WalletModel
+          .query()
+          .select()
+          .first()
+          .where('deleted_at', null)
+          .andWhere('coin_id', coinValue.id)
+          .andWhere('is_active', true)
+          .andWhere('user_id', user_id)
+          .orderBy('id', 'DESC');
 
-      var cryptoValue = await CoinsModel
-        .query()
-        .first()
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', crypto)
-        .orderBy('id', 'DESC');
+        console.log("walletCurrency", walletCurrency)
 
-      var walletCrypto = await WalletModel
-        .query()
-        .select()
-        .first()
-        .where('deleted_at', null)
-        .andWhere('coin_id', cryptoValue.id)
-        .andWhere('is_active', true)
-        .andWhere('user_id', user_id)
-        .orderBy('id', 'DESC');
+        if (walletCurrency == undefined) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
 
-      console.log("walletCrypto", walletCrypto)
+        var cryptoValue = await CoinsModel
+          .query()
+          .first()
+          .where('is_active', true)
+          .andWhere('deleted_at', null)
+          .andWhere('coin', crypto)
+          .orderBy('id', 'DESC');
 
-      if (walletCrypto == undefined) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
-      }
+        var walletCrypto = await WalletModel
+          .query()
+          .select()
+          .first()
+          .where('deleted_at', null)
+          .andWhere('coin_id', cryptoValue.id)
+          .andWhere('is_active', true)
+          .andWhere('user_id', user_id)
+          .orderBy('id', 'DESC');
 
-      // Add Geofencing over here
-      var stop_limit_buy_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
+        console.log("walletCrypto", walletCrypto)
 
-      console.log("stop_limit_buy_response", stop_limit_buy_response)
+        if (walletCrypto == undefined) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
 
-      if (stop_limit_buy_response.status > 1) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
-      } else {
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
+        // Add Geofencing over here
+        var stop_limit_buy_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
+
+        console.log("stop_limit_buy_response", stop_limit_buy_response)
+
+        if (stop_limit_buy_response.status > 1) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
+        } else {
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
+        }
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
       }
 
     } catch (error) {
