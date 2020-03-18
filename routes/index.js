@@ -12,14 +12,18 @@ router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
   return res.json({ status: 1 })
 });
-router.get("/api", function (req, res) {
-  console.log("socket", req.socket);
-
-  req.socket.on("incoming", function (data) {
-    console.log("Incoming Data", data);
-  })
-  return res.json({ status: 1 })
-});
+// router.get("/api", async function (req, res) {
+//   try{
+//     let socket_emit = require("../helpers/sockets/emit-trades");
+//     var all = await socket_emit.emitTrades("XRP", "BTC", [1434])
+//     console.log("all",all);
+//     return res.json({ status: 1 })
+//   }catch(err){
+//     console.log("ERr", err);
+//     return res.json({ status: 0 })
+//   }
+//
+// });
 
 router.post('/orders/market-sell-create', TradeController.marketSell);
 router.post('/orders/market-buy-create', TradeController.marketBuy);
