@@ -11,7 +11,19 @@ var mailer = require('express-mailer');
 var i18n = require("i18n");
 var session = require('express-session')
 var server = http.createServer(app);
-var io = require('socket.io')(server);
+// var io = require('socket.io')(server);
+var io = require('socket.io')(server, {
+  handlePreflightRequest: (req, res) => {
+    const headers = {
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Origin": req.headers.origin, //or the specific origin you want to give access to,
+      "Access-Control-Allow-Credentials": true
+    };
+    res.writeHead(200, headers);
+    res.end();
+  }
+});
+
 app.set('socketObject', io);
 
 app.use(session({
@@ -63,7 +75,7 @@ app.all('/*', function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*"); // restrict it to the required domain
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   // Set custom headers for CORS
-  // res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token');
+  res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token, Authorization');
   if (req.headers.language) { // If header send language, then set to that language
     i18n.setLocale(req.headers.language);
   }
@@ -77,15 +89,69 @@ app.all('/*', function (req, res, next) {
 });
 
 app.set("pairData", {
-  crypto: "ETH",
+  crypto: "XRP",
   currency: "BTC"
 });
 
 // Socket Implementation //Socket config
-io.on('connection', function (socket) {
+
+io.on('connection', async function (socket) {
   console.log("Socket connected.....");
-})
-global.io = io;
+  // socket.to( "join").emit("test", {name:"le bhai"});
+  var socket_headers = socket.request.headers;
+
+  // console.log("socket_headers",socket_headers)
+  console.log("Auth", socket_headers.authorization);
+  if( !socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == ""  ){
+    return Error("Not authorized")
+  }
+  var authentication = require("./config/authorization")(socket_headers);
+  // console.log("Socket Headers", socket_headers);
+  var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
+
+
+  console.log("RRRRR",rooms)
+  let socket_functions = require("./helpers/sockets/emit-all-data");
+  var constants = require("./config/constants");
+  socket.on( "join", async function(room){
+    socket.emit("test", {name:"le bhai"});
+    // console.log("room",room.room);
+    socket.join(room.room);
+    // console.log("Socket", socket);
+    // io.to(room.room).emit("test", {name:"le bhai"});
+
+    let symbol = (room.room);
+    let pair = (symbol).split("-")
+    let user_id = authentication.user_id;
+
+
+    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData( pair[0],pair[1]) );
+    socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookData( pair[0],pair[1]) );
+    socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData( pair[0],pair[1]) );
+    socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol) );
+    socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData( pair[0],pair[1]) );
+    socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData( pair[1]) );
+    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getCompletedOrdersData( user_id, pair[0], pair[1]), 0 );
+    // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
+    // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
+  })
+  socket.on("XRP-BTC", async function(data){
+    console.log("data",data);
+    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP","BTC" ));
+  })
+
+});
+// global.io = io;
+// // var rooms = Object.keys(global.io.sockets.adapter.sids[socket.id]);
+// var rooms = Object.keys(global.io);
+// console.log("rooms:",rooms);
+// var constants = require("./config/constants");
+// let socket_functions = require("./helpers/sockets/emit-all-data");
+// global.io.on("XRP-BTC", async function(socket){
+//   console.log("socket",socket);
+//   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData( "XRP","BTC" ));
+// });
+
 // Socket Ends
 
 //Routes

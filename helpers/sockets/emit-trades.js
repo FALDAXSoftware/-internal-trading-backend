@@ -8,35 +8,36 @@ var DashboardCardDetailsHelper = require("../../helpers/dashboard/get-card-data"
 var ChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 var InstrumentHelper = require("../../helpers/tradding/get-instrument-data");
 var UserWalletBalanceHelper = require("../../helpers/tradding/get-user-wallet-balance");
+var constants = require("../../config/constants");
 var emitTrades = async (crypto, currency, userIds) => {
     let buyBookDetails = await BuyBookOrderHelper.getBuyBookOrder(crypto, currency);
-    global.io.sockets.to(crypto + "-" + currency).emit("buybookUpdate", buyBookDetails)
+    global. io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_BUY_BOOK_EVENT, buyBookDetails)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "buybookUpdate", buyBookDetails);
     let sellBookDetails = await SellBookOrderHelper.sellOrderBook(crypto, currency);
-    global.io.sockets.to(crypto + "-" + currency).emit("sellbookUpdate", sellBookDetails)
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_SELL_BOOK_EVENT, sellBookDetails)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "sellbookUpdate", sellBookDetails);
     let tradeDetails = await TradeDetailsHelper.getTradeDetails(crypto, currency, 100);
-    global.io.sockets.to(crypto + "-" + currency).emit("tradehistoryUpdate", tradeDetails)
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_TRADE_HISTORY_EVENT, tradeDetails)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "tradehistoryUpdate", tradeDetails);
     let cardDate = await DashboardCardDetailsHelper.getCardData(crypto + "-" + currency);
-    global.io.sockets.to(crypto + "-" + currency).emit("cardDataUpdate", cardDate)
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_CARD_EVENT, cardDate)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "cardDataUpdate", cardDate);
     let depthChartData = await ChartHelper.getDepthChartDetails(crypto, currency);
-    global.io.sockets.to(crypto + "-" + currency).emit("depthChartUpdate", depthChartData)
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_DEPTH_CHART_EVENT, depthChartData)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "depthChartUpdate", depthChartData);
 
     var cryptoInstrumentUpdate = await InstrumentHelper.getInstrumentData(currency);
-    global.io.sockets.to(currency).emit("instrumentUpdate", cryptoInstrumentUpdate)
+    global.io.sockets.to(currency).emit(constants.TRADE_INSTRUMENT_EVENT, cryptoInstrumentUpdate)
     // sails
     //   .sockets
     //   .broadcast(inputs.currency, "instrumentUpdate", cryptoInstrumentUpdate);

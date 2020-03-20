@@ -8,5 +8,19 @@ module.exports = {
 	"BAD_REQUEST_CODE"	: 400,
 
 	"SERVER_ERROR_CODE"	: 500,
-	"LIMIT_PER_PAGE" 	: 10
+	"LIMIT_PER_PAGE" 	: 10,
+
+	"TRADE_BUY_BOOK_EVENT":"buy-book-data",
+	"TRADE_SELL_BOOK_EVENT":"sell-book-data",
+	"TRADE_TRADE_HISTORY_EVENT":"trade-history-data",
+	"TRADE_CARD_EVENT":"card-data",
+	"TRADE_DEPTH_CHART_EVENT":"depth-chart-data",
+	"TRADE_INSTRUMENT_EVENT":"instrument-data",
+	"TRADE_USERS_COMPLETED_ORDERS_EVENT":"users-completed-orders-data",
+	"TRADE_USERS_PENDING_ORDERS_EVENT":"users-pending-orders-data",
+	"TRADE_USERS_CANCELLED_ORDERS_EVENT":"users-cancelled-orders-data",
+
+	"SECRET_KEY":process.env.SECRET_KEY,
+	"SECRET_IV":process.env.SECRET_IV
+	
 };

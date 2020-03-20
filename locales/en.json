@@ -110,5 +110,19 @@
 		"message_type": "error",
 		"message_english": "You need to complete your ID verification to trade in FALDAX.",
 		"message": "You need to complete your ID verification to trade in FALDAX."
+	},
+	"TOKEN_EXPIRED": {
+		"page": "Internal Tradding",
+		"context": "When token is expired",
+		"message_type": "error",
+		"message_english": "Token is expired",
+		"message": "Token is expired"
+	},
+	"UNAUTHORIZED_ACCESS":{
+		"page": "Internal Tradding",
+		"context": "When no authroized",
+		"message_type": "error",
+		"message_english": "Authentication failed",
+		"message": "Authentication failed"
 	}
 }

@@ -1,6 +1,6 @@
 var TradeHistoryModel = require("../../models/TradeHistory");
 
-var getTradeDetails = async (crypto, currency, limit) => {
+var getTradeDetails = async (crypto, currency, limit=100) => {
     var tradeDetails = await TradeHistoryModel
         .query()
         .select()
