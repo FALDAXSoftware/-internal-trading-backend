@@ -1,0 +1,7 @@
+apps:
+  -
+    name: internal-trading-backend-preprod
+    restart_delay: 100
+    script: app.js
+    max_memory_restart: 500M
+    autorestart: true
