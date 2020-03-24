@@ -2,42 +2,95 @@
 def label = "buildpod.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_').take(63)
 def gitCredentialsId = "github"
 def imageRepo = "100.69.158.196"
-podTemplate(label: label, containers: [
-    containerTemplate(name: 'build-container', image: imageRepo + '/buildtool:deployer', command: 'cat', ttyEnabled: true),
-    containerTemplate(name: 'pm291', image: imageRepo + '/buildtool:pm291', command: 'cat', ttyEnabled: true),
-],
-    volumes: [
+def ip_address = "3.132.12.28"
+def sshagent_name = "internal-trading"
+def service_name = "internal-trading-backend"
+def artifact_name = "${service_name}#${env.BRANCH_NAME}#${env.BUILD_NUMBER}#${env.DEPLOY_ENV}"
+
+podTemplate(label: label, nodeSelector: 'env=jenkins' , containers: [
+     containerTemplate(
+        name: 'node', 
+        resourceRequestCpu: '50m',
+        resourceLimitCpu: '2000m',
+        resourceRequestMemory: '100Mi',
+        resourceLimitMemory: '2500Mi',
+        image: 'node:12.16-alpine', 
+        command: 'cat', 
+        ttyEnabled: true),
+], 
+volumes: [
     hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
-]
+  ]
 ){
     timeout(9){
-        def coinToDeploy;
-        def triggerByUser;
         def namespace;
         node(label) {
 
             // Wipe the workspace so we are building completely clean
             deleteDir()
 
-            stage('Docker Build'){
-                container('build-container'){
+            stage('Download Environment Files'){
+                container('node'){
                     def myRepo = checkout scm
                     gitCommit = myRepo.GIT_COMMIT
                     shortGitCommit = "${gitCommit[0..10]}${env.BUILD_NUMBER}"
                     imageTag = shortGitCommit
                     namespace = getNamespace(myRepo.GIT_BRANCH);
                     if (namespace) {
-                    withAWS(credentials:'jenkins_s3_upload') {
-                        s3Download(file:'.env', bucket:'env.faldax', path:"node-backend/${namespace}/.env", force:true)
-                    }
-
-                        sh "ls -a"
-                        sh "docker build -t ${imageRepo}/cronjob:${imageTag}  ."
-                        sh "docker push  ${imageRepo}/cronjob:${imageTag}"
-                        sh "helm upgrade --install --namespace ${namespace} --set image.tag=${imageTag} ${namespace}-cronjob -f chart/values.yaml chart/"
+                        withAWS(credentials:'jenkins_s3_upload') {
+                            s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
+                        }
                     }
                 }
             }
+
+            stage('Build Code'){
+                container('node'){ 
+                    steps {
+                        sh "node -v"
+                        sh "npm -v"
+                        if (namespace) {
+                            withAWS(credentials:'jenkins_s3_upload') {
+                                s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
+                            }
+                            sh "mv .env src/.env && cd src && npm install"
+                        }
+                    }
+                }
+            }
+
+            stage('Package Code'){
+                container('node'){ 
+                    steps {
+                        if (namespace) {
+                            sh "tar -czf ${env.WORKSPACE}/${env.ARTIFACT_NAME}.tar.gz ."
+                        }
+                    }
+                }
+            }
+
+            stage('Deploy - preprod') {
+
+                if (env.BRANCH_NAME == "preprod"){
+                    sshagent(credentials: ["${sshagent_name}"]) {
+                        sh "ssh ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-preprod"
+                        sh "scp ${env.WORKSPACE}/${env.ARTIFACT_NAME}.tar.gz futurx@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-preprod"
+                        sh "ssh futurx@${ip_address} 'bash -s' < ./deploy.sh ${service_name}-preprod ${env.ARTIFACT_NAME}"
+                    }
+                }
+            }
+
+            stage('Deploy - mainnet') {
+
+                if (env.BRANCH_NAME == "mainnet"){
+                    sshagent(credentials: ["${sshagent_name}"]) {      
+                        sh "ssh ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-mainnet"
+                        sh "scp ${env.WORKSPACE}/${env.ARTIFACT_NAME}.tar.gz futurx@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-mainnet"
+                        sh "ssh futurx@${ip_address} 'bash -s' < ./deploy.sh ${service_name}-mainnet ${env.ARTIFACT_NAME}"
+                    }
+                }
+            }
+
         }
     }
 }
@@ -45,8 +98,7 @@ podTemplate(label: label, containers: [
 def getNamespace(branch){
     switch (branch) {
         case 'master': return "prod";
-        case 'development': return "dev";
-        case 'pre-prod': return "pre-prod";
+        case 'preprod': return "preprod";
         case 'mainnet': return "mainnet";
         default: return null;
     }
