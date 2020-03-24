@@ -36,35 +36,24 @@ volumes: [
                     shortGitCommit = "${gitCommit[0..10]}${env.BUILD_NUMBER}"
                     imageTag = shortGitCommit
                     namespace = getNamespace(myRepo.GIT_BRANCH);
-                    if (namespace) {
-                        withAWS(credentials:'jenkins_s3_upload') {
-                            s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
-                        }
-                    }
                 }
             }
 
             stage('Build Code'){
                 container('node'){ 
-                    steps {
-                        sh "node -v"
-                        sh "npm -v"
-                        if (namespace) {
-                            withAWS(credentials:'jenkins_s3_upload') {
-                                s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
-                            }
-                            sh "mv .env src/.env && cd src && npm install"
+                    if (namespace) {
+                        withAWS(credentials:'jenkins_s3_upload') {
+                            s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
                         }
+                        sh "mv .env src/.env && cd src && npm install"
                     }
                 }
             }
 
             stage('Package Code'){
                 container('node'){ 
-                    steps {
-                        if (namespace) {
-                            sh "tar -czf ${env.WORKSPACE}/${env.ARTIFACT_NAME}.tar.gz ."
-                        }
+                    if (namespace) {
+                        sh "tar -czf ${env.WORKSPACE}/${env.ARTIFACT_NAME}.tar.gz ."
                     }
                 }
             }
