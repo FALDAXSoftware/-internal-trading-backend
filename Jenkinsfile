@@ -62,9 +62,9 @@ volumes: [
 
                 if (env.BRANCH_NAME == "preprod"){
                     sshagent(credentials: ["${sshagent_name}"]) {
-                        sh "ssh ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-preprod"
-                        sh "scp ${env.WORKSPACE}/${artifact_name}.tar.gz futurx@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-preprod"
-                        sh "ssh futurx@${ip_address} 'bash -s' < ./deploy.sh ${service_name}-preprod ${artifact_name}"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-preprod"
+                        sh "scp -o StrictHostKeyChecking=no ${env.WORKSPACE}/${artifact_name}.tar.gz ubuntu@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-preprod"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${ip_address} 'bash -s' < ./deploy.sh ${service_name}-preprod ${artifact_name}"
                     }
                 }
             }
@@ -73,9 +73,9 @@ volumes: [
 
                 if (env.BRANCH_NAME == "mainnet"){
                     sshagent(credentials: ["${sshagent_name}"]) {      
-                        sh "ssh ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-mainnet"
-                        sh "scp ${env.WORKSPACE}/${artifact_name}.tar.gz futurx@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-mainnet"
-                        sh "ssh futurx@${ip_address} 'bash -s' < ./deploy.sh ${service_name}-mainnet ${env.ARTIFACT_NAME}"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-mainnet"
+                        sh "scp -o StrictHostKeyChecking=no ${env.WORKSPACE}/${artifact_name}.tar.gz ubuntu@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-mainnet"
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${ip_address} 'bash -s' < ./deploy.sh ${service_name}-mainnet ${env.ARTIFACT_NAME}"
                     }
                 }
             }
