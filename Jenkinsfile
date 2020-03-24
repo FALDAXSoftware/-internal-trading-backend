@@ -5,7 +5,7 @@ def imageRepo = "100.69.158.196"
 def ip_address = "3.132.12.28"
 def sshagent_name = "internal-trading"
 def service_name = "internal-trading-backend"
-def artifact_name = "${service_name}#${env.BRANCH_NAME}#${env.BUILD_NUMBER}#${env.DEPLOY_ENV}"
+def artifact_name = "${service_name}#${env.BRANCH_NAME}#${env.BUILD_NUMBER}"
 
 podTemplate(label: label, nodeSelector: 'env=jenkins' , containers: [
      containerTemplate(
@@ -14,7 +14,7 @@ podTemplate(label: label, nodeSelector: 'env=jenkins' , containers: [
         resourceLimitCpu: '2000m',
         resourceRequestMemory: '100Mi',
         resourceLimitMemory: '2500Mi',
-        image: 'node:12.16-alpine', 
+        image: 'node:12.16', 
         command: 'cat', 
         ttyEnabled: true),
 ], 
