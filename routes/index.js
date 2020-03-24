@@ -7,6 +7,7 @@ var router = express.Router();
 // route grouping
 var TradeController = require('../controllers/v1/TradeController');
 var TradingViewController = require('../controllers/v1/TradingViewController');
+var UserFavouritesController = require("../controllers/v1/UserFavourites");
 
 router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
@@ -31,6 +32,7 @@ router.post('/orders/limit-buy-order-create', TradeController.limitBuy);
 router.post('/orders/limit-sell-order-create', TradeController.limitSell);
 router.post('/orders/pending-buy-order-create', TradeController.stopLimitBuyOrder);
 router.post('/orders/pending-sell-order-create', TradeController.stopLimitSellOrder);
+router.post('/trade/add-favourite-pair', UserFavouritesController.addFavouritesData)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 
 // Trading View API

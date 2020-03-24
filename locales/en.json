@@ -118,11 +118,25 @@
 		"message_english": "Token is expired",
 		"message": "Token is expired"
 	},
-	"UNAUTHORIZED_ACCESS":{
+	"UNAUTHORIZED_ACCESS": {
 		"page": "Internal Tradding",
 		"context": "When no authroized",
 		"message_type": "error",
 		"message_english": "Authentication failed",
 		"message": "Authentication failed"
+	},
+	"pair already exist": {
+		"page": "Internal Tradding",
+		"context": "When Pair already exist",
+		"message_type": "error",
+		"message_english": "Favourites Pair already exist",
+		"message": "Favourites Pair already exist"
+	},
+	"pair added success": {
+		"page": "Internal Tradding",
+		"context": "When Pair added Success",
+		"message_type": "error",
+		"message_english": "Favourites pair added successfully.",
+		"message": "Favourites pair added successfully."
 	}
 }

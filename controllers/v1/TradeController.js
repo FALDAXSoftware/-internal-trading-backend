@@ -1267,8 +1267,9 @@ class TradeController extends AppController {
   // Cron for Pending Order execution
   async executeStopLimit() {
     var now = moment();
+    console.log(now);
     var pendingData = await getPendingOrderDetails.getPendingOrderDetails();
-
+    console.log(pendingData.length)
     for (var i = 0; i < pendingData.length; i++) {
       var {
         order_type,
@@ -1316,7 +1317,6 @@ class TradeController extends AppController {
       }
     }
   }
-
 
 }
 

@@ -6,5 +6,5 @@ var cronData = require("../controllers/v1/TradeController");
 // On Every Minute
 cron.schedule('* * * * *', async (req, res, next) => {
     console.log("Started cron....");
-
+    await cronData.executeStopLimit();
 });
