@@ -1,6 +1,8 @@
 var Currency = require("../currency");
 var getLatestPrice = require("../fixapi/get-latest-price");
 var AdminSettingModel = require("../../models/AdminSetting");
+var snapshotPrice = require("./get-snapshot-price");
+var feesCalculation = require("../fees-calculation");
 
 var priceObject = async (value_object) => {
     try {
@@ -44,6 +46,28 @@ var priceObject = async (value_object) => {
                     .andWhere('slug', 'faldax_fee')
                     .orderBy('id', 'DESC')
 
+                console.log("faldax_fee", faldax_fee)
+
+                var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag)
+                if (req_body.Side == 1) {
+                    priceValue = (1 / get_jst_price[0].ask_price);
+                }
+                totalValue = (parseFloat(req_body.OrderQty) * parseFloat(priceValue))
+                var qty = req_body.OrderQty;
+                req_body.OrderQty = totalValue;
+
+                if (req_body.Side == 1) {
+                    feesCurrency = crypto;
+                    get_network_fees = await feesCalculation.feesValue(feesCurrency.toLowerCase(), qty);
+                    console.log("req_body.OrderQty", req_body.OrderQty)
+                    console.log("faldax_fee.value", faldax_fee.value)
+                    faldax_fee_value = (req_body.OrderQty * ((faldax_fee.value) / 100))
+                    faldax_fees_actual = faldax_fee_value;
+                    get_faldax_fee = (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) ? (parseFloat(req_body.OrderQty) - parseFloat(get_network_fees) - parseFloat(((req_body.OrderQty * (faldax_fee.value) / 100)))) : (parseFloat(req_body.OrderQty) - parseFloat(get_network_fees) - parseFloat(((req_body.OrderQty * (faldax_fee.value) / 100))));
+                    if (!usd_value && usd_value != '') { (original_value = get_faldax_fee) }
+                    req_body.OrderQty = get_faldax_fee;
+                }
+                console.log("get_faldax_fee before", get_faldax_fee)
 
             } else if (flag == 2) {
 

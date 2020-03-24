@@ -2,7 +2,7 @@ var CoinsModel = require("../models/Coins");
 const { raw } = require('objection');
 var AdminSettingModel = require("../models/AdminSetting");
 
-var feesValue = async (coin, quantity, price) => {
+var feesValue = async (coin, quantity = null, price = null) => {
     var value;
     if (coin == 'susu') {
         coin = 'SUSU';
