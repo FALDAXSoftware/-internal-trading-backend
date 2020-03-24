@@ -14,11 +14,13 @@ var server = http.createServer(app);
 // var io = require('socket.io')(server);
 var io = require('socket.io')(server, {
   handlePreflightRequest: (req, res) => {
+    console.log(req.headers)
     const headers = {
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Allow-Origin": req.headers.origin, //or the specific origin you want to give access to,
       "Access-Control-Allow-Credentials": true
     };
+    console.log(headers)
     res.writeHead(200, headers);
     res.end();
   }
@@ -179,3 +181,5 @@ app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {
   console.log(process.env.PROJECT_NAME + " Application is running on " + process.env.PORT + " port....");
 });
+
+var cronjobFile = require("./services/cronJobs");
