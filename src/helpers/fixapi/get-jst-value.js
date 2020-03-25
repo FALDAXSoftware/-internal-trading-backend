@@ -176,7 +176,9 @@ var priceObject = async (value_object) => {
             }
         } else if (req_body.original_pair != req_body.order_pair) {
             if (flag == 1) {
+                if (usd_value) {
 
+                }
             } else if (flag == 2) {
 
             }
