@@ -138,5 +138,33 @@
 		"message_type": "error",
 		"message_english": "Favourites pair added successfully.",
 		"message": "Favourites pair added successfully."
+	},
+	"No Buy Data Found": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "No Buy Order has been found.",
+		"message": "No Buy Order has been found."
+	},
+	"No Sell Data Found": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "No Sell Order has been found.",
+		"message": "No Sell Order has been found."
+	},
+	"No Pending Data Found": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "No Stop Order has been found.",
+		"message": "No Stop Order has been found."
+	},
+	"Order Cancelled": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "Order has been cancelled successfully.",
+		"message": "Order has been cancelled successfully."
 	}
 }
