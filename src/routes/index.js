@@ -33,6 +33,7 @@ router.post('/orders/limit-sell-order-create', TradeController.limitSell);
 router.post('/orders/pending-buy-order-create', TradeController.stopLimitBuyOrder);
 router.post('/orders/pending-sell-order-create', TradeController.stopLimitSellOrder);
 router.post('/trade/add-favourite-pair', UserFavouritesController.addFavouritesData)
+router.post('/cancel-pending-order', TradeController.cancelPendingOrder)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 
 // Trading View API

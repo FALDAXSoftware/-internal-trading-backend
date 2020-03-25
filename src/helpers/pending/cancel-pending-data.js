@@ -9,10 +9,12 @@ var feesValue = require("../wallet/get-maker-taker-fees")
 
 var cancelPendingOrder = async (side, type, id) => {
     var deletePending;
-    var now = moment().now();
+    var now = moment().format();
     var crypto;
     var currency;
     var userIds = [];
+
+    console.log(side, type, id)
 
     if (type == "Limit" && side == "Buy") {
         var pendingBookDetailsBuy = await BuyBookModel
@@ -22,9 +24,11 @@ var cancelPendingOrder = async (side, type, id) => {
             .where('deleted_at', null)
             .andWhere('id', id)
 
+        console.log(pendingBookDetailsBuy)
         crypto = pendingBookDetailsBuy.settle_currency;
         currency = pendingBookDetailsBuy.currency;
         userIds.push(pendingBookDetailsBuy.user_id);
+
 
         var fees = await feesValue.getFeesValue(pendingBookDetailsBuy.settle_currency, pendingBookDetailsBuy.currency);
         var coinId = await CoinsModel
@@ -44,6 +48,8 @@ var cancelPendingOrder = async (side, type, id) => {
             .andWhere('user_id', pendingBookDetailsBuy.user_id)
             .orderBy('id', 'DESC');
 
+        console.log(walletDetails)
+
         var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsBuy.price * pendingBookDetailsBuy.quantity);
 
         var updateWalletDetails = await WalletModel
@@ -60,6 +66,8 @@ var cancelPendingOrder = async (side, type, id) => {
             return (0);
         }
 
+
+        console.log(pendingBookDetailsBuy)
         var activityCancel = await ActivityTableModel
             .query()
             .where('deleted_at', null)
@@ -68,21 +76,29 @@ var cancelPendingOrder = async (side, type, id) => {
                 is_cancel: true
             })
 
-        deletePending = await BuyBookModel
+        deletePendingFirst = await BuyBookModel
             .query()
             .where('id', id)
             .andWhere('deleted_at', null)
-            .updateAndFetch({
+            .patch({
                 deleted_at: now
             });
+
+        var deletePending = await BuyBookModel
+            .query()
+            .select()
+            .where('id', id)
+
     } else if (type == "Limit" && side == "Sell") {
         var pendingBookDetailsSell = await SellBookModel
             .query()
-            .select()
             .first()
+            .select()
             .where('deleted_at', null)
             .andWhere('id', id)
             .orderBy('id', 'DESC')
+
+        console.log(pendingBookDetailsSell)
 
         crypto = pendingBookDetailsSell.settle_currency;
         currency = pendingBookDetailsSell.currency;
@@ -107,21 +123,23 @@ var cancelPendingOrder = async (side, type, id) => {
             .andWhere('deleted_at', null)
             .orderBy('id', 'DESC');
 
+        console.log(walletDetails)
+
 
         var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsSell.quantity);
 
         var updateWalletDetails = await WalletModel
             .query()
-            .where('user_id', pendingBookDetailsSell[i].user_id)
+            .where('user_id', pendingBookDetailsSell.user_id)
             .andWhere('coin_id', coinId.id)
             .andWhere('deleted_at', null)
-            .updateAndFetch({
+            .patch({
                 placed_balance: userPlacedBalance
             })
 
         if (pendingBookDetailsSell.length === 0) {
-            // throw("No buy limit order found.")
-            return (0);
+            // throw("No sell limit order found.")
+            return (1);
         }
 
         var activityCancel = await ActivityTableModel
@@ -132,12 +150,20 @@ var cancelPendingOrder = async (side, type, id) => {
                 is_cancel: true
             })
 
-        deletePending = await SellBookModel
+        deletePendingFirst = await SellBookModel
             .query()
             .where('id', id)
-            .updateAndFetch({
+            .patch({
                 deleted_at: now
             })
+
+        deletePending = await SellBookModel
+            .query()
+            .select()
+            .where('id', id)
+
+        console.log(deletePending)
+
     } else {
         var pendingDetails = await PendingBookModel
             .query()
@@ -147,13 +173,15 @@ var cancelPendingOrder = async (side, type, id) => {
             .andWhere('deleted_at', null)
             .orderBy('id', 'DESC')
 
+        console.log(pendingDetails)
+
         crypto = pendingDetails.settle_currency;
         currency = pendingDetails.currency;
         userIds.push(pendingDetails.user_id);
 
         if (pendingDetails == undefined || pendingDetails.length == 0) {
             // throw("No pending order found.")
-            return (0);
+            return (3);
 
         }
 
@@ -165,23 +193,29 @@ var cancelPendingOrder = async (side, type, id) => {
                 is_cancel: true
             })
 
-        deletePending = await PendingBookModel
+        deletePendingFirst = await PendingBookModel
             .query()
             .where('id', id)
-            .updateAndFetch({
+            .patch({
                 deleted_at: now
             });
+
+        deletePending = await PendingBookModel
+            .query()
+            .select()
+            .where('id', id)
     }
+    console.log(deletePending)
     if (deletePending) {
         // Socket
         // await sails
         //     .helpers
         //     .sockets
         //     .tradeEmit(crypto, currency, userIds);
-        return ("Deleted Successfully")
+        return (4)
     } else {
         // throw "Server Error";
-        return (0);
+        return (5);
     }
 }
 
