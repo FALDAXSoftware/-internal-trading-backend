@@ -69,8 +69,9 @@ class TradeController extends AppController {
         side,
         order_type,
         orderQuantity,
-        user_id
+        // user_id
       } = req.body;
+      var user_id = await Helper.getUserId(req.headers);
       let userIds = [];
       userIds.push(user_id);
 
@@ -333,15 +334,15 @@ class TradeController extends AppController {
   }
   // Used for Buy Market order
   async marketBuy(req, res) {
+
     try {
       let {
         symbol,
         side,
         order_type,
         orderQuantity,
-        user_id
       } = req.body;
-
+      var user_id = await Helper.getUserId(req.headers);
       var userIds = [];
       userIds.push(user_id);
 
@@ -602,12 +603,14 @@ class TradeController extends AppController {
   async limitBuy(req, res) {
     let {
       symbol,
-      user_id,
+      // user_id,
       side,
       order_type,
       orderQuantity,
       limit_price
     } = req.body;
+
+    var user_id = await Helper.getUserId(req.headers);
 
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
@@ -842,13 +845,13 @@ class TradeController extends AppController {
   async limitSell(req, res) {
     let {
       symbol,
-      user_id,
+      // user_id,
       side,
       order_type,
       orderQuantity,
       limit_price
     } = req.body;
-
+    var user_id = await Helper.getUserId(req.headers);
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
     if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
@@ -1078,10 +1081,10 @@ class TradeController extends AppController {
         order_type,
         orderQuantity,
         limit_price,
-        stop_price,
-        user_id
+        stop_price
+        // user_id
       } = req.body;
-
+      var user_id = await Helper.getUserId(req.headers);
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
@@ -1172,9 +1175,10 @@ class TradeController extends AppController {
         order_type,
         orderQuantity,
         limit_price,
-        stop_price,
-        user_id
+        stop_price
+        // user_id
       } = req.body;
+      var user_id = await Helper.getUserId(req.headers);
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
