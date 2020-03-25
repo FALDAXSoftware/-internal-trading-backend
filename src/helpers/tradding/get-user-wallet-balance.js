@@ -97,16 +97,16 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .first()
         .select()
         .where('coin_id', cryptoData.id)
-        .andWhere('deleted_at', null)
-        .andWhere('is_active', true);
+        .andWhere('deleted_at', null);
+    // .andWhere('is_active', true);
 
     var getCurrencyPriceData = await CurrencyConversionModel
         .query()
         .first()
         .select()
         .where('coin_id', currencyData.id)
-        .andWhere('deleted_at', null)
-        .andWhere('is_active', true);
+        .andWhere('deleted_at', null);
+    // .andWhere('is_active', true);
 
     // Fetching Amount of trade done on the basis of time and usd value
     var currencyAmount = await TradeHistoryModel
