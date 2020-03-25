@@ -111,13 +111,28 @@ io.on('connection', async function (socket) {
   // console.log("Socket Headers", socket_headers);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
 
-
   console.log("RRRRR", rooms)
   let socket_functions = require("./helpers/sockets/emit-all-data");
   var constants = require("./config/constants");
   socket.on("join", async function (room) {
+    // function findClientsSocketByRoomId(roomId) {
+    console.log('room.r',room);
+    var roomId = room.room;
+      var res = []
+          , room_name = io.sockets.adapter.rooms[roomId];
+      if (room_name) {
+        for (var id in room_name) {
+          res.push(io.sockets.adapter.nsp.connected[id]);
+        }
+      }
+      console.log(io.sockets.adapter)
+    //   return res;
+    // }
+
+    // var clients = this.findClientsSocket('room', room.room);
+    console.log("clients",res);
     socket.emit("test", { name: "le bhai" });
-    // console.log("room",room.room);
+    console.log("room",room);
 
     socket.join(room.room);
     // console.log("Socket", socket);
@@ -156,6 +171,8 @@ io.on('connection', async function (socket) {
   })
 
 });
+
+
 // global.io = io;
 // // var rooms = Object.keys(global.io.sockets.adapter.sids[socket.id]);
 // var rooms = Object.keys(global.io);

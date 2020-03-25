@@ -48,7 +48,7 @@ var getInstrumentData = async (currency) => {
 
 // Get Users Completed Orders details
 var getCompletedOrdersData = async (data) => {
-    var user_id = data.user_id; // need to get from Authorization
+    var user_id = data.user_id;
     var pair = (data.symbol).split("-");
     var crypto = pair[0];
     var currency = pair[1];
