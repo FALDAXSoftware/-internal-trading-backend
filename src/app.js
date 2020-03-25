@@ -182,4 +182,65 @@ server.listen(app.get('port'), function () {
   console.log(process.env.PROJECT_NAME + " Application is running on " + process.env.PORT + " port....");
 });
 
+CronSendEmail = async (requestedData) => {
+  // console.log(res)
+  console.log("IN app.js")
+  var EmailTemplate = require("./models/EmailTemplate");
+  var template_name = requestedData.template;
+  var email = requestedData.email;
+  // var body = requestedData.body;
+  // var extraData = requestedData.extraData;
+  // var subject = requestedData.subject;
+  var user_detail = requestedData.user_detail;
+  var format_data = requestedData.formatData;
+
+  let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
+
+  let template = await EmailTemplate.getSingleData({
+    slug: requestedData.templateSlug
+  });
+
+  let language_content = template.all_content[user_language].content;
+  let language_subject = template.all_content[user_language].subject;
+
+  var emailContent = require("./helpers/helpers")
+  language_content = await emailContent.formatEmail(language_content, format_data);
+
+  console.log(language_content)
+  console.log("template_name", template_name)
+  var object = {
+    to: email,
+    subject: language_subject,
+    content: (language_content),
+    PROJECT_NAME: process.env.PROJECT_NAME,
+    SITE_URL: process.env.SITE_URL,
+    homelink: process.env.SITE_URL
+  }
+  console.log(object)
+
+  try {
+    await app.mailer
+      .send(template_name, {
+        to: email,
+        subject: language_subject,
+        content: (language_content),
+        PROJECT_NAME: process.env.PROJECT_NAME,
+        SITE_URL: process.env.SITE_URL,
+        homelink: process.env.SITE_URL
+      }, function (err) {
+        console.log("err", err)
+        if (err) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+  } catch (err) {
+    console.log("EMail err:", err);
+    return 0;
+  }
+}
+
+module.exports = { CronSendEmail: CronSendEmail };
+
 var cronjobFile = require("./services/cronJobs");
