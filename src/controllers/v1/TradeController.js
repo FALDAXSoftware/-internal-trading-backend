@@ -51,6 +51,7 @@ var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
 var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 var TradeHistoryModel = require("../../models/TradeHistory");
 var TradeStatusChecking = require("../../helpers/user-trade-checking");
+var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
 
 /**
  * Trade Controller : Used for live tradding
@@ -1315,6 +1316,28 @@ class TradeController extends AppController {
           var pendingSell = await StopLimitSellExecute.stopLimitSell(now, pendingOrderBook);
         }
       }
+    }
+  }
+
+  async cancelPendingOrder(req, res) {
+    try {
+      var { side, id, order_type, user_id } = req.body;
+      console.log(req.body);
+      var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
+      if (cancel_pending_data == 0) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("No Buy Data Found").message, []);
+      } else if (cancel_pending_data == 1) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("No Sell Data Found").message, []);
+      } else if (cancel_pending_data == 3) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("No Pending Data Found").message, []);
+      } else if (cancel_pending_data == 4) {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Cancelled").message, []);
+      } else if (cancel_pending_data == 5) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+      }
+    } catch (error) {
+      console.log(error);
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
     }
   }
 
