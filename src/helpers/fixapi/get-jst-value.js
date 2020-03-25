@@ -126,6 +126,53 @@ var priceObject = async (value_object) => {
                     .query()
                     .first()
                     .select()
+                    .where("deleted_at", null)
+                    .andWhere("slug", "faldax_fee")
+                    .orderBy("id", 'DESC');
+
+                if (req_body.Side == 1) {
+                    var qty = ((req_body.OrderQty))
+                    feesCurrency = crypto;
+                    get_network_fees = await feesCalculation.feesValue(feesCurrency.toLowerCase(), qty);
+                    faldax_fee_value = (req_body.OrderQty * ((faldax_fee.value) / 100))
+                    faldax_fees_actual = faldax_fee_value;
+                    get_faldax_fee = (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) ? (parseFloat(req_body.OrderQty) + parseFloat(get_network_fees) + parseFloat(((req_body.OrderQty * (faldax_fee.value) / 100)))) : (parseFloat(price_value_usd) + parseFloat(get_network_fees) + parseFloat(((price_value_usd * (faldax_fee.value) / 100))));
+                    original_value = get_faldax_fee
+                    req_body.OrderQty = get_faldax_fee;
+                }
+                var dataValueOne = 0;
+                if (req_body.offer_code && req_body.offer_code != '') {
+                    dataValueOne = await applyOfferCode.offerObject(req_body, faldax_fee_value, flag)
+                    faldax_fee_value = dataValueOne.faldax_fees_offer;
+                    req_body.OrderQty = parseFloat(req_body.OrderQty) - parseFloat(dataValueOne.final_faldax_fees_actual);
+                }
+
+                var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag);
+                if (req_body.Side == 1) {
+                    priceValue = (get_jst_price[0].ask_price);
+                }
+
+                totalValue = priceValue * req_body.OrderQty;
+
+                if (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) {
+                    totalValue = (req_body.OrderQty * priceValue);
+                    usd_price = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    usd_price = (req_body.OrderQty * usd_price[0].ask_price)
+                }
+
+                get_faldax_fee = req_body.OrderQty;
+
+                returnData = {
+                    "network_fee": get_network_fees,
+                    "faldax_fee": faldax_fee_value,
+                    "total_value": get_faldax_fee,
+                    "currency": feesCurrency,
+                    "price_usd": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? usd_price : usd_value,
+                    "currency_value": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? totalValue : totalValue,
+                    "original_value": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? qty : price_value_usd,
+                    "orderQuantity": get_faldax_fee,
+                    "faldax_fees_actual": faldax_fees_actual
+                }
             }
         } else if (req_body.original_pair != req_body.order_pair) {
             if (flag == 1) {
