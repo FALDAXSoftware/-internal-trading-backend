@@ -3,6 +3,8 @@ var getLatestPrice = require("../fixapi/get-latest-price");
 var AdminSettingModel = require("../../models/AdminSetting");
 var snapshotPrice = require("./get-snapshot-price");
 var feesCalculation = require("../fees-calculation");
+var offerCodeStatus = require("./check-offer-code-status");
+var applyOfferCode = require("./apply-offer-code");
 
 var priceObject = async (value_object) => {
     try {
@@ -68,6 +70,44 @@ var priceObject = async (value_object) => {
                     req_body.OrderQty = get_faldax_fee;
                 }
                 console.log("get_faldax_fee before", get_faldax_fee)
+
+                if (req_body.offer_code && req_body.offer_code != '') {
+                    var dataValueOne = await applyOfferCode.offerObject(req_body, faldax_fee_value, flag);
+                    var faldax_feeRemainning = dataValueOne.final_faldax_fees_actual - dataValueOne.faldax_fees_offer;
+                    if (faldax_feeRemainning < 0) {
+                        faldax_feeRemainning = 0.0
+                    }
+                    console.log(parseFloat(faldax_feeRemainning));
+                    var feeValue = parseFloat(faldax_feeRemainning).toFixed(8)
+                    get_faldax_fee = parseFloat(get_faldax_fee) + parseFloat(feeValue);
+                    dataValue = dataValueOne.priceValue;
+                    faldax_fee_value = dataValueOne.faldax_fees_offer;
+                }
+
+                if (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) {
+                    usd_price = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    console.log("usd_price", usd_price)
+                    usd_price = (qty * usd_price[0].ask_price)
+                }
+                req_body.OrderQty = qty;
+
+                if (usd_value) {
+                    get_faldax_fee = get_faldax_fee;
+                }
+
+                original_value = totalValue;
+                console.log("get_faldax_fee", get_faldax_fee)
+                returnData = {
+                    "network_fee": (get_network_fees > 0) ? (get_network_fees) : (0.0),
+                    "faldax_fee": (faldax_fee_value > 0) ? (faldax_fee_value) : (0.0),
+                    "total_value": (get_faldax_fee > 0) ? (get_faldax_fee) : (0.0),
+                    "currency": feesCurrency,
+                    "price_usd": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? usd_price : totalValue,
+                    "currency_value": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? req_body.OrderQty : price_value_usd,
+                    "original_value": original_value,
+                    "orderQuantity": original_value,
+                    "faldax_fees_actual": faldax_fees_actual
+                }
 
             } else if (flag == 2) {
 
