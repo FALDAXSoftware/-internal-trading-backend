@@ -1292,8 +1292,8 @@ class TradeController extends AppController {
         'symbol': symbol,
         'side': side,
         'order_type': order_type,
-        'created': now.format(),
-        'updated': now.format(),
+        'created_at': now.format(),
+        'updated_at': now.format(),
         'maximum_time': now
           .add(1, 'years')
           .format(),

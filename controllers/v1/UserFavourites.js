@@ -9,6 +9,7 @@ const constants = require('../../config/constants');
 var Helper = require("../../helpers/helpers");
 var UserFavouriteModel = require("../../models/UserFavourites");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var {map, sortBy} = require('lodash');
 
 class UserFavourites extends AppController {
 
@@ -40,9 +41,9 @@ class UserFavourites extends AppController {
                     var price = await TradeHistoryModel
                         .query()
                         .select()
-                        .where('settl_currency', data.pair_to)
+                        .where('settle_currency', data.pair_to)
                         .andWhere('currency', data.pair_from)
-                        .andWhere('created', '>=', yesterday)
+                        .andWhere('created_at', '>=', yesterday)
                         .orderBy('id', 'DESC')
 
                     if (price.length == 0) {
@@ -54,13 +55,13 @@ class UserFavourites extends AppController {
                         average_price = total_price / (price.length);
                     }
 
-                    var current_price = await trade_history
+                    var current_price = await TradeHistoryModel
                         .query()
                         .first()
-                        .where('settl_currency', data.pair_to)
+                        .where('settle_currency', data.pair_to)
                         .andWhere('currency', data.pair_from)
-                        .andWhere('created', '<=', today)
-                        .andWhere('created', '>=', yesterday)
+                        .andWhere('created_at', '<=', today)
+                        .andWhere('created_at', '>=', yesterday)
                         .orderBy('id', 'DESC')
 
                     if (current_price == undefined) {
@@ -69,13 +70,13 @@ class UserFavourites extends AppController {
                         current_price = current_price.fill_price;
                     }
 
-                    var previous_price = await trade_history
+                    var previous_price = await TradeHistoryModel
                         .query()
                         .first()
-                        .where('settl_currency', data.pair_to)
+                        .where('settle_currency', data.pair_to)
                         .andWhere('currency', data.pair_from)
-                        .andWhere('created', '<=', today)
-                        .andWhere('created', '>=', yesterday)
+                        .andWhere('created_at', '<=', today)
+                        .andWhere('created_at', '>=', yesterday)
                         .orderBy('id', 'ASC')
 
                     if (previous_price == undefined) {
@@ -99,13 +100,13 @@ class UserFavourites extends AppController {
                         flag = true;
                     }
 
-                    var tradeorderdetails = await trade_history
+                    var tradeorderdetails = await TradeHistoryModel
                         .query()
-                        .where('settl_currency', data.pair_to)
+                        .where('settle_currency', data.pair_to)
                         .andWhere('currency', data.pair_from)
-                        .andWhere('created', '<=', today)
-                        .andWhere('created', '>=', yesterday)
-                        .orderBy('created', 'ASC')
+                        .andWhere('created_at', '<=', today)
+                        .andWhere('created_at', '>=', yesterday)
+                        .orderBy('created_at', 'ASC')
 
                     var card_data = {
                         "pair_from": data.pair_from,
