@@ -69,18 +69,24 @@ class CampaignsOffers extends AppModel {
 
 	// Get User Data
 	static async getSingleData(filter, select = "") {
-		if (select != "") {
-			select = select;
-		} else {
-			select = "*";
-		}
-		var getData = await CampaignsOffers
-			.query()
-			.select(select)
-			.where(filter)
-			.first();
+		try{
+			console.log("filter",filter);
+			if (select != "") {
+				select = select;
+			} else {
+				select = "*";
+			}
+			var getData = await CampaignsOffers
+				.query()
+				.select(select)
+				.where(filter)
+				.first();
 
-		return getData;
+			return getData;
+		}catch(err ){
+		console.log("err",err);
+		}
+
 	}
 
 }

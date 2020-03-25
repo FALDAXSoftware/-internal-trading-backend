@@ -99,7 +99,7 @@ app.set("pairData", {
 
 io.on('connection', async function (socket) {
   console.log("Socket connected.....");
-  // socket.to( "join").emit("test", {name:"le bhai"});
+  socket.to( "join").emit("test", {name:"le bhai"});
   var socket_headers = socket.request.headers;
 
   // console.log("socket_headers",socket_headers)
@@ -117,15 +117,21 @@ io.on('connection', async function (socket) {
   var constants = require("./config/constants");
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
-    // console.log("room",room.room);
-    socket.join(room.room);
-    // console.log("Socket", socket);
-    // io.to(room.room).emit("test", {name:"le bhai"});
-
+    let user_id = authentication.user_id;
+    // if( room.previous_room ){
+    //   socket.leave(room.previous_room);
+    //   let previous_pair = (room.previous_room).split("-");
+    //   socket.leave(previous_pair[1]);
+    //   socket.leave(room.previous_room+user_id);
+    // }
     let symbol = (room.room);
     let pair = (symbol).split("-")
-    let user_id = authentication.user_id;
-
+    // console.log("room",room.room);
+    socket.join(room.room); //Join to new  Room
+    socket.join(room.room+user_id); // Join to new Room with Userid
+    socket.join(pair[1]); // Join to new Currency Room
+    // console.log("Socket", socket);
+    // io.to(room.room).emit("test", {name:"le bhai"});
 
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookData(pair[0], pair[1]));
@@ -148,17 +154,27 @@ io.on('connection', async function (socket) {
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
+
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
+
   })
   // socket.on("XRP-BTC", async function (data) {
   //   console.log("data", data);
   //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
   // })
-
+  // Temp FIXAPI
+  socket.on("check-offer-code", async function (data) {
+    console.log("Check Offer");
+    console.log(data);
+    let check_offer = require("./helpers/fixapi/check-offer-code-status");
+    socket.emit("offercode-data", await check_offer.offerCodeStatus(data));
+  })
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
   })
+
+
 
 });
 // global.io = io;

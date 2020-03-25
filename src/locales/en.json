@@ -180,5 +180,6 @@
 		"message_type": "error",
 		"message_english": "Portfolio data has been fetched successfully.",
 		"message": "Portfolio data has been fetched successfully."
-	}
+	},
+	"Campaign Offer invalid": "Campaign Offer invalid"
 }
