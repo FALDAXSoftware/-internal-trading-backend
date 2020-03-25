@@ -110,7 +110,22 @@ var priceObject = async (value_object) => {
                 }
 
             } else if (flag == 2) {
-
+                var valueUSD
+                var totalValue = 0;
+                var priceValue = 0;
+                var price_value_usd = 0;
+                if (usd_value) {
+                    var price_value = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    if (req_body.Side == 1) {
+                        price_value_usd = (1 / price_value[0].ask_price);
+                    }
+                    price_value_usd = price_value_usd * usd_value;
+                    req_body.OrderQty = price_value_usd;
+                }
+                var faldax_fee = await AdminSettingModel
+                    .query()
+                    .first()
+                    .select()
             }
         } else if (req_body.original_pair != req_body.order_pair) {
             if (flag == 1) {

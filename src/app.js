@@ -111,67 +111,52 @@ io.on('connection', async function (socket) {
   // console.log("Socket Headers", socket_headers);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
 
+
   console.log("RRRRR", rooms)
   let socket_functions = require("./helpers/sockets/emit-all-data");
   var constants = require("./config/constants");
   socket.on("join", async function (room) {
-    // function findClientsSocketByRoomId(roomId) {
-    // console.log('room.r',room);
-    // var roomId = room.room;
-    //   var res = []
-    //       , room_name = io.sockets.adapter.rooms[roomId];
-    //   if (room_name) {
-    //     for (var id in room_name) {
-    //       res.push(io.sockets.adapter.nsp.connected[id]);
-    //     }
-    //   }
-    //   console.log(io.sockets.adapter)
-    //   return res;
-    // }
-
     socket.emit("test", { name: "le bhai" });
-    console.log("room",room);
-    let user_id = authentication.user_id;
-    if( room.previous_room ){
-      socket.leave(room.previous_room);
-      let previous_pair = (room.previous_room).split("-");
-      socket.leave(previous_pair[1]);
-      socket.leave(room.previous_room+user_id);
-    }
-    let symbol = (room.room);
-    let pair = (symbol).split("-")
-
-    socket.join(room.room); //Join to new  Room
-    socket.join(room.room+user_id); // Join to new Room with Userid
-    socket.join(pair[1]); // Join to new Currency Room
+    // console.log("room",room.room);
+    socket.join(room.room);
     // console.log("Socket", socket);
     // io.to(room.room).emit("test", {name:"le bhai"});
+
+    let symbol = (room.room);
+    let pair = (symbol).split("-")
+    let user_id = authentication.user_id;
+
 
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookData(pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
+    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
-    socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id));
-    socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id));
-    socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id));
+    socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
+    socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
+    socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id))
+
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
     socket.on("trade_users_history_event", async function (data) {
-      data.user_id = user_id;
-      socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
+      data.user_id = user_id
+      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getUserOrdersData(data));
     })
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
   })
+  // socket.on("XRP-BTC", async function (data) {
+  //   console.log("data", data);
+  //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
+  // })
+
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
   })
 
 });
-
-
 // global.io = io;
 // // var rooms = Object.keys(global.io.sockets.adapter.sids[socket.id]);
 // var rooms = Object.keys(global.io);
@@ -198,5 +183,66 @@ app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {
   console.log(process.env.PROJECT_NAME + " Application is running on " + process.env.PORT + " port....");
 });
+
+CronSendEmail = async (requestedData) => {
+  // console.log(res)
+  console.log("IN app.js")
+  var EmailTemplate = require("./models/EmailTemplate");
+  var template_name = requestedData.template;
+  var email = requestedData.email;
+  // var body = requestedData.body;
+  // var extraData = requestedData.extraData;
+  // var subject = requestedData.subject;
+  var user_detail = requestedData.user_detail;
+  var format_data = requestedData.formatData;
+
+  let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
+
+  let template = await EmailTemplate.getSingleData({
+    slug: requestedData.templateSlug
+  });
+
+  let language_content = template.all_content[user_language].content;
+  let language_subject = template.all_content[user_language].subject;
+
+  var emailContent = require("./helpers/helpers")
+  language_content = await emailContent.formatEmail(language_content, format_data);
+
+  console.log(language_content)
+  console.log("template_name", template_name)
+  var object = {
+    to: email,
+    subject: language_subject,
+    content: (language_content),
+    PROJECT_NAME: process.env.PROJECT_NAME,
+    SITE_URL: process.env.SITE_URL,
+    homelink: process.env.SITE_URL
+  }
+  console.log(object)
+
+  try {
+    await app.mailer
+      .send(template_name, {
+        to: email,
+        subject: language_subject,
+        content: (language_content),
+        PROJECT_NAME: process.env.PROJECT_NAME,
+        SITE_URL: process.env.SITE_URL,
+        homelink: process.env.SITE_URL
+      }, function (err) {
+        console.log("err", err)
+        if (err) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+  } catch (err) {
+    console.log("EMail err:", err);
+    return 0;
+  }
+}
+
+module.exports = { CronSendEmail: CronSendEmail };
 
 var cronjobFile = require("./services/cronJobs");

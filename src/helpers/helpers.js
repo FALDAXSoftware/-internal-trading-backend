@@ -28,7 +28,10 @@ var SendEmail = async (res, requestedData) => {
   if (res == null) {
     var express = require('express');
     var app = express();
-    res = app;
+    var response = require("../app");
+    await response.CronSendEmail(requestedData)
+    // res = app;
+    return 1;
   }
   console.log(res)
   var EmailTemplate = require("../models/EmailTemplate");
@@ -50,6 +53,8 @@ var SendEmail = async (res, requestedData) => {
   let language_subject = template.all_content[user_language].subject;
 
   language_content = await module.exports.formatEmail(language_content, format_data);
+
+  console.log(language_content)
 
   try {
     await res.mailer
