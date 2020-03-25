@@ -47,7 +47,7 @@ var getInstrumentData = async (currency) => {
 }
 
 // Get Users Completed Orders details
-var getCompletedOrdersData = async (data) => {
+var getUserOrdersData = async (data) => {
     var user_id = data.user_id;
     var pair = (data.symbol).split("-");
     var crypto = pair[0];
@@ -113,7 +113,7 @@ module.exports = {
     getCardData,
     getDepthChartData,
     getInstrumentData,
-    getCompletedOrdersData,
+    getUserOrdersData,
     getCancelledOrdersData,
     getPendingOrdersData,
     getMarketValue,

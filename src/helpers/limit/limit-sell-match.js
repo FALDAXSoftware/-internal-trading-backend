@@ -101,6 +101,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                         recipientName: user_data.first_name
                                                     }
                                                 }
+                                                console.log(res)
                                                 await Helper.SendEmail(res, allData)
                                             }
                                         }
