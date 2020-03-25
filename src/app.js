@@ -118,12 +118,12 @@ io.on('connection', async function (socket) {
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
     let user_id = authentication.user_id;
-    // if( room.previous_room ){
-    //   socket.leave(room.previous_room);
-    //   let previous_pair = (room.previous_room).split("-");
-    //   socket.leave(previous_pair[1]);
-    //   socket.leave(room.previous_room+user_id);
-    // }
+    if( room.previous_room ){
+      socket.leave(room.previous_room);
+      let previous_pair = (room.previous_room).split("-");
+      socket.leave(previous_pair[1]);
+      socket.leave(room.previous_room+user_id);
+    }
     let symbol = (room.room);
     let pair = (symbol).split("-")
     // console.log("room",room.room);
