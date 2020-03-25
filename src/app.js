@@ -118,6 +118,7 @@ io.on('connection', async function (socket) {
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
     // console.log("room",room.room);
+
     socket.join(room.room);
     // console.log("Socket", socket);
     // io.to(room.room).emit("test", {name:"le bhai"});
