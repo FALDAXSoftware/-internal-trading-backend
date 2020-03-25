@@ -104,10 +104,18 @@ var formatEmail = async (emailContent, data) => {
   return tempEmailContent;
 }
 
+// Get User ID
+var getUserId = async function (headers) {
+  var authorization = headers;
+  var authentication = require("../config/authorization")(authorization);
+  return authentication.user_id;
+}
+
 module.exports = {
   jsonFormat,
   randomString,
   SendEmail,
-  formatEmail
+  formatEmail,
+  getUserId
 }
 
