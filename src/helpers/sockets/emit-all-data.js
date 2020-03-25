@@ -22,7 +22,12 @@ var getTradeHistoryData = async (crypto, currency) => {
     let helper = require("../../helpers/trade/get-trade-details");;
     let data = await helper.getTradeDetails(crypto, currency);
     return data;
+}
 
+var getUserBalance = async (user_id, crypto, currency) => {
+    let helper = require("../tradding/get-user-wallet-balance");
+    let data = await helper.getUserWalletBalance(user_id, currency, crypto);
+    return data;
 }
 
 // Get Card Data
@@ -110,6 +115,7 @@ module.exports = {
     getBuyBookData,
     getSellBookData,
     getTradeHistoryData,
+    getUserBalance,
     getCardData,
     getDepthChartData,
     getInstrumentData,
