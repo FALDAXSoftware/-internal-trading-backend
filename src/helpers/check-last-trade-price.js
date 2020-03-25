@@ -5,7 +5,7 @@ var sellOrder = require("./sell/get-sell-book-order");
 
 var getLastTradePrice = async (crypto, currency) => {
 
-    var tradeHistoryCount = await tradeDetails.getTradeDetails(crypto.currency, 1);
+    var tradeHistoryCount = await tradeDetails.getTradeDetails(crypto, currency, 1);
     var lastTradePrice = 0.0;
     if (tradeHistoryCount.length == 0) {
         var buyBook = await buyOrder.getBuyBookOrder(crypto, currency);
@@ -15,7 +15,8 @@ var getLastTradePrice = async (crypto, currency) => {
         lastTradePrice = parseFloat((buyBookData + sellBookData) / 2);
     } else {
         var tradeData = await lastPrice.getLastPrice(crypto, currency);
-        lastTradePrice = tradeData[0].fill_price;
+        console.log(tradeData)
+        lastTradePrice = tradeData.fill_price;
     }
     return (lastTradePrice);
 }

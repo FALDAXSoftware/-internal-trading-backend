@@ -7,8 +7,8 @@ var WalletsModel = require("../../models/Wallet");
 var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var FeesModel = require("../../models/Fees");
 var TradeHistoryModel = require("../../models/TradeHistory");
-var SellBookOrderHelper  = require("../../helpers/sell/get-sell-book-order");
-var BuyBookOrderHelper  = require("../../helpers/buy/get-buy-book-order");
+var SellBookOrderHelper = require("../../helpers/sell/get-sell-book-order");
+var BuyBookOrderHelper = require("../../helpers/buy/get-buy-book-order");
 
 var getUserWalletBalance = async (user_id, currency, crypto) => {
     var userWalletBalance;
@@ -25,7 +25,7 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         if (coinId.is_active == false || coinId.is_active == "false") {
             currencyMessage = "Coin is Currently inactive"
         } else {
-             userWalletCurrencyBalance = await WalletsModel
+            userWalletCurrencyBalance = await WalletsModel
                 .query()
                 .select()
                 .where('coin_id', coinId.id)
@@ -78,6 +78,14 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .andWhere('deleted_at', null)
         .andWhere('is_active', true);
 
+    var currencyData = await CoinsModel
+        .query()
+        .first()
+        .select()
+        .where('coin', currency)
+        .andWhere('deleted_at', null)
+        .andWhere('is_active', true);
+
     var now = moment().format();
     var yesterday = moment(now)
         .subtract(1, 'months')
@@ -89,7 +97,16 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .first()
         .select()
         .where('coin_id', cryptoData.id)
-        .andWhere('deleted_at', null);
+        .andWhere('deleted_at', null)
+        .andWhere('is_active', true);
+
+    var getCurrencyPriceData = await CurrencyConversionModel
+        .query()
+        .first()
+        .select()
+        .where('coin_id', currencyData.id)
+        .andWhere('deleted_at', null)
+        .andWhere('is_active', true);
 
     // Fetching Amount of trade done on the basis of time and usd value
     var currencyAmount = await TradeHistoryModel
@@ -119,21 +136,21 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
 
     if (sellBook.length == 0) {
         sellBookValue = 0;
-      } else {
+    } else {
         sellBookValue = sellBook[0].price;
-      }
-      if (buyBook.length == 0) {
+    }
+    if (buyBook.length == 0) {
         buyBookValue = 0;
-      } else {
+    } else {
         buyBookValue = buyBook[0].price;
-      }
-      var buyEstimatedFee = sellBookValue - (sellBookValue * (cryptoTakerFee.taker_fee / 100));
-      var sellEstimatedFee = buyBookValue - (buyBookValue * (cryptoTakerFee.taker_fee / 100));
+    }
+    var buyEstimatedFee = sellBookValue - (sellBookValue * (cryptoTakerFee.taker_fee / 100));
+    var sellEstimatedFee = buyBookValue - (buyBookValue * (cryptoTakerFee.taker_fee / 100));
 
-      var buyPay = sellBookValue;
-      var sellPay = buyBookValue;
+    var buyPay = sellBookValue;
+    var sellPay = buyBookValue;
 
-      userWalletBalance = {
+    userWalletBalance = {
         'currency': userWalletCurrencyBalance,
         'currency_msg': currencyMessage,
         'crypto': userWalletCryptoBalance,
@@ -142,9 +159,11 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         'sellEstimatedPrice': sellEstimatedFee,
         'buyPay': buyPay,
         'sellPay': sellPay,
-        'fees': cryptoTakerFee.taker_fee
-      };
-      return userWalletBalance;
+        'fees': cryptoTakerFee.taker_fee,
+        'cryptoFiat': getCryptoPriceData.quote.USD.price,
+        "currencyFiat": getCurrencyPriceData.quote.USD.price
+    };
+    return userWalletBalance;
 }
 
 module.exports = {
