@@ -105,10 +105,10 @@ var formatEmail = async (emailContent, data) => {
 }
 
 // Get User ID
-var getUserId = async function( headers ){
+var getUserId = async function (headers) {
   var authorization = headers;
   var authentication = require("../config/authorization")(authorization);
-  return  authentication.user_id;
+  return authentication.user_id;
 }
 
 module.exports = {

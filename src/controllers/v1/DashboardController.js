@@ -20,110 +20,127 @@ class DashboardController extends AppController {
         super();
     }
 
-    async getPortfolioData(user_id) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                var user_data = await UserModel
+    async getPortfolioData(req, res) {
+        // return new Promise(async (resolve, reject) => {
+        try {
+            var user_id = await Helper.getUserId(req.headers);
+            var user_data = await UserModel
+                .query()
+                .first()
+                .select()
+                .where('id', user_id)
+                .andWhere('deleted_at', null)
+                .andWhere('is_active', true)
+                .orderBy('id', 'DESC');
+
+            var currency = user_data.fiat;
+            var yesterday = moment().subtract(1, 'days');
+            var today = moment();
+            var portfolioData = [];
+            var average_price;
+
+            var coinBalance = await WalletModel
+                .query()
+                .select('coin_name', 'balance', 'coin')
+                .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
+                .where('user_id', user_id)
+                .andWhere('coins.is_fiat', false);
+
+            for (var i = 0; i < coinBalance.length; i++) {
+                var total_price = 0;
+                var price = await TradeHistoryModel
+                    .query()
+                    .select('fill_price')
+                    .where('settle_currency', coinBalance[i].coin)
+                    .andWhere('currency', currency)
+                    .andWhere('created_at', '<=', today)
+                    .andWhere('created_at', '>=', yesterday)
+                    .orderBy('id', 'DESC')
+
+                if (price.length == 0) {
+                    average_price = 0;
+                } else {
+                    for (var j = 0; j < price.length; j++) {
+                        total_price = total_price + price[j].fill_price;
+                    }
+
+                    average_price = total_price / (price.length);
+                }
+
+                var percentChange = 0.0;
+
+                var priceFiat = await CurrencyConversionModel
                     .query()
                     .first()
                     .select()
-                    .where('id', user_id)
-                    .andWhere('deleted_at', null)
-                    .andWhere('is_active', true)
+                    .where('deleted_at', null)
+                    .andWhere('symbol', coinBalance[i].coin)
                     .orderBy('id', 'DESC');
 
-                var currency = user_data.fiat;
-                var yesterday = moment().subtract(1, 'days');
-                var today = moment();
-                var portfolioData = [];
-                var average_price;
-
-                var coinBalance = await WalletModel
-                    .query()
-                    .select('coin_name', 'balance', 'coin')
-                    .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
-                    .where('user_id', user_id)
-                    .andWhere('coins.is_fiat', false);
-
-                for (var i = 0; i < coinBalance.length; i++) {
-                    var total_price = 0;
-                    var price = await TradeHistoryModel
-                        .query()
-                        .select('fill_price')
-                        .where('settle_currency', coinBalance[i].coin)
-                        .andWhere('currency', currency)
-                        .andWhere('created_at', '<=', today)
-                        .andWhere('created_at', '>=', yesterday)
-                        .orderBy('id', 'DESC')
-
-                    if (price.length == 0) {
-                        average_price = 0;
-                    } else {
-                        for (var j = 0; j < price.length; j++) {
-                            total_price = total_price + price[j].fill_price;
-                        }
-
-                        average_price = total_price / (price.length);
-                    }
-
-                    var percentChange = 0.0;
-
-                    var priceFiat = await CurrencyConversionModel
-                        .query()
-                        .first()
-                        .select()
-                        .where('deleted_at', null)
-                        .andWhere('symbol', coinBalance[i].coin)
-                        .orderBy('id', 'DESC');
-
-                    if (priceFiat == undefined) {
-                        priceFiat = 0;
-                        percentchange = 0;
-                    } else {
-                        percentchange = priceFiat.quote.USD.percent_change_24h;
-                        priceFiat = priceFiat.quote.USD.price;
-                    }
-
-                    var portfolio_data = {
-                        "name": coinBalance[i].name,
-                        "average_price": average_price,
-                        "percentchange": percentchange,
-                        "Amount": coinBalance[i].balance,
-                        'symbol': coinBalance[i].coin_name,
-                        "fiatPrice": priceFiat
-                    }
-
-                    portfolioData.push(portfolio_data);
-
+                var percentchange = 0.0
+                if (priceFiat == undefined) {
+                    priceFiat = 0;
+                    percentchange = 0;
+                } else {
+                    percentchange = priceFiat.quote.USD.percent_change_24h;
+                    priceFiat = priceFiat.quote.USD.price;
                 }
-                resolve(portfolioData)
 
-            } catch (error) {
-                console.log(error);
+                var portfolio_data = {
+                    "name": coinBalance[i].name,
+                    "average_price": average_price,
+                    "percentchange": percentchange,
+                    "Amount": coinBalance[i].balance,
+                    'symbol': coinBalance[i].coin_name,
+                    "fiatPrice": priceFiat
+                }
+
+                portfolioData.push(portfolio_data);
+
             }
-        })
-    }
-
-    async getActivityData(user_id) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                var data = await ActivityModel
-                    .query()
-                    .select()
-                    .where("user_id", user_id)
-                    .andWhere('is_market', false)
-                    .andWhere('deleted_at', null)
-                    .orderBy('id', 'DESC');
-
-                data.map((value1, i) => {
-                    value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
+            // resolve(portfolioData)
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("portfolio data").message,
+                    "data": portfolioData
                 });
 
-                resolve(data);
-            } catch (error) {
-                console.log(error);
-            }
-        })
+        } catch (error) {
+            console.log(error);
+        }
+        // })
+    }
+
+    async getActivityData(req, res) {
+        // return new Promise(async (resolve, reject) => {
+        try {
+            var user_id = await Helper.getUserId(req.headers);
+            var data = await ActivityModel
+                .query()
+                .select()
+                .where("user_id", user_id)
+                .andWhere('is_market', false)
+                .andWhere('deleted_at', null)
+                .orderBy('id', 'DESC');
+
+            data.map((value1, i) => {
+                value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
+            });
+
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("activity data").message,
+                    "data": data
+                });
+        } catch (error) {
+            console.log(error);
+            return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+        // })
     }
 }
 
