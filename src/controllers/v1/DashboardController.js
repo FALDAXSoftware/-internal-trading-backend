@@ -40,9 +40,9 @@ class DashboardController extends AppController {
 
                 var coinBalance = await WalletModel
                     .query()
-                    .select('coin_name', 'name', 'balance', 'coin')
+                    .select('coin_name', 'balance', 'coin')
                     .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
-                    .where('user_id', userid)
+                    .where('user_id', user_id)
                     .andWhere('coins.is_fiat', false);
 
                 for (var i = 0; i < coinBalance.length; i++) {
@@ -50,10 +50,10 @@ class DashboardController extends AppController {
                     var price = await TradeHistoryModel
                         .query()
                         .select('fill_price')
-                        .where('settl_currency', coinBalance[i].coin)
+                        .where('settle_currency', coinBalance[i].coin)
                         .andWhere('currency', currency)
-                        .andWhere('created', '<=', today)
-                        .andWhere('created', '>=', yesterday)
+                        .andWhere('created_at', '<=', today)
+                        .andWhere('created_at', '>=', yesterday)
                         .orderBy('id', 'DESC')
 
                     if (price.length == 0) {
@@ -112,7 +112,7 @@ class DashboardController extends AppController {
                     .select()
                     .where("user_id", user_id)
                     .andWhere('is_market', false)
-                    .andWhere('deleted', false)
+                    .andWhere('deleted_at', null)
                     .orderBy('id', 'DESC');
 
                 data.map((value1, i) => {
