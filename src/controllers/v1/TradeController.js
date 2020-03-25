@@ -370,7 +370,8 @@ class TradeController extends AppController {
           side,
           order_type,
           orderQuantity,
-          user_id);
+          user_id,
+          res);
 
         if (responseData.status > 1) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
@@ -391,7 +392,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res) {
     var userIds = [];
     userIds.push(user_id);
     console.log("userIds", userIds)
@@ -538,7 +539,7 @@ class TradeController extends AppController {
           requestData.orderQuantity = parseFloat(remainingQty).toFixed(8);
           console.log("requestData", requestData)
           // Again call same api
-          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id)
+          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res)
           console.log(response);
         } else {
           return {
