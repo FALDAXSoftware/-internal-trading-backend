@@ -161,7 +161,7 @@ io.on('connection', async function (socket) {
   })
 
 });
-// global.io = io;
+global.io = io;
 // // var rooms = Object.keys(global.io.sockets.adapter.sids[socket.id]);
 // var rooms = Object.keys(global.io);
 // console.log("rooms:",rooms);
