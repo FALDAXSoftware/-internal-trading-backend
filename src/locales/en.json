@@ -166,5 +166,19 @@
 		"message_type": "error",
 		"message_english": "Order has been cancelled successfully.",
 		"message": "Order has been cancelled successfully."
+	},
+	"activity data": {
+		"page": "Internal Tradding",
+		"context": "During time of activity fetch",
+		"message_type": "error",
+		"message_english": "Activity data has been fetched successfully.",
+		"message": "Activity data has been fetched successfully."
+	},
+	"portfolio data": {
+		"page": "Internal Tradding",
+		"context": "During time of portfolio fetch",
+		"message_type": "error",
+		"message_english": "Portfolio data has been fetched successfully.",
+		"message": "Portfolio data has been fetched successfully."
 	}
 }
