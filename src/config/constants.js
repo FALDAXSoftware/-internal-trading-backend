@@ -24,6 +24,7 @@ module.exports = {
 	"USER_PORTFOLIO_DATA_EVENT": "users-portfolio-data",
 	"USER_ACTIVITY_DATA_EVENT": "users-activity-data",
 	"TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG": "users-completed-flag",
+	"TRADE_GET_USERS_ALL_TRADE_DATA":"users-all-trade-data",
 
 	"SECRET_KEY": process.env.SECRET_KEY,
 	"SECRET_IV": process.env.SECRET_IV

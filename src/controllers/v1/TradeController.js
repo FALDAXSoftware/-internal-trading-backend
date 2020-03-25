@@ -1311,8 +1311,10 @@ class TradeController extends AppController {
 
       if (pendingData.length > 0) {
         if (order_type == "StopLimit" && side == "Buy") {
+          console.log("INSIDE BUY")
           var pendigBuy = await StopLimitBuyExecute.stopLimitBuy(now, pendingOrderBook);
         } else if (order_type == "StopLimit" && side == "Sell") {
+          console.log("INSIDE SELL", pendingOrderBook)
           var pendingSell = await StopLimitSellExecute.stopLimitSell(now, pendingOrderBook);
         }
       }

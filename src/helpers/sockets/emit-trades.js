@@ -11,7 +11,7 @@ var UserWalletBalanceHelper = require("../../helpers/tradding/get-user-wallet-ba
 var constants = require("../../config/constants");
 var emitTrades = async (crypto, currency, userIds) => {
     let buyBookDetails = await BuyBookOrderHelper.getBuyBookOrder(crypto, currency);
-    global. io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_BUY_BOOK_EVENT, buyBookDetails)
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_BUY_BOOK_EVENT, buyBookDetails)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "buybookUpdate", buyBookDetails);
@@ -55,6 +55,11 @@ var emitTrades = async (crypto, currency, userIds) => {
         let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
         global.io.sockets.to(crypto + "-" + currency + element).emit("walletBalanceUpdate", userBalanceDetails)
 
+
+        global.io.sockets.to(crypto + "-" + currency + element).emit("orderUpdated", {
+            crypto: crypto,
+            currency: currency
+        })
         // sails
         //   .sockets
         //   .broadcast(inputs.crypto + "-" + inputs.currency + "-" + element, "walletBalanceUpdate", userBalanceDetails);
@@ -66,10 +71,7 @@ var emitTrades = async (crypto, currency, userIds) => {
     //     crypto: inputs.crypto,
     //     currency: inputs.currency
     //   });
-    global.io.sockets.to(crypto + "-" + currency).emit("orderUpdated", {
-        crypto: crypto,
-        currency: currency
-    })
+
 }
 
 module.exports = {

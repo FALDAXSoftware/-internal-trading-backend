@@ -22,7 +22,12 @@ var getTradeHistoryData = async (crypto, currency) => {
     let helper = require("../../helpers/trade/get-trade-details");;
     let data = await helper.getTradeDetails(crypto, currency);
     return data;
+}
 
+var getUserBalance = async (user_id, crypto, currency) => {
+    let helper = require("../tradding/get-user-wallet-balance");
+    let data = await helper.getUserWalletBalance(user_id, currency, crypto);
+    return data;
 }
 
 // Get Card Data
@@ -47,7 +52,7 @@ var getInstrumentData = async (currency) => {
 }
 
 // Get Users Completed Orders details
-var getCompletedOrdersData = async (data) => {
+var getUserOrdersData = async (data) => {
     var user_id = data.user_id;
     var pair = (data.symbol).split("-");
     var crypto = pair[0];
@@ -82,24 +87,28 @@ var getPendingOrdersData = async (user_id, crypto, currency, month) => {
     return data;
 }
 
+// Get Market Value
 var getMarketValue = async () => {
     let helper = require("../../helpers/get-coin-list");
     let data = await helper.coinData();
     return data;
 }
 
+// Get user favouite data
 var getUserFavouritesData = async (user_id, socket_id) => {
     let helper = require("../../controllers/v1/UserFavourites");
     let data = await helper.getFavourites(user_id, socket_id);
     return data;
 }
 
+// Get Portfolio data
 var getPortfolioData = async (user_id) => {
     let helper = require("../../controllers/v1/DashboardController");
     let data = await helper.getPortfolioData(user_id);
     return data;
 }
 
+// Get Activity Data
 var getActivityData = async (user_id) => {
     let helper = require("../../controllers/v1/DashboardController");
     let data = await helper.getActivityData(user_id);
@@ -110,10 +119,11 @@ module.exports = {
     getBuyBookData,
     getSellBookData,
     getTradeHistoryData,
+    getUserBalance,
     getCardData,
     getDepthChartData,
     getInstrumentData,
-    getCompletedOrdersData,
+    getUserOrdersData,
     getCancelledOrdersData,
     getPendingOrdersData,
     getMarketValue,

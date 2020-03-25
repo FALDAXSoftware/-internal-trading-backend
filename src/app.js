@@ -130,6 +130,7 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookData(pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
+    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
@@ -140,15 +141,20 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
     socket.on("trade_users_history_event", async function (data) {
-      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getCompletedOrdersData(data));
+      data.user_id = user_id
+      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getUserOrdersData(data));
+    })
+
+    socket.on("change-instrument-data", async function (data) {
+      socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
   })
-  socket.on("XRP-BTC", async function (data) {
-    console.log("data", data);
-    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
-  })
+  // socket.on("XRP-BTC", async function (data) {
+  //   console.log("data", data);
+  //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
+  // })
 
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
@@ -181,5 +187,66 @@ app.set('port', process.env.PORT);
 server.listen(app.get('port'), function () {
   console.log(process.env.PROJECT_NAME + " Application is running on " + process.env.PORT + " port....");
 });
+
+CronSendEmail = async (requestedData) => {
+  // console.log(res)
+  console.log("IN app.js")
+  var EmailTemplate = require("./models/EmailTemplate");
+  var template_name = requestedData.template;
+  var email = requestedData.email;
+  // var body = requestedData.body;
+  // var extraData = requestedData.extraData;
+  // var subject = requestedData.subject;
+  var user_detail = requestedData.user_detail;
+  var format_data = requestedData.formatData;
+
+  let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
+
+  let template = await EmailTemplate.getSingleData({
+    slug: requestedData.templateSlug
+  });
+
+  let language_content = template.all_content[user_language].content;
+  let language_subject = template.all_content[user_language].subject;
+
+  var emailContent = require("./helpers/helpers")
+  language_content = await emailContent.formatEmail(language_content, format_data);
+
+  console.log(language_content)
+  console.log("template_name", template_name)
+  var object = {
+    to: email,
+    subject: language_subject,
+    content: (language_content),
+    PROJECT_NAME: process.env.PROJECT_NAME,
+    SITE_URL: process.env.SITE_URL,
+    homelink: process.env.SITE_URL
+  }
+  console.log(object)
+
+  try {
+    await app.mailer
+      .send(template_name, {
+        to: email,
+        subject: language_subject,
+        content: (language_content),
+        PROJECT_NAME: process.env.PROJECT_NAME,
+        SITE_URL: process.env.SITE_URL,
+        homelink: process.env.SITE_URL
+      }, function (err) {
+        console.log("err", err)
+        if (err) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+  } catch (err) {
+    console.log("EMail err:", err);
+    return 0;
+  }
+}
+
+module.exports = { CronSendEmail: CronSendEmail };
 
 var cronjobFile = require("./services/cronJobs");
