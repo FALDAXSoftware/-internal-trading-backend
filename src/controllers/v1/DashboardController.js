@@ -44,7 +44,7 @@ class DashboardController extends AppController {
 
             var coinBalance = await WalletModel
                 .query()
-                .select('coin_name', 'balance', 'coin')
+                .select('coin_name', 'balance', 'coin', 'coin_code')
                 .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
                 .where('user_id', user_id)
                 .andWhere('coins.is_fiat', false);
@@ -134,8 +134,9 @@ class DashboardController extends AppController {
                     "average_price": average_price,
                     "percentchange": percentChange,
                     "Amount": coinBalance[i].balance,
-                    'symbol': coinBalance[i].coin_name,
-                    "fiatPrice": priceFiat
+                    'symbol': coinBalance[i].coin_code,
+                    "fiatPrice": priceFiat,
+                    "name": coinBalance[i].coin_name
                 }
 
                 portfolioData.push(portfolio_data);
