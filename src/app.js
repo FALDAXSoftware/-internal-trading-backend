@@ -140,15 +140,15 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
     socket.on("trade_users_history_event", async function (data) {
-      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getCompletedOrdersData(data));
+      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getUserOrdersData(data));
     })
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
   })
-  socket.on("XRP-BTC", async function (data) {
-    console.log("data", data);
-    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
-  })
+  // socket.on("XRP-BTC", async function (data) {
+  //   console.log("data", data);
+  //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
+  // })
 
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
