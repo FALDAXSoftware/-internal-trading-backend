@@ -13,6 +13,7 @@ var TradeHistoryModel = require("../../models/TradeHistory");
 var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var CoinsModel = require("../../models/Coins");
 var ActivityModel = require("../../models/Activity");
+var TempCoinMArketCapModel = require("../../models/TempCoinMarketCap");
 
 class DashboardController extends AppController {
 
@@ -24,6 +25,8 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers);
+            var total = 0;
+            var diffrenceValue = 0;
             var user_data = await UserModel
                 .query()
                 .first()
@@ -68,28 +71,68 @@ class DashboardController extends AppController {
                 }
 
                 var percentChange = 0.0;
+                var currentPrice = 0.0;
+                var previousPrice = 0.0;
 
-                var priceFiat = await CurrencyConversionModel
+                var currentPriceFiat = await TempCoinMArketCapModel
                     .query()
                     .first()
                     .select()
                     .where('deleted_at', null)
-                    .andWhere('symbol', coinBalance[i].coin)
+                    .andWhere('coin', coinBalance[i].coin)
+                    .andWhere("created_at", "<=", today)
+                    .andWhere("created_at", ">=", yesterday)
                     .orderBy('id', 'DESC');
 
-                var percentchange = 0.0
-                if (priceFiat == undefined) {
-                    priceFiat = 0;
-                    percentchange = 0;
+                console.log(currentPriceFiat)
+
+                if (currentPriceFiat == undefined) {
+                    currentPrice = 0;
                 } else {
-                    percentchange = priceFiat.quote.USD.percent_change_24h;
-                    priceFiat = priceFiat.quote.USD.price;
+                    currentPrice = currentPriceFiat.price;
                 }
 
+                var previousPriceFiat = await TempCoinMArketCapModel
+                    .query()
+                    .first()
+                    .select()
+                    .where('deleted_at', null)
+                    .andWhere('coin', coinBalance[i].coin)
+                    .andWhere("created_at", "<=", today)
+                    .andWhere("created_at", ">=", yesterday)
+                    .orderBy('id', 'ASC');
+
+                if (previousPriceFiat == undefined) {
+                    currentPrice = 0;
+                } else {
+                    previousPrice = previousPriceFiat.price;
+                }
+
+
+                var diffrence = currentPrice - previousPrice;
+                percentChange = (diffrence / currentPrice) * 100;
+
+                if (percentChange) {
+                    percentChange = percentChange;
+                } else {
+                    percentChange = 0;
+                }
+                // var percentchange = 0.0
+                var priceFiat = currentPriceFiat
+                if (priceFiat == undefined) {
+                    priceFiat = 0;
+                    // percentchange = 0;
+                } else {
+                    // percentchange = priceFiat.quote.USD.percent_change_24h;
+                    priceFiat = priceFiat.price;
+                }
+
+                total = total + percentChange;
+                diffrenceValue = diffrenceValue + diffrence;
                 var portfolio_data = {
                     "name": coinBalance[i].name,
                     "average_price": average_price,
-                    "percentchange": percentchange,
+                    "percentchange": percentChange,
                     "Amount": coinBalance[i].balance,
                     'symbol': coinBalance[i].coin_name,
                     "fiatPrice": priceFiat
@@ -98,13 +141,21 @@ class DashboardController extends AppController {
                 portfolioData.push(portfolio_data);
 
             }
+            var changeValue = user_data.diffrence_fiat - diffrenceValue;
+            var totalFiat = user_data.total_value - total;
             // resolve(portfolioData)
+            var response = {
+                'portfolioData': portfolioData,
+                'diffrence': changeValue,
+                'total': totalFiat,
+                "fiat": user_data.fiat
+            };
             return res
                 .status(200)
                 .json({
                     "status": constants.SUCCESS_CODE,
                     "message": i18n.__("portfolio data").message,
-                    "data": portfolioData
+                    "data": response
                 });
 
         } catch (error) {

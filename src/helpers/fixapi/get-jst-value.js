@@ -181,6 +181,16 @@ var priceObject = async (value_object) => {
 
             }
         }
+
+        returnData.network_fee = parseFloat(returnData.network_fee).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.faldax_fee = parseFloat(returnData.faldax_fee).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.total_value = parseFloat(returnData.total_value).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.price_usd = parseFloat(returnData.price_usd).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.currency_value = parseFloat(returnData.currency_value).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.original_value = parseFloat(returnData.original_value).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.orderQuantity = parseFloat(returnData.orderQuantity).toFixed(sails.config.local.TOTAL_PRECISION);
+        returnData.limit_price = parseFloat(get_jst_price[0].limit_price).toFixed(sails.config.local.TOTAL_PRECISION)
+        returnData.faldax_fees_actual = parseFloat(faldax_fees_actual).toFixed(sails.config.local.TOTAL_PRECISION)
     } catch (error) {
         console.log(error);
     }
