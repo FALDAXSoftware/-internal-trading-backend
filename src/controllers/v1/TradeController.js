@@ -333,15 +333,15 @@ class TradeController extends AppController {
   }
   // Used for Buy Market order
   async marketBuy(req, res) {
+
     try {
       let {
         symbol,
         side,
         order_type,
         orderQuantity,
-        user_id
       } = req.body;
-
+      var user_id = await Helper.getUserId(req.headers);
       var userIds = [];
       userIds.push(user_id);
 
