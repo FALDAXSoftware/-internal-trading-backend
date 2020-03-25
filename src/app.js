@@ -116,32 +116,36 @@ io.on('connection', async function (socket) {
   var constants = require("./config/constants");
   socket.on("join", async function (room) {
     // function findClientsSocketByRoomId(roomId) {
-    console.log('room.r',room);
-    var roomId = room.room;
-      var res = []
-          , room_name = io.sockets.adapter.rooms[roomId];
-      if (room_name) {
-        for (var id in room_name) {
-          res.push(io.sockets.adapter.nsp.connected[id]);
-        }
-      }
-      console.log(io.sockets.adapter)
+    // console.log('room.r',room);
+    // var roomId = room.room;
+    //   var res = []
+    //       , room_name = io.sockets.adapter.rooms[roomId];
+    //   if (room_name) {
+    //     for (var id in room_name) {
+    //       res.push(io.sockets.adapter.nsp.connected[id]);
+    //     }
+    //   }
+    //   console.log(io.sockets.adapter)
     //   return res;
     // }
 
-    // var clients = this.findClientsSocket('room', room.room);
-    console.log("clients",res);
     socket.emit("test", { name: "le bhai" });
     console.log("room",room);
-
-    socket.join(room.room);
-    // console.log("Socket", socket);
-    // io.to(room.room).emit("test", {name:"le bhai"});
-
+    let user_id = authentication.user_id;
+    if( room.previous_room ){
+      socket.leave(room.previous_room);
+      let previous_pair = (room.previous_room).split("-");
+      socket.leave(previous_pair[1]);
+      socket.leave(room.previous_room+user_id);
+    }
     let symbol = (room.room);
     let pair = (symbol).split("-")
-    let user_id = authentication.user_id;
 
+    socket.join(room.room); //Join to new  Room
+    socket.join(room.room+user_id); // Join to new Room with Userid
+    socket.join(pair[1]); // Join to new Currency Room
+    // console.log("Socket", socket);
+    // io.to(room.room).emit("test", {name:"le bhai"});
 
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookData(pair[0], pair[1]));
@@ -149,23 +153,18 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
-    socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
-    socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
-    socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id))
-
+    socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id));
+    socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id));
+    socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id));
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
     socket.on("trade_users_history_event", async function (data) {
-      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT, await socket_functions.getUserOrdersData(data));
+      data.user_id = user_id;
+      socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
     })
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
   })
-  // socket.on("XRP-BTC", async function (data) {
-  //   console.log("data", data);
-  //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
-  // })
-
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
   })
