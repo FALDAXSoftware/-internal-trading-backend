@@ -5,7 +5,8 @@ var WalletModel = require("../../models/Wallet");
 var CoinsModel = require("../../models/Coins");
 var ActivityTableModel = require("../../models/Activity");
 var SellBookModel = require("../../models/SellBook");
-var feesValue = require("../wallet/get-maker-taker-fees")
+var feesValue = require("../wallet/get-maker-taker-fees");
+var socketHelper = require("../sockets/emit-trades");
 
 var cancelPendingOrder = async (side, type, id) => {
     var deletePending;
@@ -207,11 +208,13 @@ var cancelPendingOrder = async (side, type, id) => {
     }
     console.log(deletePending)
     if (deletePending) {
-        // Socket
-        // await sails
-        //     .helpers
-        //     .sockets
-        //     .tradeEmit(crypto, currency, userIds);
+        //Emit data in rooms
+        let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds);
+        console.log("FINALLLY");
+        return {
+            status: 1,
+            message: ''
+        }
         return (4)
     } else {
         // throw "Server Error";
