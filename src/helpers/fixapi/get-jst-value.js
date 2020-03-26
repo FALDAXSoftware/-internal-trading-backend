@@ -230,7 +230,59 @@ var priceObject = async (value_object) => {
                     }
                 }
             } else if (flag == 2) {
+                if (usd_value) {
+                    var price_value = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"))
+                    if (req_body.Side == 2) {
+                        price_value_usd = (1 / price_value[0].bid_price);
+                    }
+                    price_value_usd = price_value_usd * usd_value;
+                    req_body.OrderQty = price_value_usd;
+                }
+                var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag);
+                if (req_body.Side == 2) {
+                    priceValue = (1 / get_jst_price[0].bid_price);
+                }
+                totalValue = (req_body.OrderQty * priceValue)
+                if (req_body.Side == 2) {
+                    feesCurrency = currency;
+                    get_network_fees = await feesCalculation.feesValue(feesCurrency.toLowerCase(), req_body.OrderQty, totalValue);
+                    var faldax_fee = await AdminSettingModel
+                        .query()
+                        .first()
+                        .select()
+                        .where("deleted_at", null)
+                        .andWhere("slug", "faldax_fee")
+                        .orderBy("id", "DESC");
 
+                    faldax_fee_value = (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) ? parseFloat(((req_body.OrderQty * (faldax_fee.value) / 100))) : parseFloat(((price_value_usd * (faldax_fee.value) / 100)))
+                    faldax_fees_actual = faldax_fee_value;
+                    get_faldax_fee = (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) ? (parseFloat(req_body.OrderQty) + parseFloat(get_network_fees) + parseFloat(((req_body.OrderQty * (faldax_fee.value) / 100)))) : (parseFloat(price_value_usd) + parseFloat(get_network_fees) + parseFloat(((price_value_usd * (faldax_fee.value) / 100))));
+                    if (req_body.offer_code && req_body.offer_code != '') {
+                        var dataValueOne = await applyOfferCode.offerObject(req_body, faldax_fee_value, flag)
+                        var faldax_feeRemainning = dataValueOne.final_faldax_fees_actual - dataValueOne.faldax_fees_offer;
+                        get_faldax_fee = parseFloat(get_faldax_fee) - parseFloat(faldax_feeRemainning);
+                        faldax_fee_value = dataValueOne.faldax_fees_offer
+                    }
+                }
+                if (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) {
+                    totalValue = (req_body.OrderQty * priceValue);
+                    usd_price = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    usd_price = (req_body.OrderQty * usd_price[0].bid_price)
+                }
+                totalValue = get_faldax_fee * (priceValue)
+                original_value = totalValue;
+
+                returnData = {
+                    "network_fee": get_network_fees,
+                    "faldax_fee": faldax_fee_value,
+                    "total_value": get_faldax_fee,
+                    "currency": feesCurrency,
+                    "price_usd": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? usd_price : totalValue,
+                    "currency_value": original_value,
+                    "original_value": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? req_body.OrderQty : price_value_usd,
+                    "orderQuantity": get_faldax_fee,
+                    "faldax_fees_actual": faldax_fees_actual
+                }
             }
         }
 
@@ -243,6 +295,8 @@ var priceObject = async (value_object) => {
         returnData.orderQuantity = parseFloat(returnData.orderQuantity).toFixed(sails.config.local.TOTAL_PRECISION);
         returnData.limit_price = parseFloat(get_jst_price[0].limit_price).toFixed(sails.config.local.TOTAL_PRECISION)
         returnData.faldax_fees_actual = parseFloat(faldax_fees_actual).toFixed(sails.config.local.TOTAL_PRECISION)
+
+        return (returnData)
     } catch (error) {
         console.log(error);
     }
