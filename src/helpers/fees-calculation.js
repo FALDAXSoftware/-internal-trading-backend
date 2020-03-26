@@ -4,6 +4,7 @@ var AdminSettingModel = require("../models/AdminSetting");
 
 var feesValue = async (coin, quantity = null, price = null) => {
     var value;
+    console.log("coin", coin)
     if (coin == 'susu') {
         coin = 'SUSU';
     }
@@ -14,11 +15,10 @@ var feesValue = async (coin, quantity = null, price = null) => {
         .select()
         .where('deleted_at', null)
         .andWhere("is_active", true)
-        .andWhere(builder => {
-            builder.where('coin_code', coin)
-                .orWhere('coin', coin)
-        })
+        .andWhere('coin', coin.toUpperCase())
         .orderBy('id', 'DESC')
+
+    console.log("coinData", coinData)
 
     if (coinData != undefined) {
         if (coin == "btc" || coin == "tbtc") {

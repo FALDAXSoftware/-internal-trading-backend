@@ -58,10 +58,13 @@ var priceObject = async (value_object) => {
                 totalValue = (parseFloat(req_body.OrderQty) * parseFloat(priceValue))
                 var qty = req_body.OrderQty;
                 req_body.OrderQty = totalValue;
-
+                console.log("req_body", req_body)
                 if (req_body.Side == 1) {
                     feesCurrency = crypto;
+                    console.log("feesCurrency"), feesCurrency
+                    console.log("qty", qty)
                     get_network_fees = await feesCalculation.feesValue(feesCurrency.toLowerCase(), qty);
+                    console.log("get_network_fees", get_network_fees)
                     console.log("req_body.OrderQty", req_body.OrderQty)
                     console.log("faldax_fee.value", faldax_fee.value)
                     faldax_fee_value = (req_body.OrderQty * ((faldax_fee.value) / 100))
@@ -117,7 +120,7 @@ var priceObject = async (value_object) => {
                 var price_value_usd = 0;
                 if (usd_value) {
                     var price_value = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
-                    console.log("price_value",price_value);
+                    console.log("price_value", price_value);
                     if (req_body.Side == 1) {
                         price_value_usd = (1 / price_value[0].ask_price);
                     }
@@ -131,17 +134,20 @@ var priceObject = async (value_object) => {
                     .where("deleted_at", null)
                     .andWhere("slug", "faldax_fee")
                     .orderBy("id", 'DESC');
-                console.log("faldax_fee",faldax_fee);
+                console.log("faldax_fee", faldax_fee);
                 if (req_body.Side == 1) {
                     var qty = ((req_body.OrderQty))
                     feesCurrency = crypto;
+                    console.log("feesCurrency", feesCurrency, qty)
                     get_network_fees = await feesCalculation.feesValue(feesCurrency.toLowerCase(), qty);
+                    console.log("get_network_fees", get_network_fees)
                     faldax_fee_value = (req_body.OrderQty * ((faldax_fee.value) / 100))
                     faldax_fees_actual = faldax_fee_value;
                     get_faldax_fee = (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) ? (parseFloat(req_body.OrderQty) + parseFloat(get_network_fees) + parseFloat(((req_body.OrderQty * (faldax_fee.value) / 100)))) : (parseFloat(price_value_usd) + parseFloat(get_network_fees) + parseFloat(((price_value_usd * (faldax_fee.value) / 100))));
                     original_value = get_faldax_fee
                     req_body.OrderQty = get_faldax_fee;
                 }
+                console.log(req_body)
                 var dataValueOne = 0;
                 if (req_body.offer_code && req_body.offer_code != '') {
                     dataValueOne = await applyOfferCode.offerObject(req_body, faldax_fee_value, flag)
@@ -159,9 +165,9 @@ var priceObject = async (value_object) => {
 
                 if (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) {
                     totalValue = (req_body.OrderQty * priceValue);
-                    console.log("crypto",crypto);
+                    console.log("crypto", crypto);
                     usd_price = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
-                    console.log("usd_price",usd_price);
+                    console.log("usd_price", usd_price);
                     usd_price = (req_body.OrderQty * usd_price[0].ask_price)
                 }
 
@@ -292,15 +298,16 @@ var priceObject = async (value_object) => {
             }
         }
 
-        returnData.network_fee = parseFloat(returnData.network_fee).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.faldax_fee = parseFloat(returnData.faldax_fee).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.total_value = parseFloat(returnData.total_value).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.price_usd = parseFloat(returnData.price_usd).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.currency_value = parseFloat(returnData.currency_value).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.original_value = parseFloat(returnData.original_value).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.orderQuantity = parseFloat(returnData.orderQuantity).toFixed(sails.config.local.TOTAL_PRECISION);
-        returnData.limit_price = parseFloat(get_jst_price[0].limit_price).toFixed(sails.config.local.TOTAL_PRECISION)
-        returnData.faldax_fees_actual = parseFloat(faldax_fees_actual).toFixed(sails.config.local.TOTAL_PRECISION)
+        console.log("returnData", returnData)
+        returnData.network_fee = parseFloat(returnData.network_fee).toFixed(8);
+        returnData.faldax_fee = parseFloat(returnData.faldax_fee).toFixed(8);
+        returnData.total_value = parseFloat(returnData.total_value).toFixed(8);
+        returnData.price_usd = parseFloat(returnData.price_usd).toFixed(8);
+        returnData.currency_value = parseFloat(returnData.currency_value).toFixed(8);
+        returnData.original_value = parseFloat(returnData.original_value).toFixed(8);
+        returnData.orderQuantity = parseFloat(returnData.orderQuantity).toFixed(8);
+        returnData.limit_price = parseFloat(get_jst_price[0].limit_price).toFixed(8)
+        returnData.faldax_fees_actual = parseFloat(faldax_fees_actual).toFixed(8)
 
         return (returnData)
     } catch (error) {

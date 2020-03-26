@@ -184,7 +184,13 @@ io.on('connection', async function (socket) {
   })
 
   socket.on("conversion-data-incoming", async function (data) {
+    console.log(socket.request.headers)
     console.log("INCOMING DATA", data)
+    var socket_headers = socket.request.headers;
+    var authentication = require("./config/authorization")(socket_headers);
+    let user_id = authentication.user_id;
+    data.user_id = user_id;
+    console.log("After userd", data)
     let jst_value = require("./controllers/v1/FixApiController");
     socket.emit("conversion-data-outgoing", await jst_value.getConversionPrice(data))
   })
