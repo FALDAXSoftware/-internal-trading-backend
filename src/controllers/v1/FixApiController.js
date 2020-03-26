@@ -64,7 +64,7 @@ class FixApiController extends AppController {
         "usd_value": usd_value
       }
 
-      var user_id = req.user.id;
+      // var user_id = req.user.id;
       req_body.user_id = user_id;
       var jstResponseValue = await FixApiHelper.priceObject(req_body);
       jstResponseValue.faldax_fee = jstResponseValue.faldax_fee;
