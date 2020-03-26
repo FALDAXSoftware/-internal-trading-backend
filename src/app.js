@@ -99,7 +99,7 @@ app.set("pairData", {
 
 io.on('connection', async function (socket) {
   console.log("Socket connected.....");
-  socket.to( "join").emit("test", {name:"le bhai"});
+  socket.to("join").emit("test", { name: "le bhai" });
   var socket_headers = socket.request.headers;
 
   // console.log("socket_headers",socket_headers)
@@ -118,17 +118,17 @@ io.on('connection', async function (socket) {
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
     let user_id = authentication.user_id;
-    if( room.previous_room ){
+    if (room.previous_room) {
       socket.leave(room.previous_room);
       let previous_pair = (room.previous_room).split("-");
       socket.leave(previous_pair[1]);
-      socket.leave(room.previous_room+user_id);
+      socket.leave(room.previous_room + user_id);
     }
     let symbol = (room.room);
     let pair = (symbol).split("-")
     // console.log("room",room.room);
     socket.join(room.room); //Join to new  Room
-    socket.join(room.room+user_id); // Join to new Room with Userid
+    socket.join(room.room + user_id); // Join to new Room with Userid
     socket.join(pair[1]); // Join to new Currency Room
     // console.log("Socket", socket);
     // io.to(room.room).emit("test", {name:"le bhai"});
