@@ -5,7 +5,7 @@ var latestPrice = async (coin, side) => {
     if (side == "Buy") {
         get_price = await PriceHistoryModel
             .query()
-            .first()
+            // .first()
             .select()
             .where('coin', coin)
             .andWhere('type', 1)
@@ -14,7 +14,7 @@ var latestPrice = async (coin, side) => {
     } else if (side == "Sell") {
         get_price = await PriceHistoryModel
             .query()
-            .first()
+            // .first()
             .select()
             .where('coin', coin)
             .andWhere('type', 0)
