@@ -173,7 +173,7 @@ io.on('connection', async function (socket) {
   })
 
   socket.on("conversion-data-incoming", async function (data) {
-    let jst_value = require("../src/controllers/v1/FixApiController");
+    let jst_value = require("./controllers/v1/FixApiController");
     socket.emit("convesrion-data-outgoing", await jst_value.getConversionPrice(data))
   })
   socket.on("market_data", async function () {
