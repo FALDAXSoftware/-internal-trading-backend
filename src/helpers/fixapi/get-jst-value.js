@@ -9,6 +9,7 @@ var applyOfferCode = require("./apply-offer-code");
 var priceObject = async (value_object) => {
     try {
         var req_body = value_object;
+        var symbol = req_body.Symbol;
         var get_faldax_fee;
         var get_network_fees;
         var feesCurrency;
@@ -148,6 +149,7 @@ var priceObject = async (value_object) => {
                 }
 
                 var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag);
+                console.log("get_jst_price", get_jst_price)
                 if (req_body.Side == 1) {
                     priceValue = (get_jst_price[0].ask_price);
                 }
