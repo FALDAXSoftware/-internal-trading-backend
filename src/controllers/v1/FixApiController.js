@@ -37,9 +37,10 @@ class FixApiController extends AppController {
         offer_code,
         order_pair,
         original_pair,
-        usd_value
+        usd_value,
+        user_id
       } = data;
-      var user_id = await Helper.getUserId(req.headers);
+      // var user_id = await Helper.getUserId(req.headers);
       if (Symbol == "XRP/ETH" || Symbol == "LTC/ETH") {
         return res.json({
           status: 200,
