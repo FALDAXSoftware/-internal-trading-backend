@@ -2,6 +2,8 @@ const request = require('request');
 var MarketSnapshotPriceModel = require("../../models/MarketSnapshotPrices");
 
 var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
+    symbol = symbol.replace("/", "");
+
     return new Promise(async (resolve, reject) => {
         var md_entry_type = (side == "Buy" ? 1 : 0)
         await request({
@@ -13,8 +15,8 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
             json: true
         }, async function (err, httpResponse, body) {
             try {
-                console.log(err)
-                console.log(body)
+                // console.log(err)
+                // console.log(body)
                 if (err) {
                     return (err);
                 }
@@ -28,7 +30,6 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
                     product: body.Product,
                     maturity_date: body.MaturityDate,
                     md_entries: { MDEntries: body.MDEntries },
-                    limit_price: 0.0,
                     type_of: (type_of == "create_order" ? "order" : "check")
                 };
 
@@ -52,7 +53,6 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
 
                 var total_sell = 0.0;
                 var calculate_quantity = 0.0;
-
                 if (MDEntries.length > 0) {
                     var last_price = 0;
                     for (var i = 0; i < MDEntries.length; i++) {
@@ -128,8 +128,10 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
                         }
                     }
                 }
+                console.log("response_data",response_data);
                 resolve(response_data)
             } catch (error) {
+                console.log("error",error);
                 return error
             }
         })
