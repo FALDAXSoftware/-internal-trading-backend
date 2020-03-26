@@ -25,7 +25,7 @@ class FixApiController extends AppController {
     super();
   }
   // Get Conversion Price
-  async getConversionPrice(req, res, next) {
+  async getConversionPrice(data) {
     try {
       let {
         Symbol,
@@ -38,9 +38,9 @@ class FixApiController extends AppController {
         order_pair,
         original_pair,
         usd_value
-      } = req.params;
+      } = data;
       var user_id = await Helper.getUserId(req.headers);
-      if( Symbol == "XRP/ETH" || Symbol == "LTC/ETH"){
+      if (Symbol == "XRP/ETH" || Symbol == "LTC/ETH") {
         return res.json({
           status: 200,
           data: [],
@@ -48,8 +48,8 @@ class FixApiController extends AppController {
           err: sails.__("Pair does not supported").message
         });
       }
-      Symbol = Symbol.replace("/","");
-      console.log("Symbol",Symbol);
+      Symbol = Symbol.replace("/", "");
+      console.log("Symbol", Symbol);
       var req_body = {
         "Symbol": Symbol,
         "Side": Side,
@@ -67,10 +67,10 @@ class FixApiController extends AppController {
       req_body.user_id = user_id;
       var jstResponseValue = await FixApiHelper.priceObject(req_body);
       jstResponseValue.faldax_fee = jstResponseValue.faldax_fee;
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('User Trade Success').message, jstResponseValue);
+      return jstResponseValue;
     } catch (err) {
       console.log("err", err);
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+      // return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
     }
   }
 }
