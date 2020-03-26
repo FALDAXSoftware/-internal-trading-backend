@@ -1,9 +1,9 @@
 /*
 Used to get currency and crypto from pair
 */
-let get_currencies = async function( pair ){
+let currency_conversion = async function( pair ){
     var currencies={};
-    var data = pair.split("-");
+    var data = pair.split("/");
     currencies = {
       crypto: data[0],
       currency: data[1]
@@ -11,5 +11,5 @@ let get_currencies = async function( pair ){
     return currencies;
 }
 module.exports = {
-    get_currencies
+    currency_conversion
 }
