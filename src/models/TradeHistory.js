@@ -35,7 +35,7 @@ class TradeHistory extends visibilityPlugin((AppModel)) {
   encript_id() {
 
     if (this.id) {
-      return cryptr.encrypt(this.id);
+      return this.id;
     }
   }
 
@@ -47,9 +47,9 @@ class TradeHistory extends visibilityPlugin((AppModel)) {
      *
      * @returns string decripted id
      */
-  static decript_id(id) {
-    return cryptr.decrypt(id);
-  }
+  // static decript_id(id) {
+  //   return cryptr.decrypt(id);
+  // }
 
   /** Optional JSON schema. This is not the database schema!
      *   Nothing is generated based on this. This is only used
