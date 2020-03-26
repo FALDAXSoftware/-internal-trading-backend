@@ -49,7 +49,7 @@ class FixApiController extends AppController {
           err: sails.__("Pair does not supported").message
         });
       }
-      Symbol = Symbol.replace("/", "");
+      // Symbol = Symbol.replace("/", "");
       console.log("Symbol", Symbol);
       var req_body = {
         "Symbol": Symbol,
@@ -67,7 +67,6 @@ class FixApiController extends AppController {
       // var user_id = req.user.id;
       req_body.user_id = user_id;
       var jstResponseValue = await FixApiHelper.priceObject(req_body);
-      console.log(jstResponseValue);
       jstResponseValue.faldax_fee = jstResponseValue.faldax_fee;
       return jstResponseValue;
     } catch (err) {
