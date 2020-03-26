@@ -159,17 +159,7 @@ io.on('connection', async function (socket) {
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
 
   })
-  // socket.on("XRP-BTC", async function (data) {
-  //   console.log("data", data);
-  //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
-  // })
-  // Temp FIXAPI
-  socket.on("check-offer-code", async function (data) {
-    console.log("Check Offer");
-    console.log(data);
-    let check_offer = require("./helpers/fixapi/check-offer-code-status");
-    socket.emit("offercode-data", await check_offer.offerCodeStatus(data));
-  })
+
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
   })
