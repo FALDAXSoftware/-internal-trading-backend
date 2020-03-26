@@ -54,7 +54,7 @@ var getInstrumentData = async (currency) => {
 // Get Users Completed Orders details
 var getUserOrdersData = async (data) => {
     var user_id = data.user_id;
-    var pair = (data.symbol).split("-");
+    var pair = (data.pair).split("-");
     var crypto = pair[0];
     var currency = pair[1];
     var month = data.month;
@@ -62,13 +62,13 @@ var getUserOrdersData = async (data) => {
         let helper = require("../../helpers/tradding/get-completed-orders");
         let data = await helper.getCompletedOrders(user_id, crypto, currency, month);
         return data;
-    } else if (flag == 2) {
-        let helper = require("../../helpers/tradding/get-cancelled-orders");
-        let data = await helper.getCancelledOrders(user_id, crypto, currency, month);
-        return data;
-    } else if (flag == 3) {
+    } else if (data.flag == 2) {
         let helper = require("../../helpers/tradding/get-pending-orders");
         let data = await helper.getPendingOrders(user_id, crypto, currency, month);
+        return data;
+    } else if (data.flag == 3) {
+        let helper = require("../../helpers/tradding/get-cancelled-orders");
+        let data = await helper.getCancelledOrders(user_id, crypto, currency, month);
         return data;
     }
 }
