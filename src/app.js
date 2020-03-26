@@ -148,6 +148,7 @@ io.on('connection', async function (socket) {
 
     socket.on("trade_users_history_event", async function (data) {
       data.user_id = user_id
+      console.log("data", data);
       socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
     })
 
