@@ -146,11 +146,11 @@ io.on('connection', async function (socket) {
 
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
-    socket.on("trade_users_history_event", async function (data) {
-      console.log(data);
-      data.user_id = user_id
-      socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
-    })
+    // socket.on("trade_users_history_event", async function (data) {
+    //   console.log(data);
+    //   data.user_id = user_id
+    //   socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
+    // })
 
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
@@ -159,6 +159,17 @@ io.on('connection', async function (socket) {
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
 
+  })
+
+  socket.on("trade_users_history_event", async function (data) {
+    console.log("data", data)
+    console.log(socket.request.headers)
+    var socket_headers = socket.request.headers;
+    var authentication = require("./config/authorization")(socket_headers);
+    let user_id = authentication.user_id;
+    data.user_id = user_id
+    console.log(data);
+    socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
   // socket.on("XRP-BTC", async function (data) {
   //   console.log("data", data);
