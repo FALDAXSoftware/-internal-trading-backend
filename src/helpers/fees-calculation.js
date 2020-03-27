@@ -27,8 +27,9 @@ var feesValue = async (coin, quantity = null, price = null) => {
                 .first()
                 .select()
                 .where("deleted_at", null)
-                .andWhere('slug', "btc_fee")
+                .andWhere("slug", "btc_fee")
                 .orderBy('id', 'DESC');
+            console.log("data", data)
             value = (((quantity) / (25) * data.value));
         } else if (coin == 'bch' || coin == 'tbch') {
             var data = await AdminSettingModel
@@ -73,7 +74,7 @@ var feesValue = async (coin, quantity = null, price = null) => {
         } else if (coin == 'SUSU') {
             value = 0.01
         }
-
+        console.log("FEES>>>>>>", value)
         return value;
     } else {
         // Coin not Found

@@ -52,6 +52,7 @@ var priceObject = async (value_object) => {
                 console.log("faldax_fee", faldax_fee)
 
                 var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag)
+                console.log("get_jst_price", get_jst_price)
                 if (req_body.Side == 1) {
                     priceValue = (1 / get_jst_price[0].ask_price);
                 }
@@ -209,7 +210,7 @@ var priceObject = async (value_object) => {
                         .first()
                         .select()
                         .where("deleted_at", null)
-                        .andWhere("slug", faldax_fee)
+                        .andWhere("slug", "faldax_fee")
                         .orderBy("id", "DESC");
 
                     faldax_fee_value = (totalValue * ((faldax_fee.value) / 100))
