@@ -2,6 +2,7 @@ var latestPrice = require("./get-latest-price");
 var checkOfferStatus = require("./check-offer-code-status");
 
 var offerObject = async (req_body, faldax_fee_value, flag) => {
+    console.log("req_body, faldax_fee_value, flag", req_body, faldax_fee_value, flag)
     var currency_pair = (req_body.Symbol).split("/");
     // Get  Fiat Value of each Asset
     let calculate_offer_amount = 0;
@@ -18,13 +19,15 @@ var offerObject = async (req_body, faldax_fee_value, flag) => {
         var asset2_usd_value = asset2_value[0].bid_price;
         calculate_offer_amount = asset2_usd_value;
     }
+    console.log("calculate_offer_amount", calculate_offer_amount)
 
     var final_faldax_fees = faldax_fee_value
     var final_faldax_fees_actual = faldax_fee_value; // Actual Faldax Fees
     var faldax_fees_offer = 0.0;
     var object = {};
 
-    var offer_status = await checkOfferStatus.offerCodeStatus(req_body.offer_code, req_body.user_id, false)
+    var offer_status = await checkOfferStatus.offerCodeStatus(req_body, false)
+    console.log("offer_status", offer_status)
     offer_message = offer_status.message;
 
     if (offer_status.status == "truefalse") {
@@ -40,12 +43,14 @@ var offerObject = async (req_body, faldax_fee_value, flag) => {
         }
         object.faldax_fees_offer = faldax_fees_offer;
         object.final_faldax_fees_actual = final_faldax_fees_actual;
+        console.log("object", object)
         return object;
     } else if (offer_status.status == true) {
 
         // object.priceValue = priceValue;
         object.faldax_fees_offer = faldax_fees_offer;
         object.final_faldax_fees_actual = final_faldax_fees_actual;
+        console.log("object", object)
         return object;
     }
 

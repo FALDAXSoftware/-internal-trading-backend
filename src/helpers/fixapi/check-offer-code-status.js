@@ -9,8 +9,8 @@ const moment = require('moment');
 var current_date = formatTime();
 var error_message = i18n.__("Campaign Offer invalid").message;
 
-var offerCodeStatus = async ( body ) => {
-    console.log("body",body);
+var offerCodeStatus = async (body) => {
+    console.log("body", body);
     var offer_code = body.offer_code;
     var user_id = body.user_id;
     var check_only = body.check_only;
@@ -22,7 +22,7 @@ var offerCodeStatus = async ( body ) => {
     var response = {};
     // Get Compaign offer code
     var get_campaign_offer_data = await CampaignsOffersModel.getSingleData(offer_object);
-    console.log("get_campaign_offer_data",get_campaign_offer_data);
+    console.log("get_campaign_offer_data", get_campaign_offer_data);
     if (get_campaign_offer_data.length == 0) {
         response.status = false;
         response.message = error_message;
@@ -67,10 +67,10 @@ var offerCodeStatus = async ( body ) => {
 
     // Check type of Campaign
     if (get_campaign_data.usage == 1) {
-
+        console.log(1, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only)
         // Get Conversion history to check Offercode applied or not // Function
         let check_offercode_in_transactions = await getPastTransactions(user_id, campaign_id, campaign_offer_id);
-        let check_offercode_same_campaign = await checkOffercodeCampaign(1, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data,check_only);
+        let check_offercode_same_campaign = await checkOffercodeCampaign(1, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only);
         if (check_offercode_in_transactions.length == 0) {
             // Check validity of Code
             let check_offer_validity = await checkValidityOfOffercode(get_campaign_data, get_campaign_offer_data, false);
@@ -87,7 +87,7 @@ var offerCodeStatus = async ( body ) => {
         }
     } else { // If Multiple usage
         let check_offercode_in_transactions = await getPastTransactions(user_id, campaign_id, campaign_offer_id);
-        let check_offercode_same_campaign = await checkOffercodeCampaign(0, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data,check_only);
+        let check_offercode_same_campaign = await checkOffercodeCampaign(0, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only);
         if (check_offercode_in_transactions.length == 0) {
             let check_offer_validity = await checkValidityOfOffercode(get_campaign_data, get_campaign_offer_data, true);
             // No block of code
@@ -126,8 +126,8 @@ async function getPastTransactions(user_id = 0, campaign_id, campaign_offer_id) 
     let check_offercode_in_transactions = await JSTTradeHistoryModel
         .query()
         .select()
-        .where("campaign_id",campaign_id)
-        .andWhere("campaign_offer_id",campaign_offer_id)
+        .where("campaign_id", campaign_id)
+        .andWhere("campaign_offer_id", campaign_offer_id)
         .andWhere(builder => {
             builder.where('order_status', 'filled')
                 .orWhere('order_status', 'partially_filled')
@@ -188,7 +188,7 @@ async function checkNumberOfTransaction(get_campaign_offer_data, check_offercode
 }
 
 // Check total fees already deducted using Offer
-async function checkTotalFeesDeducted( get_campaign_offer_data, check_offercode_in_transactions, success_message) {
+async function checkTotalFeesDeducted(get_campaign_offer_data, check_offercode_in_transactions, success_message) {
     let offer_transaction_fees = get_campaign_offer_data.fees_allowed;
 
     if (get_campaign_offer_data.is_default_values == true) {
@@ -242,7 +242,7 @@ async function checkTotalFeesDeducted( get_campaign_offer_data, check_offercode_
 
 // To check if offercode is not of Same Campaign
 async function checkOffercodeCampaign(usage, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only) {
-    // console.log("Entered......");
+    console.log("Entered......", usage, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only);
     let get_data_object = {
         campaign_id: campaign_id,
         or: [{ order_status: 'filled' }, { order_status: 'partially_filled' }]
@@ -259,14 +259,14 @@ async function checkOffercodeCampaign(usage, user_id, campaign_id, campaign_offe
 
     if (usage == 0 && check_offercode_campaign.length > 0 && check_offercode_campaign.campaign_offer_id != campaign_offer_id) {
         if (check_only) {
-            await UsersCampaignsHistoryModel.update({ id: store_offercode_history.id },{ wrong_attempted: true });
+            await UsersCampaignsHistoryModel.update({ id: store_offercode_history.id }, { wrong_attempted: true });
         }
         response.status = false;
         response.message = error_message;
         return response;
     } else if (usage == 1 && check_offercode_campaign.length > 0 && (check_offercode_campaign.campaign_id == campaign_id) && get_campaign_offer_data.user_id != user_id) {
         if (check_only) {
-            await UsersCampaignsHistoryModel.update({ id: store_offercode_history.id },{ wrong_attempted: true });
+            await UsersCampaignsHistoryModel.update({ id: store_offercode_history.id }, { wrong_attempted: true });
         }
         response.status = false;
         response.message = error_message;

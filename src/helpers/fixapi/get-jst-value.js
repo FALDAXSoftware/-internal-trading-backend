@@ -152,6 +152,7 @@ var priceObject = async (value_object) => {
                 var dataValueOne = 0;
                 if (req_body.offer_code && req_body.offer_code != '') {
                     dataValueOne = await applyOfferCode.offerObject(req_body, faldax_fee_value, flag)
+                    console.log("dataValueOne", dataValueOne)
                     faldax_fee_value = dataValueOne.faldax_fees_offer;
                     req_body.OrderQty = parseFloat(req_body.OrderQty) - parseFloat(dataValueOne.final_faldax_fees_actual);
                 }
