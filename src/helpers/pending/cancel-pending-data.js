@@ -68,7 +68,7 @@ var cancelPendingOrder = async (side, type, id) => {
         }
 
 
-        console.log(pendingBookDetailsBuy)
+        console.log("pendingBookDetailsBuy", pendingBookDetailsBuy)
         var activityCancel = await ActivityTableModel
             .query()
             .where('deleted_at', null)
@@ -85,10 +85,14 @@ var cancelPendingOrder = async (side, type, id) => {
                 deleted_at: now
             });
 
+        console.log("deletePendingFirst", deletePendingFirst)
+
         var deletePending = await BuyBookModel
             .query()
             .select()
             .where('id', id)
+
+        console.log("deletePending", deletePending)
 
     } else if (type == "Limit" && side == "Sell") {
         var pendingBookDetailsSell = await SellBookModel
@@ -211,10 +215,10 @@ var cancelPendingOrder = async (side, type, id) => {
         //Emit data in rooms
         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds);
         console.log("FINALLLY");
-        return {
-            status: 1,
-            message: ''
-        }
+        // return {
+        //     status: 1,
+        //     message: ''
+        // }
         return (4)
     } else {
         // throw "Server Error";
