@@ -1331,6 +1331,7 @@ class TradeController extends AppController {
       var { side, id, order_type, user_id } = req.body;
       console.log(req.body);
       var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
+      console.log("cancel_pending_data", cancel_pending_data)
       if (cancel_pending_data == 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("No Buy Data Found").message, []);
       } else if (cancel_pending_data == 1) {
