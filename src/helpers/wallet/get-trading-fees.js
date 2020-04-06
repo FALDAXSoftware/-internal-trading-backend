@@ -406,8 +406,8 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             var requestedFee = (((inputs.quantity)) * ((inputs.makerFee / 100)).toFixed(8))
             var userFee = ((((inputs.quantity) * inputs.fill_price) * ((inputs.takerFee / 100)))).toFixed(8);
 
-            var adminBalance = parseFloat(adminWalletCrypto.balance).toFixed(8) + parseFloat(requestedFee).toFixed(8)
-            var adminPlacedBalance = parseFloat(adminWalletCrypto.placed_balance).toFixed(8) + parseFloat(requestedFee).toFixed(8)
+            var adminBalance = parseFloat(adminWalletCrypto.balance) + parseFloat(requestedFee)
+            var adminPlacedBalance = parseFloat(adminWalletCrypto.placed_balance) + parseFloat(requestedFee)
 
             if (adminWalletCrypto != undefined) {
                 var adminWalletCrypto = await Wallet
@@ -424,8 +424,8 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
                     })
             }
 
-            var adminCurrencyBalance = parseFloat(adminWalletCurrency.balance).toFixed(8) + parseFloat(userFee).toFixed(8);
-            var adminCurrencyPlacedBalance = parseFloat(adminWalletCurrency.placed_balance).toFixed(8) + parseFloat(userFee).toFixed(8)
+            var adminCurrencyBalance = parseFloat(adminWalletCurrency.balance) + parseFloat(userFee);
+            var adminCurrencyPlacedBalance = parseFloat(adminWalletCurrency.placed_balance) + parseFloat(userFee)
 
             if (adminWalletCrypto != undefined) {
                 var adminWalletCrypto = await Wallet
