@@ -117,7 +117,8 @@ io.on('connection', async function (socket) {
   var constants = require("./config/constants");
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
-    let user_id = authentication.user_id;
+    // console.log("authentication", authentication)
+    var user_id = authentication.user_id;
     if (room.previous_room) {
       socket.leave(room.previous_room);
       let previous_pair = (room.previous_room).split("-");
@@ -140,9 +141,10 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
-    socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
-    socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
-    socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id))
+    // socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
+    // console.log(user_id)
+    // socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
+    // socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id))
 
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
@@ -163,7 +165,7 @@ io.on('connection', async function (socket) {
 
   socket.on("trade_users_history_event", async function (data) {
     console.log("data", data)
-    console.log(socket.request.headers)
+    console.log("headers", socket.request.headers)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
     let user_id = authentication.user_id;
