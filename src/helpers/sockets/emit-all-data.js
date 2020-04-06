@@ -110,6 +110,7 @@ var getPortfolioData = async (user_id) => {
 
 // Get Activity Data
 var getActivityData = async (user_id) => {
+    console.log(user_id)
     let helper = require("../../controllers/v1/DashboardController");
     let data = await helper.getActivityData(user_id);
     return data;

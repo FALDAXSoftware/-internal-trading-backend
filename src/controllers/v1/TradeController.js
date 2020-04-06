@@ -1012,7 +1012,7 @@ class TradeController extends AppController {
       }
     } else {
       sellLimitOrderData.activity_id = activity.id;
-      var total_price = parseFloat(sellLimitOrderData * quantity * sellLimitOrderData.limit_price).toFixed(8);
+      var total_price = parseFloat(sellLimitOrderData.quantity * sellLimitOrderData.limit_price).toFixed(8);
       if (total_price <= wallet.placed_balance) {
         sellLimitOrderData.is_partially_fulfilled = true;
         sellLimitOrderData.is_filled = false;

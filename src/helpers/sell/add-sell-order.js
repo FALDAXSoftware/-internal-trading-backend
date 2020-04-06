@@ -21,6 +21,7 @@ var SellOrderAdd = async (sellLimitOrderData) => {
     if (walletBalance != 0) {
         var balance = walletBalance.placed_balance;
         var updatedBalance = balance - total_price;
+        console.log(updatedBalance)
         var updatedBalance = parseFloat((updatedBalance).toFixed(6));
 
         var walletUpdate = await WalletModel
