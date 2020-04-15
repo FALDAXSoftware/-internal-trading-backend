@@ -10,14 +10,6 @@ var Wallet = require("../../models/Wallet");
 
 var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
     var makerTakerFees = {};
-    // var coin1 = await CoinsModel
-    //     .query()
-    //     .first()
-    //     .select("id")
-    //     .where('is_active', true)
-    //     .andWhere('deleted_at', null)
-    //     .andWhere('coin', crypto);
-
     try {
         var request = inputs;
         var user_id = parseInt(inputs.user_id);
@@ -60,25 +52,6 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .where('coin_id', cryptoData.id)
             .andWhere('deleted_at', null);
 
-        // Fetching Amount of trade done on the basis of time and usd value
-        // var currencyAmount = await TradeHistory
-        //     .sum('quantity')
-        //     .where({
-        //         or: [{
-        //             user_id: user_id,
-        //         },
-        //         {
-        //             requested_user_id: user_id
-        //         }
-        //         ],
-        //         deleted_at: null,
-        //         created_at: {
-        //             ">=": yesterday
-        //         },
-        //         created_at: {
-        //             "<=": now
-        //         }
-        //     });
         var currencyAmount = await TradeHistoryModel
             .query()
             .sum('quantity')
@@ -89,25 +62,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .andWhere('deleted_at', null)
             .andWhere('created_at', '>=', yesterday)
             .andWhere('created_at', '<=', now);
-        // Fetching Amount of trade done on the basis of time and usd value
-        // var cryptoAmount = await TradeHistory
-        //     .sum('quantity')
-        //     .where({
-        //         or: [{
-        //             user_id: requested_user_id,
-        //         },
-        //         {
-        //             requested_user_id: requested_user_id
-        //         }
-        //         ],
-        //         deleted_at: null,
-        //         created_at: {
-        //             ">=": yesterday
-        //         },
-        //         created_at: {
-        //             "<=": now
-        //         }
-        //     });
+
         var cryptoAmount = await TradeHistoryModel
             .query()
             .sum('quantity')
@@ -119,28 +74,9 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .andWhere('created_at', '>=', yesterday)
             .andWhere('created_at', '<=', now);
 
-
-
-
         var totalCurrencyAmount = currencyAmount[0].sum * (getCurrencyPriceData.quote.USD.price);
         var totalCryptoAmount = cryptoAmount[0].sum * (getCryptoPriceData.quote.USD.price);
 
-        // Fetching the fees on the basis of the total trade done in last 30 days
-        // var currencyMakerFee = await Fees.findOne({
-        //     select: [
-        //         'maker_fee',
-        //         'taker_fee'
-        //     ],
-        //     where: {
-        //         deleted_at: null,
-        //         min_trade_volume: {
-        //             '<=': parseFloat(totalCurrencyAmount)
-        //         },
-        //         max_trade_volume: {
-        //             '>=': parseFloat(totalCurrencyAmount)
-        //         }
-        //     }
-        // });
         var currencyMakerFee = await Fees
             .query()
             .first()
@@ -148,23 +84,6 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .where('deleted_at', null)
             .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
             .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
-
-        // Fetching the fees on the basis of the total trade done in last 30 days
-        // var cryptoTakerFee = await Fees.findOne({
-        //     select: [
-        //         'maker_fee',
-        //         'taker_fee'
-        //     ],
-        //     where: {
-        //         deleted_at: null,
-        //         min_trade_volume: {
-        //             '<=': parseFloat(totalCryptoAmount)
-        //         },
-        //         max_trade_volume: {
-        //             '>=': parseFloat(totalCryptoAmount)
-        //         }
-        //     }
-        // });
 
         var cryptoTakerFee = await Fees
             .query()

@@ -111,6 +111,8 @@ var cancelPendingOrder = async (side, type, id) => {
 
         var fees = await feesValue.getFeesValue(pendingBookDetailsSell.settle_currency, pendingBookDetailsSell.currency);
 
+        console.log("fees", fees)
+
         var coinId = await CoinsModel
             .query()
             .select()
@@ -118,6 +120,8 @@ var cancelPendingOrder = async (side, type, id) => {
             .where('deleted_at', null)
             .andWhere('coin', pendingBookDetailsSell.settle_currency)
             .orderBy('id', 'DESC');
+
+        console.log("coinId", coinId)
 
         var walletDetails = await WalletModel
             .query()
@@ -128,10 +132,14 @@ var cancelPendingOrder = async (side, type, id) => {
             .andWhere('deleted_at', null)
             .orderBy('id', 'DESC');
 
-        console.log(walletDetails)
+        console.log("walletDetails", walletDetails)
+
+        console.log("pendingBookDetailsSell", pendingBookDetailsSell)
 
 
         var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsSell.quantity);
+
+        console.log("userPlacedBalance", userPlacedBalance)
 
         var updateWalletDetails = await WalletModel
             .query()

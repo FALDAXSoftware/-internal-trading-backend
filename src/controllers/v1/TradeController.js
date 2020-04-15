@@ -80,8 +80,16 @@ class TradeController extends AppController {
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);
+
+        if (orderQuantity <= 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
         // Get Currency/Crypto each asset
         let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        if (crypto == currency) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
         // Get and check Crypto Wallet details
         let crypto_wallet_data = await WalletHelper.checkWalletStatus(crypto, user_id);
         if (crypto_wallet_data == 0) {
@@ -352,8 +360,16 @@ class TradeController extends AppController {
 
         orderQuantity = parseFloat(orderQuantity);
 
+        if (orderQuantity <= 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
+
         // Get Currency/Crypto each asset
         let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        if (crypto == currency) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
         // Get and check Crypto Wallet details
         let crypto_wallet_data = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
         // if (crypto_wallet_data == 0) {
@@ -624,6 +640,10 @@ class TradeController extends AppController {
       }
 
       let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      if (crypto == currency) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+      }
       // Get and check Crypto Wallet details
       let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
 
@@ -864,6 +884,10 @@ class TradeController extends AppController {
       }
 
       let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      if (crypto == currency) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+      }
       // Get and check Crypto Wallet details
       let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
 
@@ -1096,6 +1120,10 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
         }
         let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        if (crypto == currency) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
         let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
         console.log(wallet)
         if (wallet == 0) {
@@ -1192,6 +1220,10 @@ class TradeController extends AppController {
         }
 
         let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        if (crypto == currency) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
 
         let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
 
