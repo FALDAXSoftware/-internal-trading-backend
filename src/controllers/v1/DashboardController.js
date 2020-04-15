@@ -266,6 +266,8 @@ class DashboardController extends AppController {
                     let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
                 }
 
+                return res.status(200).json({ "status": "OK" })
+
 
             })
         } catch (error) {
