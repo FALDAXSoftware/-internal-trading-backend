@@ -18,6 +18,7 @@ const request = require('request');
 var BuyAdd = require("../../helpers/buy/add-buy-order");
 var socketHelper = require("../../helpers/sockets/emit-trades");
 var SellAdd = require("../../helpers/sell/add-sell-order");
+var TradeController = require("../../controllers/v1/TradeController");
 
 class DashboardController extends AppController {
 
@@ -202,15 +203,15 @@ class DashboardController extends AppController {
     async updateBuyOrderBook(req, res) {
         try {
             await request({
-                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=20",
+                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=5",
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 json: true
             }, async function (err, httpResponse, body) {
-                // console.log(body);
-                // console.log(err);
+                console.log(body);
+                console.log(err);
                 var bidValue = body.bids;
                 var askValue = body.asks;
                 console.log(bidValue)
@@ -257,9 +258,15 @@ class DashboardController extends AppController {
                     buyLimitOrderData.is_partially_fulfilled = true;
                     buyLimitOrderData.is_filled = false;
                     buyLimitOrderData.added = true;
-                    var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
+                    let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
+                        buyLimitOrderData.user_id,
+                        buyLimitOrderData.side,
+                        buyLimitOrderData.order_type,
+                        buyLimitOrderData.quantity,
+                        buyLimitOrderData.limit_price,
+                        res);
 
-                    console.log("addBuyBook", addBuyBook)
+                    console.log("responseData", responseData)
                     let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
                 }
 
@@ -275,7 +282,7 @@ class DashboardController extends AppController {
     async updateSellOrderBook(req, res) {
         try {
             await request({
-                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=20",
+                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=5",
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -326,10 +333,16 @@ class DashboardController extends AppController {
                     sellLimitOrderData.is_partially_fulfilled = true;
                     sellLimitOrderData.is_filled = false;
                     sellLimitOrderData.added = true;
-                    var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData);
+                    let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
+                        sellLimitOrderData.user_id,
+                        sellLimitOrderData.side,
+                        sellLimitOrderData.order_type,
+                        sellLimitOrderData.quantity,
+                        sellLimitOrderData.limit_price,
+                        res);
 
 
-                    console.log("addSellBook", addSellBook)
+                    console.log("responseData", responseData)
                     let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
                 }
 
