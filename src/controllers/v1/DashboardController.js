@@ -228,7 +228,7 @@ class DashboardController extends AppController {
 
                 var now = new Date();
 
-                shuffle(bidValue);
+                var bidValue = await module.exports.shuffle(bidValue);
 
                 for (var i = 0; i < bidValue.length; i++) {
                     var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
@@ -303,7 +303,7 @@ class DashboardController extends AppController {
 
                 var now = new Date();
 
-                shuffle(askValue);
+                var askValue = await module.exports.shuffle(askValue);
                 for (var i = 0; i < askValue.length; i++) {
                     var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                     var priceValue = parseFloat(askValue[i][0]).toFixed(8);
@@ -345,6 +345,24 @@ class DashboardController extends AppController {
         } catch (error) {
 
         }
+    }
+
+
+    shuffle(arra1) {
+        var ctr = arra1.length, temp, index;
+
+        // While there are elements in the array
+        while (ctr > 0) {
+            // Pick a random index
+            index = Math.floor(Math.random() * ctr);
+            // Decrease ctr by 1
+            ctr--;
+            // And swap the last element with it
+            temp = arra1[ctr];
+            arra1[ctr] = arra1[index];
+            arra1[index] = temp;
+        }
+        return arra1;
     }
 }
 
