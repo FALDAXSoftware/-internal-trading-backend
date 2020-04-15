@@ -38,7 +38,8 @@ router.post('/cancel-pending-order', TradeController.cancelPendingOrder)
 router.get('/get-chart-data-graph', UserFavouritesController.getFavouritesData);
 router.get('/get-activity-data', DashboardController.getActivityData)
 router.get('/get-portfolio-data', DashboardController.getPortfolioData);
-router.get('/update-order-book', DashboardController.updateOrderBook);
+router.get('/update-order-book', DashboardController.updateBuyOrderBook);
+router.get('/update-sell-order-book', DashboardController.updateSellOrderBook);
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 
 // Trading View API
