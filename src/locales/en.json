@@ -181,5 +181,12 @@
 		"message_english": "Portfolio data has been fetched successfully.",
 		"message": "Portfolio data has been fetched successfully."
 	},
+	"Currency and Crypto should not be same": {
+		"page": "Internal Tradding",
+		"context": "During time of instrument data fech",
+		"message_type": "error",
+		"message_english": "Crypto and Currency should not be same.",
+		"message": "Crypto and Currency should not be same."
+	},
 	"Campaign Offer invalid": "Campaign Offer invalid"
 }
