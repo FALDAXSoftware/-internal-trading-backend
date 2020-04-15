@@ -282,23 +282,18 @@ class DashboardController extends AppController {
                 },
                 json: true
             }, async function (err, httpResponse, body) {
-                // console.log(body);
-                // console.log(err);
-                var bidValue = body.bids;
+
                 var askValue = body.asks;
-                console.log(bidValue)
                 console.log(askValue);
 
-                for (var i = 0; i < bidValue.length; i++) {
-                    // console.log("Price >>", bidValue[i][0]);
-                    // console.log("Quantity", bidValue[i][1])
+                for (var i = 0; i < askValue.length; i++) {
                     var min = 0.01,
                         max = 0.02,
                         highlightedNumber = Math.random() * (max - min) + min;
-                    bidValue[i][1] = highlightedNumber
+                    askValue[i][1] = highlightedNumber
                 }
 
-                console.log(bidValue)
+                // console.log(bidValue)
                 console.log(askValue);
 
                 var now = new Date();
@@ -334,7 +329,7 @@ class DashboardController extends AppController {
                     var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData);
 
 
-                    console.log("addBuyBook", addBuyBook)
+                    console.log("addSellBook", addSellBook)
                     let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
                 }
 
