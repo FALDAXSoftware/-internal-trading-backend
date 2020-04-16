@@ -56,10 +56,7 @@ var emitTrades = async (crypto, currency, userIds) => {
         global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)
 
 
-        global.io.sockets.to(crypto + "-" + currency + element).emit("orderUpdated", {
-            crypto: crypto,
-            currency: currency
-        })
+        global.io.sockets.to(crypto + "-" + currency + element).emit("users-completed-flag", true)
         // sails
         //   .sockets
         //   .broadcast(inputs.crypto + "-" + inputs.currency + "-" + element, "walletBalanceUpdate", userBalanceDetails);
