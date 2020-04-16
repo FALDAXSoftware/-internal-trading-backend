@@ -27,6 +27,8 @@ var addBuyBookData = async (buyLimitOrderData) => {
             var updatedBalance = balance - total_price;
             var updatedBalance = parseFloat((updatedBalance).toFixed(6));
 
+            console.log("updatedBalance", updatedBalance)
+
             var walletUpdate = await WalletModel
                 .query()
                 .where('id', walletBalance.id)
