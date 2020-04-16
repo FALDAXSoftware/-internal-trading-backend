@@ -53,7 +53,7 @@ var emitTrades = async (crypto, currency, userIds) => {
         console.log(filteredUsers)
         const element = filteredUsers[index];
         let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
-        global.io.sockets.to(crypto + "-" + currency + element).emit("walletBalanceUpdate", userBalanceDetails)
+        global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)
 
 
         global.io.sockets.to(crypto + "-" + currency + element).emit("orderUpdated", {
