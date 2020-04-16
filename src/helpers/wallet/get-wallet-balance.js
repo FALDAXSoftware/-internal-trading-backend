@@ -22,6 +22,8 @@ var getWalletBalance = async (crypto, currency, user_id) => {
             .andWhere('coin_id', coin.id)
             .andWhere('user_id', user_id)
             .orderBy('id', 'DESC')
+
+        console.log("walletBalance", walletBalance)
         return (walletBalance)
     } else {
         // Coin Not Found
