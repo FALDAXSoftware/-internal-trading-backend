@@ -14,6 +14,11 @@ var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var CoinsModel = require("../../models/Coins");
 var ActivityModel = require("../../models/Activity");
 var TempCoinMArketCapModel = require("../../models/TempCoinMarketCap");
+const request = require('request');
+var BuyAdd = require("../../helpers/buy/add-buy-order");
+var socketHelper = require("../../helpers/sockets/emit-trades");
+var SellAdd = require("../../helpers/sell/add-sell-order");
+var TradeController = require("../../controllers/v1/TradeController");
 
 class DashboardController extends AppController {
 
@@ -193,6 +198,179 @@ class DashboardController extends AppController {
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
         // })
+    }
+
+    async updateBuyOrderBook(req, res) {
+        try {
+            await request({
+                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=5",
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            }, async function (err, httpResponse, body) {
+                console.log(body);
+                console.log(err);
+                var bidValue = body.bids;
+                var askValue = body.asks;
+                console.log(bidValue)
+                console.log(askValue);
+
+                for (var i = 0; i < bidValue.length; i++) {
+                    var min = 0.01,
+                        max = 0.02,
+                        highlightedNumber = Math.random() * (max - min) + min;
+                    bidValue[i][1] = highlightedNumber
+                }
+
+                console.log(bidValue)
+                console.log(askValue);
+
+                var now = new Date();
+
+                var bidValue = await module.exports.shuffle(bidValue);
+
+                for (var i = 0; i < bidValue.length; i++) {
+                    var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
+                    var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
+
+                    var buyLimitOrderData = {
+                        'user_id': 1545,
+                        'symbol': 'XRP-BTC',
+                        'side': 'Buy',
+                        'order_type': 'Limit',
+                        'created_at': now,
+                        'updated_at': now,
+                        'fill_price': 0.0,
+                        'limit_price': priceValue,
+                        'stop_price': 0.0,
+                        'price': priceValue,
+                        'quantity': quantityValue,
+                        'fix_quantity': quantityValue,
+                        'order_status': "open",
+                        'currency': 'BTC',
+                        'settle_currency': 'XRP',
+                        'maximum_time': now,
+                        'is_partially_fulfilled': false
+                    };
+
+                    buyLimitOrderData.is_partially_fulfilled = true;
+                    buyLimitOrderData.is_filled = false;
+                    buyLimitOrderData.added = true;
+                    let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
+                        buyLimitOrderData.user_id,
+                        buyLimitOrderData.side,
+                        buyLimitOrderData.order_type,
+                        buyLimitOrderData.quantity,
+                        buyLimitOrderData.limit_price,
+                        res);
+
+                    console.log("responseData", responseData)
+                    let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
+                }
+
+                return res.status(200).json({ "status": "OK" })
+
+
+            })
+        } catch (error) {
+
+        }
+    }
+
+    async updateSellOrderBook(req, res) {
+        try {
+            await request({
+                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=5",
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            }, async function (err, httpResponse, body) {
+
+                var askValue = body.asks;
+                console.log(askValue);
+
+                for (var i = 0; i < askValue.length; i++) {
+                    var min = 0.01,
+                        max = 0.02,
+                        highlightedNumber = Math.random() * (max - min) + min;
+                    askValue[i][1] = highlightedNumber
+                }
+
+                // console.log(bidValue)
+                console.log(askValue);
+
+                var now = new Date();
+
+                var askValue = await module.exports.shuffle(askValue);
+                for (var i = 0; i < askValue.length; i++) {
+                    var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
+                    var priceValue = parseFloat(askValue[i][0]).toFixed(8);
+
+                    var sellLimitOrderData = {
+                        'user_id': 1545,
+                        'symbol': 'XRP-BTC',
+                        'side': 'Sell',
+                        'order_type': 'Limit',
+                        'created_at': now,
+                        'updated_at': now,
+                        'fill_price': 0.0,
+                        'limit_price': priceValue,
+                        'stop_price': 0.0,
+                        'price': priceValue,
+                        'quantity': quantityValue,
+                        'fix_quantity': quantityValue,
+                        'order_status': "open",
+                        'currency': 'BTC',
+                        'settle_currency': 'XRP',
+                        'maximum_time': now,
+                        'is_partially_fulfilled': false
+                    };
+
+                    sellLimitOrderData.is_partially_fulfilled = true;
+                    sellLimitOrderData.is_filled = false;
+                    sellLimitOrderData.added = true;
+                    let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
+                        sellLimitOrderData.user_id,
+                        sellLimitOrderData.side,
+                        sellLimitOrderData.order_type,
+                        sellLimitOrderData.quantity,
+                        sellLimitOrderData.limit_price,
+                        res);
+
+
+                    console.log("responseData", responseData)
+                    let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
+                }
+
+                return res.status(200).json({ "status": "OK" })
+
+
+            })
+        } catch (error) {
+
+        }
+    }
+
+
+    shuffle(arra1) {
+        var ctr = arra1.length, temp, index;
+
+        // While there are elements in the array
+        while (ctr > 0) {
+            // Pick a random index
+            index = Math.floor(Math.random() * ctr);
+            // Decrease ctr by 1
+            ctr--;
+            // And swap the last element with it
+            temp = arra1[ctr];
+            arra1[ctr] = arra1[index];
+            arra1[index] = temp;
+        }
+        return arra1;
     }
 }
 
