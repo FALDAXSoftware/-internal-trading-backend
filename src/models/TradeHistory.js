@@ -65,6 +65,16 @@ class TradeHistory extends visibilityPlugin((AppModel)) {
       properties: {}
     };
   }
+  // Add transaction id before add
+  $beforeInsert(options, context) {
+    var result = '';
+    let length = 32;
+    let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    var current_date = new Date();
+    current_date = current_date.getTime();
+    this.transaction_id = ("tx_"+current_date+result).toLocaleLowerCase();
+  }
 }
 
 module.exports = TradeHistory;
