@@ -226,8 +226,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                         trade_history_data.user_fee = (tradingFees.userFee)
                         trade_history_data.requested_fee = (tradingFees.requestedFee);
-                        trade_history_data.user_coin = crypto;
-                        trade_history_data.requested_coin = currency;
+                        trade_history_data.user_coin = sellLimitOrderData.settle_currency;
+                        trade_history_data.requested_coin = sellLimitOrderData.currency;
                         delete trade_history_data.activity_id;
                         console.log(trade_history_data)
 

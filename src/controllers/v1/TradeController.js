@@ -214,8 +214,8 @@ class TradeController extends AppController {
 
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
-          trade_history_data.user_coin = crypto;
-          trade_history_data.requested_coin = currency;
+          trade_history_data.user_coin = currency;
+          trade_history_data.requested_coin = crypto;
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           let remainigQuantity = availableQty - quantityValue;
@@ -263,8 +263,8 @@ class TradeController extends AppController {
           var tradingFees = await TradingFees.getTraddingFees(request, maker_taker_fees.makerFee, maker_taker_fees.takerFee)
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
-          trade_history_data.user_coin = crypto;
-          trade_history_data.requested_coin = currency;
+          trade_history_data.user_coin = currency;
+          trade_history_data.requested_coin = crypto;
 
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
