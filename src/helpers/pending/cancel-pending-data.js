@@ -186,7 +186,7 @@ var cancelPendingOrder = async (side, type, id) => {
             .andWhere('deleted_at', null)
             .orderBy('id', 'DESC')
 
-        console.log(pendingDetails)
+        console.log("pendingDetails", pendingDetails)
 
         crypto = pendingDetails.settle_currency;
         currency = pendingDetails.currency;
@@ -217,6 +217,10 @@ var cancelPendingOrder = async (side, type, id) => {
             .query()
             .select()
             .where('id', id)
+
+        console.log("deletePending", deletePending)
+
+        console.log("userIds", userIds)
     }
     console.log(deletePending)
     if (deletePending) {
