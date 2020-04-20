@@ -30,6 +30,7 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers);
+            console.log("user_id", user_id)
             var total = 0;
             var diffrenceValue = 0;
             var user_data = await UserModel
@@ -40,6 +41,8 @@ class DashboardController extends AppController {
                 .andWhere('deleted_at', null)
                 .andWhere('is_active', true)
                 .orderBy('id', 'DESC');
+
+            console.log("user_data", user_data)
 
             var currency = user_data.fiat;
             var yesterday = moment().subtract(1, 'days');
@@ -52,7 +55,10 @@ class DashboardController extends AppController {
                 .select('coin_name', 'balance', 'coin', 'coin_code')
                 .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
                 .where('user_id', user_id)
-                .andWhere('coins.is_fiat', false);
+                .andWhere('coins.is_fiat', false)
+                .andWhere('wallets.deleted_at', null);
+
+            console.log("coinBalance", coinBalance)
 
             for (var i = 0; i < coinBalance.length; i++) {
                 var total_price = 0;
@@ -144,9 +150,12 @@ class DashboardController extends AppController {
                     "name": coinBalance[i].coin_name
                 }
 
+                console.log("portfolio_data", portfolio_data)
+
                 portfolioData.push(portfolio_data);
 
             }
+            console.log("portfolioData", portfolioData)
             var changeValue = user_data.diffrence_fiat - diffrenceValue;
             var totalFiat = user_data.total_value - total;
             // resolve(portfolioData)
