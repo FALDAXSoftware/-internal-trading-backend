@@ -5,7 +5,6 @@ var ReferralModel = require("../models/Referral");
 
 var getAmount = async (trade_object, user_id, transaction_id) => {
     var referral_percentage = 0;
-    var trade_object = inputs.trade_object;
     var collectedAmount = 0;
     var collectCoin;
     var coinData;
@@ -61,7 +60,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.coin_name = collectCoin;
                 addRefferalAddData.user_id = referredUserData.id;
                 addRefferalAddData.referred_user_id = referralData.id;
-                addRefferalAddData.txid = inputs.transaction_id;
+                addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
 
                 var addedData = await ReferralModel.create({
@@ -85,7 +84,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.coin_name = collectCoin;
                 addRefferalAddData.user_id = referredUserData.id;
                 addRefferalAddData.referred_user_id = referralData.id;
-                addRefferalAddData.txid = inputs.transaction_id;
+                addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
 
                 var addedData = await ReferralModel.create({
@@ -111,7 +110,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.coin_name = collectCoin;
                 addRefferalAddData.user_id = referredUserData.id;
                 addRefferalAddData.referred_user_id = referralData.id;
-                addRefferalAddData.txid = inputs.transaction_id;
+                addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
 
                 var addedData = await ReferralModel.create({
@@ -135,7 +134,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.coin_name = collectCoin;
                 addRefferalAddData.user_id = referredUserData.id;
                 addRefferalAddData.referred_user_id = referralData.id;
-                addRefferalAddData.txid = inputs.transaction_id;
+                addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
 
                 var addedData = await ReferralModel.create({
