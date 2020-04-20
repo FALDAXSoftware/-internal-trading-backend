@@ -1346,6 +1346,8 @@ class TradeController extends AppController {
         'activity_id': activity_id
       }
 
+      console.log("pendingOrderBook", pendingOrderBook)
+
       if (pendingData.length > 0) {
         if (order_type == "StopLimit" && side == "Buy") {
           console.log("INSIDE BUY")
