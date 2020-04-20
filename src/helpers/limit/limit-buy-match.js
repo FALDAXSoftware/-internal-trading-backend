@@ -85,6 +85,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.requested_fee = tradingFees.requestedFee;
                         trade_history_data.user_coin = buyLimitOrderData.settle_currency;
                         trade_history_data.requested_coin = buyLimitOrderData.currency;
+                        if (trade_history_data.activity_id) {
+                            delete trade_history_data.activity_id;
+                        }
                         console.log("trade_history_data", trade_history_data)
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                         console.log("tradeHistory", tradeHistory)
@@ -328,6 +331,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     buyAddedData.taker_fee = fees.takerFee;
                     if (buyAddedData.order_type == "StopLimit") {
                         buyAddedData.order_type = "Limit";
+                        buyAddedData.price = buyLimitOrderData.limit_price;
                     }
                     delete buyAddedData.id;
                     delete buyAddedData.side;
@@ -398,6 +402,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 var buyAddedData = {
                     ...buyLimitOrderData
                 };
+                // buyAddedData.price = buyLimitOrderData.limit_price;
                 buyAddedData.fix_quantity = buyAddedData.quantity;
                 buyAddedData.maker_fee = fees.makerFee;
                 buyAddedData.taker_fee = fees.takerFee;
@@ -407,6 +412,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 buyAddedData.side = "Buy";
                 if (buyAddedData.order_type == "StopLimit") {
                     buyAddedData.order_type = "Limit";
+                    buyAddedData.price = buyLimitOrderData.limit_price;
                 }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);
                 buyAddedData.is_partially_fulfilled = true;

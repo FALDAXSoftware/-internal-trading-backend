@@ -5,15 +5,13 @@ var pendingOrderDelet = require("../pending/delete-pending-order");
 
 var stopLimitBuy = async (now, pending_order_book) => {
     var order = pending_order_book;
+    var order_id = pending_order_book.id
     var lastPrice = await lastTradePrice.getLastTradePrice(order.settle_currency, order.currency);
-    console.log("lastPrice", lastPrice)
     var getActivityDetails = await activityDetails.getActivityDataId(order.activity_id);
-    console.log("getActivityDetails", getActivityDetails);
-    console.log("lastPrice >= order.stop_price", lastPrice >= order.stop_price)
     if (lastPrice >= order.stop_price) {
         var buyMatchResponse = await LimitBuyMatch.limitData(order, order.settle_currency, order.currency, getActivityDetails);
         if (buyMatchResponse) {
-            var pendingOrder = await pendingOrderDelet.deletePendingOrder(order.id)
+            var pendingOrder = await pendingOrderDelet.deletePendingOrder(order_id)
         }
     }
 
