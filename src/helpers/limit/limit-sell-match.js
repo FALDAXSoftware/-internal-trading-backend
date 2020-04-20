@@ -28,6 +28,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
         if (buyBook && buyBook.length > 0) {
+            console.log("(buyBook[0].price <= sellLimitOrderData.stop_price)", (buyBook[0].price <= sellLimitOrderData.stop_price))
             if ((buyBook[0].price >= sellLimitOrderData.limit_price) || (buyBook[0].price <= sellLimitOrderData.stop_price)) {
                 if (buyBook[0].quantity >= sellLimitOrderData.quantity) {
                     var availableQuantity = buyBook[0].quantity;
@@ -173,6 +174,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
                     }
                 } else {
+                    console.log("ELSE", remainningQuantity)
                     var remainningQuantity = sellLimitOrderData.quantity - buyBook[0].quantity;
                     remainningQuantity = parseFloat(remainningQuantity).toFixed(8);
                     var feeResult = await MakerTakerFees.getFeesValue(sellLimitOrderData.settle_currency, sellLimitOrderData.currency);
@@ -233,6 +235,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         console.log(trade_history_data)
 
                         var TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+                        console.log("TradeHistory", TradeHistory)
 
                         await buyDelete.deleteOrder(buyBook[0].id);
 
@@ -313,6 +317,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     sellLimitOrderData.added = true;
                     if (sellAddedData.order_type == "StopLimit") {
                         sellAddedData.order_type = "Limit";
+                        sellAddedData.price = sellLimitOrderData.limit_price
                     }
                     var addSellBook = await SellAdd.SellOrderAdd(sellAddedData);
                     for (var i = 0; i < userIds.length; i++) {
@@ -383,6 +388,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 sellLimitOrderData.added = true;
                 if (sellAddedData.order_type == "StopLimit") {
                     sellAddedData.order_type = "Limit";
+                    sellAddedData.price = sellLimitOrderData.limit_price
                 }
                 var addSellBook = await SellAdd.SellOrderAdd(sellAddedData);
                 for (var i = 0; i < userIds.length; i++) {
