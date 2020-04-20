@@ -20,7 +20,7 @@ var getInstrumentData = async (currency) => {
     instrumentData = await PairsModel
         .query()
         .select()
-        .where('name', 'like', '%-' + currency + "%")
+        // .where('name', 'like', '%-' + currency + "%")
         .andWhere('deleted_at', null)
         .andWhere('is_active', true);
     // Get Coin Data
