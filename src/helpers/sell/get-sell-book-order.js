@@ -9,6 +9,8 @@ var sellOrderBook = async (crypto, currency) => {
         .andWhere('currency', currency)
         .orderBy('price', 'ASC');
 
+    console.log("sellBookOrder", sellBookOrder)
+
     return (sellBookOrder);
 }
 

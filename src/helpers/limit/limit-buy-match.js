@@ -16,6 +16,7 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 
 var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null) => {
     try {
+        console.log(buyLimitOrderData)
         var quantityValue = buyLimitOrderData.quantity;
         var userIds = [];
         userIds.push(buyLimitOrderData.user_id);
@@ -27,7 +28,12 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         }
         let wallet = await WalletBalanceHelper.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);
         let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+        // console.log("sellBook", sellBook)
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+        console.log("fees", fees);
+        console.log("(sellBook[0].price <= buyLimitOrderData.stop_price)", (sellBook[0].price <= buyLimitOrderData.stop_price))
+        console.log("sellBook[0].price", sellBook[0].price)
+        console.log("buyLimitOrderData.stop_price", buyLimitOrderData.stop_price)
         if (sellBook && sellBook.length > 0) {
             if ((sellBook[0].price <= buyLimitOrderData.limit_price) || (sellBook[0].price <= buyLimitOrderData.stop_price)) {
                 console.log("INSIDE IF")
@@ -187,10 +193,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     }
                 } else {
+                    console.log("INSIDE ELSE")
                     var remainigQuantity = buyLimitOrderData.quantity - sellBook[0].quantity;
-                    remainigQuantity = parseFloat(remainigQuantity).toFixed(8)
+                    remainigQuantity = parseFloat(remainigQuantity).toFixed(8);
+                    console.log("remainigQuantity", remainigQuantity)
                     var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
                     if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= wallet.placed_balance) {
+                        console.log("INSIDE IF WALLET CHECKING");
                         var buyAddedData = {
                             ...buyLimitOrderData
                         }
@@ -240,6 +249,12 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.user_coin = crypto;
                         trade_history_data.requested_coin = currency;
 
+                        if (trade_history_data.activity_id) {
+                            delete trade_history_data.activity_id;
+                        }
+
+                        console.log("trade_history_data", trade_history_data)
+
                         let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                         await sellDelete.deleteSellOrder(sellBook[0].id);
                         for (var i = 0; i < userIds.length; i++) {
@@ -288,6 +303,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         resendDataLimit.quantity = remainigQuantity;
                         resendDataLimit.activity_id = activityResult.id;
 
+                        console.log("resendDataLimit", resendDataLimit);
+                        console.log("resendDataLimit, resendData.settle_currency, resendData.currency, activityResult", resendDataLimit, resendData.settle_currency, resendData.currency, activityResult)
+
                         if (remainigQuantity > 0) {
                             var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res);
                             return responseData;
@@ -308,6 +326,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     buyAddedData.fix_quantity = buyAddedData.quantity;
                     buyAddedData.maker_fee = fees.makerFee;
                     buyAddedData.taker_fee = fees.takerFee;
+                    if (buyAddedData.order_type == "StopLimit") {
+                        buyAddedData.order_type = "Limit";
+                    }
                     delete buyAddedData.id;
                     delete buyAddedData.side;
                     delete buyAddedData.activity_id;
@@ -384,6 +405,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 delete buyAddedData.side;
                 delete buyAddedData.activity_id;
                 buyAddedData.side = "Buy";
+                if (buyAddedData.order_type == "StopLimit") {
+                    buyAddedData.order_type = "Limit";
+                }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);
                 buyAddedData.is_partially_fulfilled = true;
                 buyLimitOrderData.is_filled = false;
