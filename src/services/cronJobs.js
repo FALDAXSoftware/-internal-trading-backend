@@ -4,7 +4,7 @@ var cron = require('node-cron');
 var cronData = require("../controllers/v1/TradeController");
 
 // On Every Minute
-cron.schedule('* * * * *', async (req, res, next) => {
+cron.schedule('*/2 * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    // await cronData.executeStopLimit();
+    await cronData.executeStopLimit();
 });
