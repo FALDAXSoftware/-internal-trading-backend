@@ -3,6 +3,8 @@ Emit Socket
 */
 var BuyBookOrderHelper = require("../../helpers/buy/get-buy-book-order");
 var SellBookOrderHelper = require("../../helpers/sell/get-sell-book-order");
+var BuyBookOrderHelperSummary = require("../../helpers/buy/get-buy-book-order-summary");
+var SellBookOrderHelperSummary = require("../../helpers/sell/get-sell-book-order-summary");
 var TradeDetailsHelper = require("../../helpers/trade/get-trade-details");
 var DashboardCardDetailsHelper = require("../../helpers/dashboard/get-card-data");
 var ChartHelper = require("../../helpers/chart/get-depth-chart-detail");
@@ -10,12 +12,12 @@ var InstrumentHelper = require("../../helpers/tradding/get-instrument-data");
 var UserWalletBalanceHelper = require("../../helpers/tradding/get-user-wallet-balance");
 var constants = require("../../config/constants");
 var emitTrades = async (crypto, currency, userIds) => {
-    let buyBookDetails = await BuyBookOrderHelper.getBuyBookOrder(crypto, currency);
+    let buyBookDetails = await BuyBookOrderHelperSummary.getBuyBookOrderSummary(crypto, currency);
     global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_BUY_BOOK_EVENT, buyBookDetails)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "buybookUpdate", buyBookDetails);
-    let sellBookDetails = await SellBookOrderHelper.sellOrderBook(crypto, currency);
+    let sellBookDetails = await SellBookOrderHelperSummary.sellOrderBookSummary(crypto, currency);
     global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_SELL_BOOK_EVENT, sellBookDetails)
     // sails
     //   .sockets
