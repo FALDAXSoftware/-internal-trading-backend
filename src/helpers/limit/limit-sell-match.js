@@ -12,6 +12,7 @@ var UserNotifications = require("../../models/UserNotifications");
 var Helper = require("../../helpers/helpers");
 var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
+var RefferalHelper = require("../get-refffered-amount");
 
 var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null) => {
     try {
@@ -27,6 +28,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
         let wallet = await SellWalletBalanceHelper.getSellWalletBalance(sellLimitOrderData.settle_currency, sellLimitOrderData.currency, sellLimitOrderData.user_id);
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+        var tradeOrder;
         if (buyBook && buyBook.length > 0) {
             console.log("(buyBook[0].price <= sellLimitOrderData.stop_price)", (buyBook[0].price <= sellLimitOrderData.stop_price))
             if ((buyBook[0].price >= sellLimitOrderData.limit_price) || (buyBook[0].price <= sellLimitOrderData.stop_price)) {
@@ -72,6 +74,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         if (trade_history_data.activity_id)
                             delete trade_history_data.activity_id;
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+                        tradeOrder = tradeHistory;
                         var remainningQuantity = availableQuantity - quantityValue;
                         if (remainningQuantity > 0) {
                             let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
@@ -234,9 +237,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                             delete trade_history_data.activity_id;
                         console.log(trade_history_data)
 
-                        var TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-
-                        console.log("TradeHistory", TradeHistory)
+                        var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+                        tradeOrder = tradeHistory;
 
                         await buyDelete.deleteOrder(buyBook[0].id);
 
@@ -299,6 +301,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
                     }
                 }
+                // Check for referral
+                let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
             } else {
                 if (parseFloat(sellLimitOrderData.quantity * sellLimitOrderData.limit_price).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
                     var sellAddedData = {

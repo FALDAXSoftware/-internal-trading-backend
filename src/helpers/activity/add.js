@@ -8,7 +8,6 @@ var addActivityData = async (orderData) => {
             .insertAndFetch({
                 ...orderData
             })
-        console.log(activityData)
         return (activityData)
     } catch (error) {
         console.log(error)
