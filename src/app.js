@@ -134,8 +134,8 @@ io.on('connection', async function (socket) {
     // console.log("Socket", socket);
     // io.to(room.room).emit("test", {name:"le bhai"});
 
-    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData(pair[0], pair[1]));
-    socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookData(pair[0], pair[1]));
+    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
+    socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));

@@ -16,7 +16,20 @@ var getSellBookData = async (crypto, currency) => {
     return data;
 
 }
+// Get Buy Book Data
+var getBuyBookDataSummary = async (crypto, currency) => {
+    let helper = require("../../helpers/buy/get-buy-book-order-summary");
+    let data = await helper.getBuyBookOrderSummary(crypto, currency);
+    return data;
 
+}
+// Get Sell Book Data
+var getSellBookDataSummary = async (crypto, currency) => {
+    let helper = require("../../helpers/sell/get-sell-book-order-summary");
+    let data = await helper.sellOrderBookSummary(crypto, currency);
+    return data;
+
+}
 // Get Trade history Data
 var getTradeHistoryData = async (crypto, currency) => {
     let helper = require("../../helpers/trade/get-trade-details");;
@@ -119,6 +132,8 @@ var getActivityData = async (user_id) => {
 module.exports = {
     getBuyBookData,
     getSellBookData,
+    getBuyBookDataSummary,
+    getSellBookDataSummary,
     getTradeHistoryData,
     getUserBalance,
     getCardData,
