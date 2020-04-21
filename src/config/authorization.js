@@ -11,7 +11,7 @@ module.exports = function (headers) {
     var get_jwt_token = split_token[1];
     try {
         var decoded = jwt.decode(get_jwt_token, require('./secret')());
-        if (decoded.exp <= Date.now()) {
+        if (decoded.exp >= Date.now()) {
             // return Helper.jsonFormat(res, constants.BAD_REQUEST_CODE, i18n.__("TOKEN_EXPIRED"), []);
             return {
                 status: constants.BAD_REQUEST_CODE,
@@ -20,7 +20,9 @@ module.exports = function (headers) {
         }
         return {
             status: constants.SUCCESS_CODE,
-            user_id: decoded.id
+            user_id: decoded.id,
+            isAdmin: (decoded.isAdmin && decoded.isAdmin == true ? true : false),
+            admin_id: (decoded.isAdmin && decoded.isAdmin == true ? decoded.id : 0)
         }
     } catch (err) {
         return {
