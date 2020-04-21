@@ -20,7 +20,9 @@ module.exports = function (headers) {
         }
         return {
             status: constants.SUCCESS_CODE,
-            user_id: decoded.id
+            user_id: decoded.id,
+            isAdmin: (decoded.isAdmin && decoded.isAdmin == true ? true : false),
+            admin_id: (decoded.isAdmin && decoded.isAdmin == true ? decoded.id : 0)
         }
     } catch (err) {
         return {
