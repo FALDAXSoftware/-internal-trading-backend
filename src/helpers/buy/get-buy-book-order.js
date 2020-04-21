@@ -6,12 +6,11 @@ var getBuyBookOrder = async (crypto, currency) => {
 
     var buyBookOrders = await BuyBookModel
         .query()
-        .select('price', raw('SUM(quantity) as quantity'))
+        .select()
         .where('deleted_at', null)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
-        .groupBy('price')
-        .orderBy('price', 'DESC').limit(100);
+        .orderBy('price', 'DESC');
 
     return (buyBookOrders)
 }

@@ -21,8 +21,6 @@ var tradeStatus = async (user_id) => {
         var msg;
         var sendInfo;
 
-        console.log(userKYC)
-
         if (userKYC) {
             if (userKYC.direct_response == null && userKYC.webhook_response == null) {
                 response = false;
