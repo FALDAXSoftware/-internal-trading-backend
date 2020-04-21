@@ -425,6 +425,7 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(quantityFixed).toFixed(8);
     var tradeOrder;
     if (sellBook && sellBook.length > 0) {
+      console.log("sellBook[0]",sellBook[0])
       var availableQuantity = sellBook[0].quantity;
       var currentSellBookDetails = sellBook[0];
       var fillPriceValue = parseFloat(currentSellBookDetails.price).toFixed(8);

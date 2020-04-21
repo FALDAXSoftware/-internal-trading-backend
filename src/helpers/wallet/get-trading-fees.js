@@ -126,7 +126,8 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .andWhere('is_active', true)
             .andWhere('coin_id', currencyData.id)
             .andWhere('user_id', inputs.requested_user_id);
-
+        console.log("cryptoData.id",cryptoData.id);
+        console.log("user_id",user_id);
         var cryptoWalletUser = await Wallet
             .query()
             .first()
@@ -135,7 +136,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .andWhere('is_active', true)
             .andWhere('coin_id', cryptoData.id)
             .andWhere('user_id', inputs.user_id);
-
+        console.log("cryptoWalletUser",cryptoWalletUser);
         var adminWalletCrypto = await Wallet
             .query()
             .first()
