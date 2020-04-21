@@ -26,7 +26,6 @@ var updateActivityData = async (id, orderData) => {
         .where('deleted_at', null)
         .andWhere('id', id)
 
-    console.log(updateActivityHistory);
 
     return (updateActivityHistory)
 }

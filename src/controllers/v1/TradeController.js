@@ -52,7 +52,7 @@ var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 var TradeHistoryModel = require("../../models/TradeHistory");
 var TradeStatusChecking = require("../../helpers/user-trade-checking");
 var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
-
+var RefferalHelper = require("../../helpers/get-refffered-amount");
 /**
  * Trade Controller : Used for live tradding
  */
@@ -153,7 +153,7 @@ class TradeController extends AppController {
     let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
 
     var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
-
+    var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
       var availableQty = buy_book_data[0].quantity;
       var currentBuyBookDetails = buy_book_data[0];
@@ -218,6 +218,7 @@ class TradeController extends AppController {
           trade_history_data.requested_coin = crypto;
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          tradeOrder = tradeHistory;
           let remainigQuantity = availableQty - quantityValue;
 
           if (remainigQuantity > 0) {
@@ -267,6 +268,7 @@ class TradeController extends AppController {
           trade_history_data.requested_coin = crypto;
 
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          tradeOrder = tradeHistory;
           let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
 
           let object = {
@@ -288,6 +290,8 @@ class TradeController extends AppController {
             message: 'Insufficient balance to place order'
           }
         }
+        // Check for referral
+      let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
       }
     } else {
       return {
@@ -419,7 +423,7 @@ class TradeController extends AppController {
     let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var quantityFixed = orderQuantity;
     var quantityValue = parseFloat(quantityFixed).toFixed(8);
-
+    var tradeOrder;
     if (sellBook && sellBook.length > 0) {
       var availableQuantity = sellBook[0].quantity;
       var currentSellBookDetails = sellBook[0];
@@ -465,7 +469,7 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-
+          console.log("currentSellBookDetails",currentSellBookDetails);
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
           console.log("updatedActivity", updatedActivity)
 
@@ -495,7 +499,7 @@ class TradeController extends AppController {
           console.log("trade_history_data", trade_history_data)
 
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-
+          tradeOrder = tradeHistory;
           let remainigQuantity = availableQuantity - quantityValue;
           console.log("remainigQuantity", remainigQuantity)
           if (remainigQuantity > 0) {
@@ -544,6 +548,7 @@ class TradeController extends AppController {
           trade_history_data.requested_coin = currency;
 
           let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          tradeOrder = TradeHistory;
           await sellDelete.deleteSellOrder(currentSellBookDetails.id);
           let requestData = {
             symbol,
@@ -564,12 +569,16 @@ class TradeController extends AppController {
           }
         }
       }
+      // Check for referral
+      let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
     } else {
       return {
         status: 2,
         message: 'Order Book Empty'
       }
     }
+
+
     for (var i = 0; i < userIds.length; i++) {
       // Notification Sending for users
       var userNotification = await UserNotifications.getSingleData({
@@ -922,7 +931,7 @@ class TradeController extends AppController {
     }
   }
 
-  // Used to execute Limit Sell Order 
+  // Used to execute Limit Sell Order
   async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res) {
     var userIds = [];
     userIds.push(parseInt(user_id));

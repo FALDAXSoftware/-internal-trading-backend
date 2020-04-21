@@ -13,10 +13,10 @@ var UserNotifications = require("../../models/UserNotifications");
 var Helper = require("../../helpers/helpers");
 var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
+var RefferalHelper = require("../get-refffered-amount");
 
 var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null) => {
     try {
-        console.log(buyLimitOrderData)
         var quantityValue = buyLimitOrderData.quantity;
         var userIds = [];
         userIds.push(buyLimitOrderData.user_id);
@@ -30,10 +30,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
         // console.log("sellBook", sellBook)
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
-        console.log("fees", fees);
-        console.log("(sellBook[0].price <= buyLimitOrderData.stop_price)", (sellBook[0].price <= buyLimitOrderData.stop_price))
-        console.log("sellBook[0].price", sellBook[0].price)
-        console.log("buyLimitOrderData.stop_price", buyLimitOrderData.stop_price)
+        var tradeOrder;
         if (sellBook && sellBook.length > 0) {
             if ((sellBook[0].price <= buyLimitOrderData.limit_price) || (sellBook[0].price <= buyLimitOrderData.stop_price)) {
                 console.log("INSIDE IF")
@@ -77,9 +74,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             quantity: buyLimitOrderData.quantity,
                             fill_price: buyLimitOrderData.fill_price
                         }
-                        console.log(request)
                         var tradingFees = await TradingFees.getTraddingFees(request, fees.makerFee, fees.takerFee);
-                        console.log("tradingFees", tradingFees)
 
                         trade_history_data.user_fee = tradingFees.userFee;
                         trade_history_data.requested_fee = tradingFees.requestedFee;
@@ -88,14 +83,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
                         }
-                        console.log("trade_history_data", trade_history_data)
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-                        console.log("tradeHistory", tradeHistory)
-                        console.log("availableQuantity", availableQuantity)
-                        console.log("quantityValue", quantityValue)
-                        console.log("availableQuantity - quantityValue", availableQuantity - quantityValue)
+                        tradeOrder = tradeHistory;
                         var remainigQuantity = availableQuantity - quantityValue;
-                        console.log("remainigQuantity", remainigQuantity)
                         if (remainigQuantity > 0) {
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
                                 quantity: remainigQuantity
@@ -258,7 +248,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
 
                         console.log("trade_history_data", trade_history_data)
 
-                        let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+                        let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+                        tradeOrder = tradeHistory;
                         await sellDelete.deleteSellOrder(sellBook[0].id);
                         for (var i = 0; i < userIds.length; i++) {
                             // Notification Sending for users
@@ -320,6 +311,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     }
                 }
+                // Check for referral
+                let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
             } else {
                 console.log("INSIDE ELSE", buyLimitOrderData)
                 if ((buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8) <= (wallet.placed_balance).toFixed(8)) {
