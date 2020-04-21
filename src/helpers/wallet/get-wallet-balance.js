@@ -23,7 +23,14 @@ var getWalletBalance = async (crypto, currency, user_id) => {
             .andWhere('user_id', user_id)
             .orderBy('id', 'DESC')
 
-        return (walletBalance)
+        // return (walletBalance)
+
+        if (walletBalance != undefined && (walletBalance.receive_address != "" || walletBalance.receive_address != null)) {
+            return (walletBalance)
+        } else {
+            // Wallet Not created
+            return (1);
+        }
     } else {
         // Coin Not Found
         return (0)
