@@ -97,6 +97,13 @@ class TradeController extends AppController {
         } else if (crypto_wallet_data == 2) {
           return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
         }
+        let crypto_wallet_data1 = await WalletHelper.checkWalletStatus(currency, user_id);
+
+        if (crypto_wallet_data1 == 0) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        } else if (crypto_wallet_data1 == 2) {
+          return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
+        }
 
         // Check balance sufficient or not
         if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
@@ -291,7 +298,7 @@ class TradeController extends AppController {
           }
         }
         // Check for referral
-      let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
+        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
       }
     } else {
       return {
@@ -376,8 +383,11 @@ class TradeController extends AppController {
         }
         // Get and check Crypto Wallet details
         let crypto_wallet_data = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-        // if (crypto_wallet_data == 0) {
-        //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        if (crypto_wallet_data == 1)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        let crypto_wallet_data_crypto1 = await WalletBalanceHelper.getWalletBalance(currency, crypto, user_id);
+        if (crypto_wallet_data_crypto1 == 1)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
         if (crypto_wallet_data == 0) {
           return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
         }
@@ -425,7 +435,7 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(quantityFixed).toFixed(8);
     var tradeOrder;
     if (sellBook && sellBook.length > 0) {
-      console.log("sellBook[0]",sellBook[0])
+      console.log("sellBook[0]", sellBook[0])
       var availableQuantity = sellBook[0].quantity;
       var currentSellBookDetails = sellBook[0];
       var fillPriceValue = parseFloat(currentSellBookDetails.price).toFixed(8);
@@ -470,7 +480,7 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          console.log("currentSellBookDetails",currentSellBookDetails);
+          console.log("currentSellBookDetails", currentSellBookDetails);
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
           console.log("updatedActivity", updatedActivity)
 
@@ -656,6 +666,11 @@ class TradeController extends AppController {
       }
       // Get and check Crypto Wallet details
       let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+      if (wallet == 1)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      let crypto_wallet_data_crypto1 = await WalletBalanceHelper.getWalletBalance(currency, crypto, user_id);
+      if (crypto_wallet_data_crypto1 == 1)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
 
       if (wallet == 0) {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
@@ -899,7 +914,13 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
       }
       // Get and check Crypto Wallet details
+      // Get and check Crypto Wallet details
       let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+      if (wallet == 1)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      let crypto_wallet_data_crypto1 = await WalletBalanceHelper.getWalletBalance(currency, crypto, user_id);
+      if (crypto_wallet_data_crypto1 == 1)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
 
       if (wallet == 0) {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
@@ -1135,7 +1156,17 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
         }
         let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
-        console.log(wallet)
+
+        if (wallet == 1) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+
+        let wallet1 = await SellWalletBalanceHelper.getSellWalletBalance(currency, crypto, user_id);
+
+        if (wallet == 1) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
+        // console.log(wallet)
         if (wallet == 0) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Coin not found").message, []);
         }
@@ -1236,8 +1267,12 @@ class TradeController extends AppController {
         }
 
         let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+        if (wallet == 1)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        let crypto_wallet_data_crypto1 = await WalletBalanceHelper.getWalletBalance(currency, crypto, user_id);
+        if (crypto_wallet_data_crypto1 == 1)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
 
-        console.log("wallet", wallet)
 
         if (wallet == 0) {
           return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
