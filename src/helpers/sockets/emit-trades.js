@@ -37,7 +37,7 @@ var emitTrades = async (crypto, currency, userIds) => {
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "depthChartUpdate", depthChartData);
 
     var cryptoInstrumentUpdate = await InstrumentHelper.getInstrumentData(currency);
-    global.io.sockets.to(currency).emit(constants.TRADE_INSTRUMENT_EVENT, cryptoInstrumentUpdate)
+    global.io.sockets.emit(constants.TRADE_INSTRUMENT_EVENT, cryptoInstrumentUpdate)
     // sails
     //   .sockets
     //   .broadcast(inputs.currency, "instrumentUpdate", cryptoInstrumentUpdate);
