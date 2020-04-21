@@ -6,7 +6,7 @@ var Cryptr = require('cryptr'),
     cryptr = new Cryptr(require('../config/secret')());
 const visibilityPlugin = require('objection-visibility');
 
-class Coins extends visibilityPlugin((AppModel)) {
+class Referral extends visibilityPlugin((AppModel)) {
 
     constructor() {
         super();
@@ -69,4 +69,4 @@ class Coins extends visibilityPlugin((AppModel)) {
     }
 }
 
-module.exports = Coins;
+module.exports = Referral;

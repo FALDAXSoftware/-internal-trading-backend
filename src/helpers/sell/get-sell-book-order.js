@@ -1,15 +1,18 @@
 var SellBookModel = require("../../models/SellBook");
-
+const {
+    raw
+} = require('objection');
 var sellOrderBook = async (crypto, currency) => {
     var sellBookOrder = await SellBookModel
         .query()
-        .select()
+        .select('price', raw('SUM(quantity) as quantity'))
         .where('deleted_at', null)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
-        .orderBy('price', 'ASC');
+        .groupBy('price')
+        .orderBy('price', 'ASC').limit(100);
 
-    console.log("sellBookOrder", sellBookOrder)
+    // console.log("sellBookOrder", sellBookOrder)
 
     return (sellBookOrder);
 }
