@@ -137,10 +137,10 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
-    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
-    socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
+    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
+    socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     // socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
     // console.log(user_id)
     // socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
