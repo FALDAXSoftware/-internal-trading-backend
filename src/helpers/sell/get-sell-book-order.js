@@ -5,12 +5,11 @@ const {
 var sellOrderBook = async (crypto, currency) => {
     var sellBookOrder = await SellBookModel
         .query()
-        .select('price', raw('SUM(quantity) as quantity'))
+        .select()
         .where('deleted_at', null)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
-        .groupBy('price')
-        .orderBy('price', 'ASC').limit(100);
+        .orderBy('price', 'ASC');
 
     // console.log("sellBookOrder", sellBookOrder)
 
