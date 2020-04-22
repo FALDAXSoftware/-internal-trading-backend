@@ -33,7 +33,7 @@ var SendEmail = async (res, requestedData) => {
     // res = app;
     return 1;
   }
-  console.log(res)
+  // console.log(res)
   var EmailTemplate = require("../models/EmailTemplate");
   var template_name = requestedData.template;
   var email = requestedData.email;
@@ -54,7 +54,7 @@ var SendEmail = async (res, requestedData) => {
 
   language_content = await module.exports.formatEmail(language_content, format_data);
 
-  console.log(language_content)
+  // console.log(language_content)
 
   try {
     await res.mailer
