@@ -423,6 +423,7 @@ class TradeController extends AppController {
 
   // Used for function to make Market Buy order
   async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res) {
+    const checkUser = Helper.checkWhichUser(user_id);
     var userIds = [];
     userIds.push(user_id);
     console.log("userIds", userIds)
@@ -455,7 +456,8 @@ class TradeController extends AppController {
         quantity: quantityValue,
         order_status: "partially_filled",
         currency: currency,
-        settle_currency: crypto
+        settle_currency: crypto,
+        placed_by:(checkUser ? 'bot':'user')
       }
 
       var resultData = {
