@@ -117,8 +117,9 @@ io.on('connection', async function (socket) {
   var constants = require("./config/constants");
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
-    // console.log("authentication", authentication)
-    var user_id = authentication.user_id;
+
+    var user_id = ( (authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id );
+    console.log("user_id",user_id);
     if (room.previous_room) {
       socket.leave(room.previous_room);
       let previous_pair = (room.previous_room).split("-");
@@ -168,7 +169,7 @@ io.on('connection', async function (socket) {
     console.log("headers", socket.request.headers)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
-    let user_id = authentication.user_id;
+    var user_id = ( (authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id );
     data.user_id = user_id
     console.log(data);
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
@@ -190,7 +191,7 @@ io.on('connection', async function (socket) {
     console.log("INCOMING DATA", data)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
-    let user_id = authentication.user_id;
+    var user_id = ( (authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id );
     data.user_id = user_id;
     console.log("After userd", data)
     let jst_value = require("./controllers/v1/FixApiController");
