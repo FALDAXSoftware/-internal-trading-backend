@@ -106,7 +106,7 @@ class TradeController extends AppController {
         }
 
         // Check balance sufficient or not
-        if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
+        if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         }
         let object = {
@@ -194,7 +194,7 @@ class TradeController extends AppController {
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData)
       if (quantityValue <= availableQty) {
-        if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        if ((quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
             ...orderData
           };
@@ -244,7 +244,7 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQty;
-        if ((priceValue * quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        if ((quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
             ...orderData
           };
@@ -392,10 +392,10 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
         }
 
-        // Check balance sufficient or not
-        if (parseFloat(crypto_wallet_data.balance) <= orderQuantity) {
-          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-        }
+        // // Check balance sufficient or not
+        // if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
+        //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        // }
         var responseData = await module.exports.makeMarketBuyOrder(symbol,
           side,
           order_type,
@@ -678,9 +678,9 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
       }
 
-      if (parseFloat(wallet.balance) <= orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-      }
+      // if (parseFloat(wallet.balance) <= orderQuantity) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      // }
 
       let responseData = await module.exports.limitBuyOrder(symbol,
         user_id,
@@ -928,7 +928,11 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
       }
 
-      if (parseFloat(wallet.balance) <= orderQuantity) {
+      console.log("wallet.placed_balance", wallet.placed_balance);
+      console.log("orderQuantity", orderQuantity)
+      console.log("parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity)", parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity))
+      if (parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity)) {
+        console.log("INSIDE IF>>>>>>")
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
 
@@ -1001,6 +1005,7 @@ class TradeController extends AppController {
     if (buyBook && buyBook.length > 0) {
       var currentPrice = buyBook[0].price;
       if (priceValue <= currentPrice) {
+        console.log("INSIDE IF")
         var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res);
         return {
           status: limitSellMatchData.status,
@@ -1008,7 +1013,8 @@ class TradeController extends AppController {
         };
       } else {
         sellLimitOrderData.activity_id = activity.id;
-        var total_price = parseFloat(sellLimitOrderData.quantity * sellLimitOrderData.limit_price).toFixed(8);
+        var total_price = parseFloat(sellLimitOrderData.quantity).toFixed(8);
+        console.log("wallet", wallet)
         if (total_price <= wallet.placed_balance) {
           sellLimitOrderData.is_partially_fulfilled = true;
           sellLimitOrderData.is_filled = false;
@@ -1069,7 +1075,7 @@ class TradeController extends AppController {
       }
     } else {
       sellLimitOrderData.activity_id = activity.id;
-      var total_price = parseFloat(sellLimitOrderData.quantity * sellLimitOrderData.limit_price).toFixed(8);
+      var total_price = parseFloat(sellLimitOrderData.quantity).toFixed(8);
       if (total_price <= wallet.placed_balance) {
         sellLimitOrderData.is_partially_fulfilled = true;
         sellLimitOrderData.is_filled = false;
