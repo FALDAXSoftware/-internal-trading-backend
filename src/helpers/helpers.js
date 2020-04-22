@@ -108,7 +108,11 @@ var formatEmail = async (emailContent, data) => {
 var getUserId = async function (headers) {
   var authorization = headers;
   var authentication = require("../config/authorization")(authorization);
-  return authentication.user_id;
+  let user_id = authentication.user_id;
+  if( authentication.isAdmin ){
+    user_id = process.env.TRADEDESK_USER_ID;
+  }
+  return user_id;
 }
 
 module.exports = {
