@@ -36,7 +36,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var availableQuantity = buyBook[0].quantity;
                     sellLimitOrderData.fill_price = buyBook[0].price;
                     delete sellLimitOrderData.id;
-                    if (parseFloat(sellLimitOrderData.fill_price * sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+                    if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
                         var sellAddedData = {
                             ...sellLimitOrderData
                         }
@@ -181,7 +181,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var remainningQuantity = sellLimitOrderData.quantity - buyBook[0].quantity;
                     remainningQuantity = parseFloat(remainningQuantity).toFixed(8);
                     var feeResult = await MakerTakerFees.getFeesValue(sellLimitOrderData.settle_currency, sellLimitOrderData.currency);
-                    if (parseFloat(sellLimitOrderData.fill_price * sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+                    if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
                         var sellAddedData = {
                             ...sellLimitOrderData
                         }
@@ -304,7 +304,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 // Check for referral
                 let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
             } else {
-                if (parseFloat(sellLimitOrderData.quantity * sellLimitOrderData.limit_price).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+                console.log("sellLimitOrderData.quantity", sellLimitOrderData.quantity)
+                if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
                     var sellAddedData = {
                         ...sellLimitOrderData
                     }
@@ -375,7 +376,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 }
             }
         } else {
-            if (parseFloat(sellLimitOrderData.quantity * sellLimitOrderData.limit_price).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+            console.log("sellLimitOrderData.quantity", sellLimitOrderData.quantity)
+            if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
                 var sellAddedData = {
                     ...sellLimitOrderData
                 }
