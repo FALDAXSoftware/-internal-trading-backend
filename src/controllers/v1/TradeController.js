@@ -194,7 +194,7 @@ class TradeController extends AppController {
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData)
       if (quantityValue <= availableQty) {
-        if ((quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        if ((quantityValue) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
             ...orderData
           };
@@ -244,7 +244,7 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQty;
-        if ((quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        if ((quantityValue) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
           var trade_history_data = {
             ...orderData
           };
