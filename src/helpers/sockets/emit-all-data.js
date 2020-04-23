@@ -90,7 +90,7 @@ var getUserOrdersData = async (data) => {
 var getAllPendingOrders = async (crypto, currency) => {
     let helper = require("../../helpers/tradding/get-all-pending-orders");
     let data = await helper.getAllPendingOrders(crypto, currency);
-    return data;
+    return { data, id: process.env.TRADEDESK_USER_ID };
 }
 
 // Get Users Cancelled Orders details
