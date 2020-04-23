@@ -40,7 +40,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     buyLimitOrderData.fill_price = sellBook[0].price;
                     delete buyLimitOrderData.id;
                     console.log((buyLimitOrderData.fill_price * buyLimitOrderData.quantity).toFixed(8) <= (wallet.placed_balance).toFixed(8))
-                    if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity).toFixed(8) <= (wallet.placed_balance).toFixed(8)) {
+                    if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) {
                         console.log("buyLimitOrderData", buyLimitOrderData)
                         var buyAddedData = {
                             ...buyLimitOrderData
@@ -191,7 +191,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     remainigQuantity = parseFloat(remainigQuantity).toFixed(8);
                     console.log("remainigQuantity", remainigQuantity)
                     var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
-                    if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= wallet.placed_balance) {
+                    if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) {
                         console.log("INSIDE IF WALLET CHECKING");
                         var buyAddedData = {
                             ...buyLimitOrderData
