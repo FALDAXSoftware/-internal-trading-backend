@@ -115,11 +115,21 @@ var getUserId = async function (headers) {
   return user_id;
 }
 
+// Check Bot or Actual User
+var checkWhichUser = function (user_id) {
+  let check = false;
+  if( user_id == process.env.TRADEDESK_USER_ID ){
+    check = true;
+  }
+  return check;
+}
+
 module.exports = {
   jsonFormat,
   randomString,
   SendEmail,
   formatEmail,
-  getUserId
+  getUserId,
+  checkWhichUser
 }
 
