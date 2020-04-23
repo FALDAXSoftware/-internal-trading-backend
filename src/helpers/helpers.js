@@ -33,7 +33,7 @@ var SendEmail = async (res, requestedData) => {
     // res = app;
     return 1;
   }
-  console.log(res)
+  // console.log(res)
   var EmailTemplate = require("../models/EmailTemplate");
   var template_name = requestedData.template;
   var email = requestedData.email;
@@ -54,7 +54,7 @@ var SendEmail = async (res, requestedData) => {
 
   language_content = await module.exports.formatEmail(language_content, format_data);
 
-  console.log(language_content)
+  // console.log(language_content)
 
   try {
     await res.mailer
@@ -108,7 +108,20 @@ var formatEmail = async (emailContent, data) => {
 var getUserId = async function (headers) {
   var authorization = headers;
   var authentication = require("../config/authorization")(authorization);
-  return authentication.user_id;
+  let user_id = authentication.user_id;
+  if( authentication.isAdmin ){
+    user_id = process.env.TRADEDESK_USER_ID;
+  }
+  return user_id;
+}
+
+// Check Bot or Actual User
+var checkWhichUser = function (user_id) {
+  let check = false;
+  if( user_id == process.env.TRADEDESK_USER_ID ){
+    check = true;
+  }
+  return check;
 }
 
 module.exports = {
@@ -116,6 +129,7 @@ module.exports = {
   randomString,
   SendEmail,
   formatEmail,
-  getUserId
+  getUserId,
+  checkWhichUser
 }
 

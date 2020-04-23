@@ -98,6 +98,7 @@ app.set("pairData", {
 // Socket Implementation //Socket config
 
 io.on('connection', async function (socket) {
+  var constants = require("./config/constants");
   console.log("Socket connected.....");
   socket.to("join").emit("test", { name: "le bhai" });
   var socket_headers = socket.request.headers;
@@ -110,14 +111,18 @@ io.on('connection', async function (socket) {
   var authentication = require("./config/authorization")(socket_headers);
   // console.log("Socket Headers", socket_headers);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
-
+  if (authentication.status > constants.SUCCESS_CODE) {
+    socket.emit(constants.USER_LOGOUT, true);
+  }
 
   console.log("RRRRR", rooms)
   let socket_functions = require("./helpers/sockets/emit-all-data");
-  var constants = require("./config/constants");
+
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
-
+    if (authentication.status > 200) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     console.log("user_id", user_id);
     if (room.previous_room) {
@@ -128,12 +133,10 @@ io.on('connection', async function (socket) {
     }
     let symbol = (room.room);
     let pair = (symbol).split("-")
-    // console.log("room",room.room);
+
     socket.join(room.room); //Join to new  Room
     socket.join(room.room + user_id); // Join to new Room with Userid
     socket.join(pair[1]); // Join to new Currency Room
-    // console.log("Socket", socket);
-    // io.to(room.room).emit("test", {name:"le bhai"});
 
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
@@ -170,15 +173,15 @@ io.on('connection', async function (socket) {
     console.log("headers", socket.request.headers)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
+    if (authentication.status > constants.SUCCESS_CODE) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id
     console.log(data);
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
-  // socket.on("XRP-BTC", async function (data) {
-  //   console.log("data", data);
-  //   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData("XRP", "BTC"));
-  // })
+
   // Temp FIXAPI
   socket.on("check-offer-code", async function (data) {
     console.log("Check Offer");
@@ -192,6 +195,9 @@ io.on('connection', async function (socket) {
     console.log("INCOMING DATA", data)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
+    if (authentication.status > constants.SUCCESS_CODE) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id;
     console.log("After userd", data)
@@ -201,23 +207,10 @@ io.on('connection', async function (socket) {
   socket.on("market_data", async function () {
     socket.emit(constants.MARKET_VALUE_EVENT, await socket_functions.getMarketValue());
   })
-
-
-
 });
 global.io = io;
-// // var rooms = Object.keys(global.io.sockets.adapter.sids[socket.id]);
-// var rooms = Object.keys(global.io);
-// console.log("rooms:",rooms);
-// var constants = require("./config/constants");
-// let socket_functions = require("./helpers/sockets/emit-all-data");
-// global.io.on("XRP-BTC", async function(socket){
-//   console.log("socket",socket);
-//   socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookData( "XRP","BTC" ));
-// });
 
 // Socket Ends
-
 //Routes
 app.use(function (req, res, next) {
   res.header('X-Powered-By', 'FALDAX');
