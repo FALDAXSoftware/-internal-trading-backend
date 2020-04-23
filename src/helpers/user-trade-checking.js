@@ -7,6 +7,14 @@ var i18n = require("i18n");
 var tradeStatus = async (user_id) => {
     try {
         // var country;
+        var sendInfo;
+        if( user_id == process.env.TRADEDESK_USER_ID ){
+            sendInfo = {
+                response: true,
+                status: false
+            }
+            return sendInfo;
+        }
         var userKYC = await KYCModel
             .query()
             .select()
@@ -19,7 +27,6 @@ var tradeStatus = async (user_id) => {
         var stateData;
         var response;
         var msg;
-        var sendInfo;
 
         if (userKYC) {
             if (userKYC.direct_response == null && userKYC.webhook_response == null) {
