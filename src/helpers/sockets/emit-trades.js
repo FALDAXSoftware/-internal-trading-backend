@@ -10,6 +10,7 @@ var DashboardCardDetailsHelper = require("../../helpers/dashboard/get-card-data"
 var ChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 var InstrumentHelper = require("../../helpers/tradding/get-instrument-data");
 var UserWalletBalanceHelper = require("../../helpers/tradding/get-user-wallet-balance");
+var AllPendingOrders = require("../../helpers/tradding/get-all-pending-orders");
 var constants = require("../../config/constants");
 var emitTrades = async (crypto, currency, userIds) => {
     let buyBookDetails = await BuyBookOrderHelperSummary.getBuyBookOrderSummary(crypto, currency);
@@ -64,6 +65,8 @@ var emitTrades = async (crypto, currency, userIds) => {
         //   .broadcast(inputs.crypto + "-" + inputs.currency + "-" + element, "walletBalanceUpdate", userBalanceDetails);
     }
 
+    var allpendingOrders = await AllPendingOrders.getAllPendingOrders(currency, crypto)
+    global.io.sockets.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, allpendingOrders)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "orderUpdated", {

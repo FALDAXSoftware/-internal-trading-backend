@@ -111,7 +111,7 @@ io.on('connection', async function (socket) {
   var authentication = require("./config/authorization")(socket_headers);
   // console.log("Socket Headers", socket_headers);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
-  if( authentication.status > constants.SUCCESS_CODE ){
+  if (authentication.status > constants.SUCCESS_CODE) {
     socket.emit(constants.USER_LOGOUT, true);
   }
 
@@ -120,11 +120,11 @@ io.on('connection', async function (socket) {
 
   socket.on("join", async function (room) {
     socket.emit("test", { name: "le bhai" });
-    if( authentication.status > 200 ){
+    if (authentication.status > 200) {
       socket.emit(constants.USER_LOGOUT, true);
     }
-    var user_id = ( (authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id );
-    console.log("user_id",user_id);
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
+    console.log("user_id", user_id);
     if (room.previous_room) {
       socket.leave(room.previous_room);
       let previous_pair = (room.previous_room).split("-");
@@ -145,12 +145,13 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
+    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
+    socket.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, await socket_functions.getAllPendingOrders(pair[0], pair[1]));
     // socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
     // console.log(user_id)
     // socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
     // socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id))
 
-    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
 
     // socket.on("trade_users_history_event", async function (data) {
     //   console.log(data);
@@ -172,10 +173,10 @@ io.on('connection', async function (socket) {
     console.log("headers", socket.request.headers)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
-    if( authentication.status > constants.SUCCESS_CODE ){
+    if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
-    var user_id = ( (authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id );
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id
     console.log(data);
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
@@ -194,10 +195,10 @@ io.on('connection', async function (socket) {
     console.log("INCOMING DATA", data)
     var socket_headers = socket.request.headers;
     var authentication = require("./config/authorization")(socket_headers);
-    if( authentication.status > constants.SUCCESS_CODE ){
+    if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
-    var user_id = ( (authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id );
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id;
     console.log("After userd", data)
     let jst_value = require("./controllers/v1/FixApiController");
