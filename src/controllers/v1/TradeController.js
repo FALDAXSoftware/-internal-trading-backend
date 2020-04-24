@@ -718,7 +718,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     let { crypto, currency } = await Currency.get_currencies(symbol);
