@@ -106,6 +106,7 @@ class TradeController extends AppController {
         }
 
         // Check balance sufficient or not
+        console.log("crypto_wallet_data.placed_balance", crypto_wallet_data.placed_balance)
         if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         }
@@ -122,6 +123,7 @@ class TradeController extends AppController {
           userIds: userIds
         };
         let market_sell_order = await module.exports.makeMarketSellOrder(res, object);
+        console.log("market_sell_order", market_sell_order)
         if (market_sell_order.status > 1) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(market_sell_order.message).message, []);
         } else {
@@ -195,7 +197,7 @@ class TradeController extends AppController {
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData)
       if (quantityValue <= availableQty) {
-        if ((quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        if ((quantityValue) <= (crypto_wallet_data.placed_balance)) {
           var trade_history_data = {
             ...orderData
           };
@@ -245,7 +247,10 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQty;
-        if ((quantityValue).toFixed(process.env.TOTAL_PRECISION) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)) {
+        console.log("quantityValue", quantityValue)
+        console.log("crypto_wallet_data.placed_balance", crypto_wallet_data.placed_balance)
+        console.log("(quantityValue) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)", (quantityValue) <= (crypto_wallet_data.placed_balance))
+        if ((quantityValue) <= (crypto_wallet_data.placed_balance)) {
           var trade_history_data = {
             ...orderData
           };
@@ -473,6 +478,9 @@ class TradeController extends AppController {
       var activity = await ActivityHelper.addActivityData(resultData);
 
       if (quantityValue <= availableQuantity) {
+        console.log("fillPriceValue", fillPriceValue);
+        console.log("quantityValue", quantityValue);
+        console.log("wallet.placed_balance", wallet.placed_balance)
         if ((fillPriceValue * quantityValue).toFixed(8) <= (wallet.placed_balance).toFixed(8)) {
           var trade_history_data = {
             ...orderData
@@ -531,6 +539,9 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQuantity;
+        console.log("fillPriceValue", fillPriceValue);
+        console.log("quantityValue", quantityValue);
+        console.log("wallet.placed_balance", wallet.placed_balance)
         if (parseFloat(fillPriceValue * quantityValue).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
           var trade_history_data = {
             ...orderData
