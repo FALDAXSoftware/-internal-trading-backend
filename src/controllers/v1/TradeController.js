@@ -105,9 +105,11 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
         }
 
+        const checkUser = Helper.checkWhichUser(user_id);
+
         // Check balance sufficient or not
         console.log("crypto_wallet_data.placed_balance", crypto_wallet_data.placed_balance)
-        if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
+        if ((parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) && checkUser != true) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         }
         let object = {
@@ -168,6 +170,7 @@ class TradeController extends AppController {
       var currentBuyBookDetails = buy_book_data[0];
       var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
       var now = new Date();
+      const checkUser = Helper.checkWhichUser(user_id);
       var orderData = {
         user_id: user_id,
         symbol: symbol,
@@ -184,7 +187,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by: (checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        placed_by: (checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -197,7 +200,7 @@ class TradeController extends AppController {
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData)
       if (quantityValue <= availableQty) {
-        if ((quantityValue) <= (crypto_wallet_data.placed_balance)) {
+        if ((quantityValue) <= (crypto_wallet_data.placed_balance) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
           };
@@ -250,7 +253,7 @@ class TradeController extends AppController {
         console.log("quantityValue", quantityValue)
         console.log("crypto_wallet_data.placed_balance", crypto_wallet_data.placed_balance)
         console.log("(quantityValue) <= (crypto_wallet_data.placed_balance).toFixed(process.env.TOTAL_PRECISION)", (quantityValue) <= (crypto_wallet_data.placed_balance))
-        if ((quantityValue) <= (crypto_wallet_data.placed_balance)) {
+        if ((quantityValue) <= (crypto_wallet_data.placed_balance) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
           };
