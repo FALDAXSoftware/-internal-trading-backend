@@ -39,7 +39,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
                 'symbol',
                 'created_at',
                 'deleted_at',
-                'limit_price')
+                'limit_price',
+                "placed_by")
             .where('deleted_at', null)
             .andWhere('settle_currency', crypto)
             .andWhere('currency', currency)
@@ -75,7 +76,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
                 'symbol',
                 'created_at',
                 'deleted_at',
-                'limit_price')
+                'limit_price',
+                "placed_by")
             .where('deleted_at', null)
             .andWhere('settle_currency', crypto)
             .andWhere('currency', currency)
@@ -99,7 +101,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
                 'symbol',
                 'created_at',
                 'deleted_at',
-                'limit_price')
+                'limit_price',
+                "placed_by")
             .where('deleted_at', null)
             .andWhere('settle_currency', crypto)
             .andWhere('currency', currency)

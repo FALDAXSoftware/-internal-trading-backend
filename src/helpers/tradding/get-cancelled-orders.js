@@ -22,7 +22,8 @@ var getCancelledOrders = async (user_id, crypto, currency, month) => {
             'symbol',
             'created_at',
             'deleted_at',
-            'limit_price')
+            'limit_price',
+            "placed_by")
         .where('deleted_at', null)
         .andWhere('is_cancel', true)
         .andWhere('settle_currency', crypto)
