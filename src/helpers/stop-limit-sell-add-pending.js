@@ -15,6 +15,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
     var userIds = [];
     userIds.push(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
+    const checkUser = Helper.checkWhichUser(user_id);
     var now = new Date();
     var limitSellOrder = ({
         'user_id': user_id,
@@ -31,7 +32,8 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         'quantity': orderQuantity,
         'settle_currency': crypto,
         'order_status': "open",
-        'currency': currency
+        'currency': currency,
+        'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     });
 
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);

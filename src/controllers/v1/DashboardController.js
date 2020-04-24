@@ -19,6 +19,9 @@ var BuyAdd = require("../../helpers/buy/add-buy-order");
 var socketHelper = require("../../helpers/sockets/emit-trades");
 var SellAdd = require("../../helpers/sell/add-sell-order");
 var TradeController = require("../../controllers/v1/TradeController");
+var Currency = require("../../helpers/currency");
+var CurrencyConversionModel = require("../../models/CurrencyConversion");
+var PairsModel = require("../../models/Pairs");
 
 class DashboardController extends AppController {
 
@@ -209,10 +212,13 @@ class DashboardController extends AppController {
         // })
     }
 
-    async updateBuyOrderBook(req, res) {
+    async updateBuyOrderBook(pair_name) {
         try {
+            console.log("pair_name", pair_name)
+            let pair = pair_name.split("-").join("")
+
             await request({
-                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=5",
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -226,15 +232,39 @@ class DashboardController extends AppController {
                 console.log(bidValue)
                 console.log(askValue);
 
+                let { crypto, currency } = await Currency.get_currencies(pair_name);
+                var maxValue = await PairsModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("name", pair_name)
+                    .orderBy("id", 'DESC')
+
+                console.log("maxValue", maxValue)
+
+                var getCryptoValue = await CurrencyConversionModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    .orderBy("id", "DESC");
+
+                console.log("getCryptoValue", getCryptoValue)
+
+                var usdValue = getCryptoValue.quote.USD.price
+                console.log("usdValue", usdValue)
+                var min = (maxValue.crypto_minimum) / (usdValue);
+                var max = (maxValue.crypto_maximum) / (usdValue);
+                console.log("min", min, " max", max)
                 for (var i = 0; i < bidValue.length; i++) {
-                    var min = 0.01,
-                        max = 0.02,
-                        highlightedNumber = Math.random() * (max - min) + min;
+                    var highlightedNumber = Math.random() * (max - min) + min;
                     bidValue[i][1] = highlightedNumber
                 }
 
-                console.log(bidValue)
-                console.log(askValue);
+                // console.log(bidValue)
+                // console.log(askValue);
 
                 var now = new Date();
 
@@ -243,10 +273,9 @@ class DashboardController extends AppController {
                 for (var i = 0; i < bidValue.length; i++) {
                     var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
                     var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
-
                     var buyLimitOrderData = {
-                        'user_id': 1545,
-                        'symbol': 'XRP-BTC',
+                        'user_id': process.env.TRADEDESK_USER_ID,
+                        'symbol': pair_name,
                         'side': 'Buy',
                         'order_type': 'Limit',
                         'created_at': now,
@@ -258,28 +287,31 @@ class DashboardController extends AppController {
                         'quantity': quantityValue,
                         'fix_quantity': quantityValue,
                         'order_status': "open",
-                        'currency': 'BTC',
-                        'settle_currency': 'XRP',
+                        'currency': currency,
+                        'settle_currency': crypto,
                         'maximum_time': now,
-                        'is_partially_fulfilled': false
+                        'is_partially_fulfilled': false,
+                        'placed_by': process.env.TRADEDESK_BOT
                     };
 
                     buyLimitOrderData.is_partially_fulfilled = true;
                     buyLimitOrderData.is_filled = false;
                     buyLimitOrderData.added = true;
+                    console.log("buyLimitOrderData", buyLimitOrderData)
                     let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
                         buyLimitOrderData.user_id,
                         buyLimitOrderData.side,
                         buyLimitOrderData.order_type,
                         buyLimitOrderData.quantity,
                         buyLimitOrderData.limit_price,
-                        res);
+                        null,
+                        true);
 
                     console.log("responseData", responseData)
-                    let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
+                    // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
 
-                return res.status(200).json({ "status": "OK" })
+                // return res.status(200).json({ "status": "OK" })
 
 
             })
@@ -288,10 +320,11 @@ class DashboardController extends AppController {
         }
     }
 
-    async updateSellOrderBook(req, res) {
+    async updateSellOrderBook(pair_name) {
         try {
+            let pair = pair_name.split("-").join("")
             await request({
-                url: "https://api.binance.com/api/v3/depth?symbol=XRPBTC&limit=5",
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -301,11 +334,35 @@ class DashboardController extends AppController {
 
                 var askValue = body.asks;
                 console.log(askValue);
+                let { crypto, currency } = await Currency.get_currencies(pair_name);
+                var maxValue = await PairsModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("name", pair_name)
+                    .orderBy("id", 'DESC')
+
+                console.log("maxValue", maxValue)
+
+                var getCryptoValue = await CurrencyConversionModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    .orderBy("id", "DESC");
+
+                console.log("getCryptoValue", getCryptoValue)
+
+                var usdValue = getCryptoValue.quote.USD.price
+                console.log("usdValue", usdValue)
+                var min = (maxValue.crypto_minimum) / (usdValue);
+                var max = (maxValue.crypto_maximum) / (usdValue);
+                console.log("min", min, " max", max)
 
                 for (var i = 0; i < askValue.length; i++) {
-                    var min = 0.01,
-                        max = 0.02,
-                        highlightedNumber = Math.random() * (max - min) + min;
+                    var highlightedNumber = Math.random() * (max - min) + min;
                     askValue[i][1] = highlightedNumber
                 }
 
@@ -318,10 +375,10 @@ class DashboardController extends AppController {
                 for (var i = 0; i < askValue.length; i++) {
                     var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                     var priceValue = parseFloat(askValue[i][0]).toFixed(8);
-
+                    let { crypto, currency } = await Currency.get_currencies(pair_name);
                     var sellLimitOrderData = {
-                        'user_id': 1545,
-                        'symbol': 'XRP-BTC',
+                        'user_id': process.env.TRADEDESK_USER_ID,
+                        'symbol': pair_name,
                         'side': 'Sell',
                         'order_type': 'Limit',
                         'created_at': now,
@@ -333,10 +390,11 @@ class DashboardController extends AppController {
                         'quantity': quantityValue,
                         'fix_quantity': quantityValue,
                         'order_status': "open",
-                        'currency': 'BTC',
-                        'settle_currency': 'XRP',
+                        'currency': currency,
+                        'settle_currency': crypto,
                         'maximum_time': now,
-                        'is_partially_fulfilled': false
+                        'is_partially_fulfilled': false,
+                        'placed_by': process.env.TRADEDESK_BOT
                     };
 
                     sellLimitOrderData.is_partially_fulfilled = true;
@@ -348,14 +406,15 @@ class DashboardController extends AppController {
                         sellLimitOrderData.order_type,
                         sellLimitOrderData.quantity,
                         sellLimitOrderData.limit_price,
-                        res);
+                        null,
+                        true);
 
 
                     console.log("responseData", responseData)
-                    let emit_socket = await socketHelper.emitTrades('XRP', 'BTC', ['1545'])
+                    // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
 
-                return res.status(200).json({ "status": "OK" })
+                // return res.status(200).json({ "status": "OK" })
 
 
             })
