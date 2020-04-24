@@ -271,43 +271,45 @@ class DashboardController extends AppController {
                 var bidValue = await module.exports.shuffle(bidValue);
 
                 for (var i = 0; i < bidValue.length; i++) {
-                    var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
-                    var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
-                    var buyLimitOrderData = {
-                        'user_id': process.env.TRADEDESK_USER_ID,
-                        'symbol': pair_name,
-                        'side': 'Buy',
-                        'order_type': 'Limit',
-                        'created_at': now,
-                        'updated_at': now,
-                        'fill_price': 0.0,
-                        'limit_price': priceValue,
-                        'stop_price': 0.0,
-                        'price': priceValue,
-                        'quantity': quantityValue,
-                        'fix_quantity': quantityValue,
-                        'order_status': "open",
-                        'currency': currency,
-                        'settle_currency': crypto,
-                        'maximum_time': now,
-                        'is_partially_fulfilled': false,
-                        'placed_by': process.env.TRADEDESK_BOT
-                    };
+                    setTimeout(() => {
+                        var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
+                        var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
+                        var buyLimitOrderData = {
+                            'user_id': process.env.TRADEDESK_USER_ID,
+                            'symbol': pair_name,
+                            'side': 'Buy',
+                            'order_type': 'Limit',
+                            'created_at': now,
+                            'updated_at': now,
+                            'fill_price': 0.0,
+                            'limit_price': priceValue,
+                            'stop_price': 0.0,
+                            'price': priceValue,
+                            'quantity': quantityValue,
+                            'fix_quantity': quantityValue,
+                            'order_status': "open",
+                            'currency': currency,
+                            'settle_currency': crypto,
+                            'maximum_time': now,
+                            'is_partially_fulfilled': false,
+                            'placed_by': process.env.TRADEDESK_BOT
+                        };
 
-                    buyLimitOrderData.is_partially_fulfilled = true;
-                    buyLimitOrderData.is_filled = false;
-                    buyLimitOrderData.added = true;
-                    console.log("buyLimitOrderData", buyLimitOrderData)
-                    let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
-                        buyLimitOrderData.user_id,
-                        buyLimitOrderData.side,
-                        buyLimitOrderData.order_type,
-                        buyLimitOrderData.quantity,
-                        buyLimitOrderData.limit_price,
-                        null,
-                        true);
+                        buyLimitOrderData.is_partially_fulfilled = true;
+                        buyLimitOrderData.is_filled = false;
+                        buyLimitOrderData.added = true;
+                        console.log("buyLimitOrderData", buyLimitOrderData)
+                        let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
+                            buyLimitOrderData.user_id,
+                            buyLimitOrderData.side,
+                            buyLimitOrderData.order_type,
+                            buyLimitOrderData.quantity,
+                            buyLimitOrderData.limit_price,
+                            null,
+                            true);
 
-                    console.log("responseData", responseData)
+                        console.log("responseData", responseData)
+                    }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
 
@@ -373,44 +375,47 @@ class DashboardController extends AppController {
 
                 var askValue = await module.exports.shuffle(askValue);
                 for (var i = 0; i < askValue.length; i++) {
-                    var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
-                    var priceValue = parseFloat(askValue[i][0]).toFixed(8);
-                    let { crypto, currency } = await Currency.get_currencies(pair_name);
-                    var sellLimitOrderData = {
-                        'user_id': process.env.TRADEDESK_USER_ID,
-                        'symbol': pair_name,
-                        'side': 'Sell',
-                        'order_type': 'Limit',
-                        'created_at': now,
-                        'updated_at': now,
-                        'fill_price': 0.0,
-                        'limit_price': priceValue,
-                        'stop_price': 0.0,
-                        'price': priceValue,
-                        'quantity': quantityValue,
-                        'fix_quantity': quantityValue,
-                        'order_status': "open",
-                        'currency': currency,
-                        'settle_currency': crypto,
-                        'maximum_time': now,
-                        'is_partially_fulfilled': false,
-                        'placed_by': process.env.TRADEDESK_BOT
-                    };
+                    setTimeout(() => {
 
-                    sellLimitOrderData.is_partially_fulfilled = true;
-                    sellLimitOrderData.is_filled = false;
-                    sellLimitOrderData.added = true;
-                    let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
-                        sellLimitOrderData.user_id,
-                        sellLimitOrderData.side,
-                        sellLimitOrderData.order_type,
-                        sellLimitOrderData.quantity,
-                        sellLimitOrderData.limit_price,
-                        null,
-                        true);
+                        var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
+                        var priceValue = parseFloat(askValue[i][0]).toFixed(8);
+                        let { crypto, currency } = await Currency.get_currencies(pair_name);
+                        var sellLimitOrderData = {
+                            'user_id': process.env.TRADEDESK_USER_ID,
+                            'symbol': pair_name,
+                            'side': 'Sell',
+                            'order_type': 'Limit',
+                            'created_at': now,
+                            'updated_at': now,
+                            'fill_price': 0.0,
+                            'limit_price': priceValue,
+                            'stop_price': 0.0,
+                            'price': priceValue,
+                            'quantity': quantityValue,
+                            'fix_quantity': quantityValue,
+                            'order_status': "open",
+                            'currency': currency,
+                            'settle_currency': crypto,
+                            'maximum_time': now,
+                            'is_partially_fulfilled': false,
+                            'placed_by': process.env.TRADEDESK_BOT
+                        };
+
+                        sellLimitOrderData.is_partially_fulfilled = true;
+                        sellLimitOrderData.is_filled = false;
+                        sellLimitOrderData.added = true;
+                        let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
+                            sellLimitOrderData.user_id,
+                            sellLimitOrderData.side,
+                            sellLimitOrderData.order_type,
+                            sellLimitOrderData.quantity,
+                            sellLimitOrderData.limit_price,
+                            null,
+                            true);
 
 
-                    console.log("responseData", responseData)
+                        console.log("responseData", responseData)
+                    }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
 
