@@ -315,7 +315,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
             } else {
                 console.log("INSIDE ELSE", buyLimitOrderData)
-                if ((buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8) <= (wallet.placed_balance).toFixed(8)) {
+                if ((buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8) <= (wallet.placed_balance).toFixed(8) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                     var buyAddedData = {
                         ...buyLimitOrderData
                     };
@@ -391,7 +391,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 }
             }
         } else {
-            if ((buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8) <= (wallet.placed_balance).toFixed(8)) {
+            if ((buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8) <= (wallet.placed_balance).toFixed(8) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                 var buyAddedData = {
                     ...buyLimitOrderData
                 };
