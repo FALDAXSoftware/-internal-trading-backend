@@ -309,6 +309,7 @@ class DashboardController extends AppController {
                         true);
 
                     console.log("responseData", responseData)
+                    await module.exports.sleep(800);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
@@ -376,7 +377,6 @@ class DashboardController extends AppController {
                 var askValue = await module.exports.shuffle(askValue);
                 for (var i = 0; i < askValue.length; i++) {
                     // setTimeout(async () => {
-
                     var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                     var priceValue = parseFloat(askValue[i][0]).toFixed(8);
                     let { crypto, currency } = await Currency.get_currencies(pair_name);
@@ -415,6 +415,7 @@ class DashboardController extends AppController {
 
 
                     console.log("responseData", responseData)
+                    await module.exports.sleep(800);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
@@ -444,6 +445,10 @@ class DashboardController extends AppController {
             arra1[index] = temp;
         }
         return arra1;
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }
 
