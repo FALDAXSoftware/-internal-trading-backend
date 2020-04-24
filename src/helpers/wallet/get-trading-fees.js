@@ -14,7 +14,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         var request = inputs;
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
-        inputs.makerFee = 0.21
+        // inputs.makerFee = 0.21
 
         // Fetching currency data value
         var currencyData = await CoinsModel
@@ -154,6 +154,14 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             .andWhere('is_active', true)
             .andWhere('coin_id', currencyData.id)
             .andWhere('user_id', 36);
+
+        if (user_id == process.env.TRADEDESK_USER_ID) {
+            inputs.takerFee = 0;
+        }
+
+        if (requested_user_id == process.env.TRADEDESK_USER_ID) {
+            inputs.makerFee = 0;
+        }
 
         // inputs.makerFee = 0.21
         // Calculating fees value on basis of the side and order executed

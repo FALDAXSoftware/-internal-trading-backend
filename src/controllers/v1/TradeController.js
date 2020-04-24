@@ -484,7 +484,7 @@ class TradeController extends AppController {
         console.log("fillPriceValue", fillPriceValue);
         console.log("quantityValue", quantityValue);
         console.log("wallet.placed_balance", wallet.placed_balance)
-        if ((fillPriceValue * quantityValue).toFixed(8) <= (wallet.placed_balance).toFixed(8)) {
+        if (((fillPriceValue * quantityValue).toFixed(8) <= (wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
           };
@@ -545,7 +545,7 @@ class TradeController extends AppController {
         console.log("fillPriceValue", fillPriceValue);
         console.log("quantityValue", quantityValue);
         console.log("wallet.placed_balance", wallet.placed_balance)
-        if (parseFloat(fillPriceValue * quantityValue).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+        if ((parseFloat(fillPriceValue * quantityValue).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
           };
@@ -954,10 +954,11 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
       }
 
+      const checkUser = Helper.checkWhichUser(user_id);
       console.log("wallet.placed_balance", wallet.placed_balance);
       console.log("orderQuantity", orderQuantity)
       console.log("parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity)", parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity))
-      if (parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity)) {
+      if ((parseFloat(wallet.placed_balance) <= parseFloat(orderQuantity)) && checkUser != true) {
         console.log("INSIDE IF>>>>>>")
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }

@@ -31,6 +31,14 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         // console.log("sellBook", sellBook)
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
         var tradeOrder;
+        if (buyLimitOrderData.order_type == "StopLimit") {
+            const checkUser = Helper.checkWhichUser(buyLimitOrderData.user_id);
+            if (checkUser == true) {
+                buyLimitOrderData.placed_by = process.env.TRADEDESK_MANUAL
+            } else {
+                buyLimitOrderData.placed_by = process.env.TRADEDESK_USER
+            }
+        }
         if (sellBook && sellBook.length > 0) {
             if ((sellBook[0].price <= buyLimitOrderData.limit_price) || (sellBook[0].price <= buyLimitOrderData.stop_price)) {
                 console.log("INSIDE IF")
@@ -40,7 +48,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     buyLimitOrderData.fill_price = sellBook[0].price;
                     delete buyLimitOrderData.id;
                     console.log((buyLimitOrderData.fill_price * buyLimitOrderData.quantity).toFixed(8) <= (wallet.placed_balance).toFixed(8))
-                    if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) {
+                    if (((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                         console.log("buyLimitOrderData", buyLimitOrderData)
                         var buyAddedData = {
                             ...buyLimitOrderData
@@ -191,7 +199,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     remainigQuantity = parseFloat(remainigQuantity).toFixed(8);
                     console.log("remainigQuantity", remainigQuantity)
                     var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
-                    if ((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) {
+                    if (((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                         console.log("INSIDE IF WALLET CHECKING");
                         var buyAddedData = {
                             ...buyLimitOrderData

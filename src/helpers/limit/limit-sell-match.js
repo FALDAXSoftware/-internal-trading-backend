@@ -29,6 +29,14 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
         let fees = await MakerTakerFees.getFeesValue(crypto, currency);
         var tradeOrder;
+        if (sellLimitOrderData.order_type == "StopLimit") {
+            const checkUser = Helper.checkWhichUser(sellLimitOrderData.user_id);
+            if (checkUser == true) {
+                sellLimitOrderData.placed_by = process.env.TRADEDESK_MANUAL
+            } else {
+                sellLimitOrderData.placed_by = process.env.TRADEDESK_USER
+            }
+        }
         if (buyBook && buyBook.length > 0) {
             console.log("(buyBook[0].price <= sellLimitOrderData.stop_price)", (buyBook[0].price <= sellLimitOrderData.stop_price))
             if ((buyBook[0].price >= sellLimitOrderData.limit_price) || (buyBook[0].price <= sellLimitOrderData.stop_price)) {
@@ -36,7 +44,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var availableQuantity = buyBook[0].quantity;
                     sellLimitOrderData.fill_price = buyBook[0].price;
                     delete sellLimitOrderData.id;
-                    if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+                    if ((parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) || sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT || sellLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                         var sellAddedData = {
                             ...sellLimitOrderData
                         }
@@ -181,7 +189,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var remainningQuantity = sellLimitOrderData.quantity - buyBook[0].quantity;
                     remainningQuantity = parseFloat(remainningQuantity).toFixed(8);
                     var feeResult = await MakerTakerFees.getFeesValue(sellLimitOrderData.settle_currency, sellLimitOrderData.currency);
-                    if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+                    if ((parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) || sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT || sellLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                         var sellAddedData = {
                             ...sellLimitOrderData
                         }
