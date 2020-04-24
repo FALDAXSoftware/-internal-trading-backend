@@ -22,6 +22,9 @@ var TradeController = require("../../controllers/v1/TradeController");
 var Currency = require("../../helpers/currency");
 var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var PairsModel = require("../../models/Pairs");
+var BuyBookModel = require("../../models/BuyBook");
+var SellBookModel = require("../../models/SellBook");
+var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 
 class DashboardController extends AppController {
 
@@ -449,6 +452,52 @@ class DashboardController extends AppController {
 
     sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async deletePendingOrder() {
+        try {
+            var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+            var getPendingBuyOrder = await BuyBookModel
+                .query()
+                .select()
+                .where("deleted_at", null)
+                .andWhere("created_at", "<=", now)
+                .andWhere("placed_by", process.env.TRADEDESK_BOT)
+                .orderBy("id", "DESC")
+
+            console.log("getPendingBuyOrder", getPendingBuyOrder)
+            console.log("getPendingBuyOrder.length", getPendingBuyOrder.length)
+
+            for (var i = 0; i < getPendingBuyOrder.length; i++) {
+                var getData = await cancelOldOrder.cancelPendingOrder(getPendingBuyOrder[i].side, getPendingBuyOrder[i].order_type, getPendingBuyOrder[i].id)
+                console.log("getData", getData)
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async deleteSellPendingOrder() {
+        try {
+            var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+            var getPendingSellOrder = await SellBookModel
+                .query()
+                .select()
+                .where("deleted_at", null)
+                .andWhere("created_at", "<=", now)
+                .andWhere("placed_by", process.env.TRADEDESK_BOT)
+                .orderBy("id", "DESC")
+
+            console.log("getPendingBuyOrder", getPendingSellOrder)
+            console.log("getPendingSellOrder.length", getPendingSellOrder.length)
+
+            for (var i = 0; i < getPendingSellOrder.length; i++) {
+                var getData = await cancelOldOrder.cancelPendingOrder(getPendingSellOrder[i].side, getPendingSellOrder[i].order_type, getPendingSellOrder[i].id)
+                console.log("getData", getData)
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
 
