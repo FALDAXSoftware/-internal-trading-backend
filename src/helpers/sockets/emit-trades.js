@@ -66,7 +66,7 @@ var emitTrades = async (crypto, currency, userIds) => {
     }
 
     var allpendingOrders = await AllPendingOrders.getAllPendingOrders(crypto, currency)
-    global.io.sockets.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, allpendingOrders)
+    global.io.sockets.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, { data: allpendingOrders, id: process.env.TRADEDESK_USER_ID })
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "orderUpdated", {
