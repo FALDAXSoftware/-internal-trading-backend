@@ -153,7 +153,7 @@ class TradeController extends AppController {
       currency_wallet_data,
       userIds
     } = alldata;
-
+    const checkUser = Helper.checkWhichUser(user_id);
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
 
@@ -181,7 +181,8 @@ class TradeController extends AppController {
         quantity: quantityValue,
         order_status: "partially_filled",
         currency: currency,
-        settle_currency: crypto
+        settle_currency: crypto,
+        placed_by:(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -457,7 +458,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by:(checkUser ? 'bot':'user')
+        placed_by:(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -710,6 +711,7 @@ class TradeController extends AppController {
   async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res) {
     var userIds = [];
     userIds.push(parseInt(user_id));
+    const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
@@ -735,7 +737,8 @@ class TradeController extends AppController {
       'currency': currency,
       'settle_currency': crypto,
       'maximum_time': now,
-      'is_partially_fulfilled': false
+      'is_partially_fulfilled': false,
+      'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
     };
 
     var resultData = {
@@ -963,6 +966,7 @@ class TradeController extends AppController {
   async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res) {
     var userIds = [];
     userIds.push(parseInt(user_id));
+    const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
     let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
@@ -988,7 +992,8 @@ class TradeController extends AppController {
       'currency': currency,
       'settle_currency': crypto,
       'maximum_time': now,
-      'is_partially_fulfilled': false
+      'is_partially_fulfilled': false,
+      'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
     }
 
     var resultData = {
