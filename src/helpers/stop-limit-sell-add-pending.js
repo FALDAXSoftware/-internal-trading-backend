@@ -33,7 +33,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         'settle_currency': crypto,
         'order_status': "open",
         'currency': currency,
-        'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     });
 
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);

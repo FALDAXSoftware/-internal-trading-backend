@@ -184,7 +184,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by:(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        placed_by:(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -463,7 +463,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by:(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        placed_by:(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -749,7 +749,7 @@ class TradeController extends AppController {
       'settle_currency': crypto,
       'maximum_time': now,
       'is_partially_fulfilled': false,
-      'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+      'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     };
 
     var resultData = {
@@ -1004,7 +1004,7 @@ class TradeController extends AppController {
       'settle_currency': crypto,
       'maximum_time': now,
       'is_partially_fulfilled': false,
-      'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+      'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     }
 
     var resultData = {

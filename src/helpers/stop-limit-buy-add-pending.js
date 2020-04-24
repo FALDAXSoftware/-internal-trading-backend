@@ -32,7 +32,7 @@ var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_
         'settle_currency': crypto,
         'order_status': "open",
         'currency': currency,
-        'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     });
 
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
