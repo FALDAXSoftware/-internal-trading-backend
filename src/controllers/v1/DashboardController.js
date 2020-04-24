@@ -456,7 +456,7 @@ class DashboardController extends AppController {
 
     async deletePendingOrder() {
         try {
-            var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+            var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
             var getPendingBuyOrder = await BuyBookModel
                 .query()
                 .select()
@@ -479,7 +479,7 @@ class DashboardController extends AppController {
 
     async deleteSellPendingOrder() {
         try {
-            var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+            var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
             var getPendingSellOrder = await SellBookModel
                 .query()
                 .select()
