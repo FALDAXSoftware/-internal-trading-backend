@@ -303,13 +303,15 @@ class DashboardController extends AppController {
                         buyLimitOrderData.side,
                         buyLimitOrderData.order_type,
                         buyLimitOrderData.quantity,
-                        buyLimitOrderData.limit_price);
+                        buyLimitOrderData.limit_price,
+                        null,
+                        true);
 
                     console.log("responseData", responseData)
-                    let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                    // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
 
-                return res.status(200).json({ "status": "OK" })
+                // return res.status(200).json({ "status": "OK" })
 
 
             })
@@ -332,11 +334,35 @@ class DashboardController extends AppController {
 
                 var askValue = body.asks;
                 console.log(askValue);
+                let { crypto, currency } = await Currency.get_currencies(pair_name);
+                var maxValue = await PairsModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("name", pair_name)
+                    .orderBy("id", 'DESC')
+
+                console.log("maxValue", maxValue)
+
+                var getCryptoValue = await CurrencyConversionModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    .orderBy("id", "DESC");
+
+                console.log("getCryptoValue", getCryptoValue)
+
+                var usdValue = getCryptoValue.quote.USD.price
+                console.log("usdValue", usdValue)
+                var min = (maxValue.crypto_minimum) / (usdValue);
+                var max = (maxValue.crypto_maximum) / (usdValue);
+                console.log("min", min, " max", max)
 
                 for (var i = 0; i < askValue.length; i++) {
-                    var min = 0.01,
-                        max = 0.02,
-                        highlightedNumber = Math.random() * (max - min) + min;
+                    var highlightedNumber = Math.random() * (max - min) + min;
                     askValue[i][1] = highlightedNumber
                 }
 
@@ -349,10 +375,10 @@ class DashboardController extends AppController {
                 for (var i = 0; i < askValue.length; i++) {
                     var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                     var priceValue = parseFloat(askValue[i][0]).toFixed(8);
-                    let { crypto, currency } = await Currency.get_currencies(symbol);
+                    let { crypto, currency } = await Currency.get_currencies(pair_name);
                     var sellLimitOrderData = {
-                        'user_id': 1545,
-                        'symbol': 'XRP-BTC',
+                        'user_id': process.env.TRADEDESK_USER_ID,
+                        'symbol': pair_name,
                         'side': 'Sell',
                         'order_type': 'Limit',
                         'created_at': now,
@@ -380,14 +406,15 @@ class DashboardController extends AppController {
                         sellLimitOrderData.order_type,
                         sellLimitOrderData.quantity,
                         sellLimitOrderData.limit_price,
-                        res);
+                        null,
+                        true);
 
 
                     console.log("responseData", responseData)
-                    let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                    // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
 
-                return res.status(200).json({ "status": "OK" })
+                // return res.status(200).json({ "status": "OK" })
 
 
             })

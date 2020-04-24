@@ -305,7 +305,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
             } else {
                 console.log("sellLimitOrderData.quantity", sellLimitOrderData.quantity)
-                if (parseFloat(sellLimitOrderData.quantity) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+                if (parseFloat(sellLimitOrderData.quantity) <= parseFloat(wallet.placed_balance).toFixed(8) || sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT || sellLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                     var sellAddedData = {
                         ...sellLimitOrderData
                     }
@@ -377,7 +377,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         } else {
             console.log("sellLimitOrderData.quantity", sellLimitOrderData.quantity)
-            if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) {
+            if (parseFloat(sellLimitOrderData.quantity).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8) || sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT || sellLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                 var sellAddedData = {
                     ...sellLimitOrderData
                 }

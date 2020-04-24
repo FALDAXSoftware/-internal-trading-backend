@@ -184,7 +184,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by:(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        placed_by: (checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -463,7 +463,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by:(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        placed_by: (checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
@@ -719,7 +719,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     const checkUser = Helper.checkWhichUser(user_id);
@@ -730,6 +730,15 @@ class TradeController extends AppController {
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
     var priceValue = parseFloat(limit_price).toFixed(8);
+    var placedBy = "";
+
+    if (checkUser == true && flag == true) {
+      placedBy = process.env.TRADEDESK_BOT
+    } else if (checkUser == true) {
+      placedBy = process.env.TRADEDESK_MANUAL
+    } else {
+      placedBy = process.env.TRADEDESK_USER
+    }
 
     var buyLimitOrderData = {
       'user_id': user_id,
@@ -749,7 +758,7 @@ class TradeController extends AppController {
       'settle_currency': crypto,
       'maximum_time': now,
       'is_partially_fulfilled': false,
-      'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+      'placed_by': placedBy
     };
 
     var resultData = {
@@ -781,7 +790,7 @@ class TradeController extends AppController {
         console.log("INSIDE ELSE??????")
         buyLimitOrderData.activity_id = activity.id;
         var total_price = buyLimitOrderData.quantity * buyLimitOrderData.limit_price;
-        if (total_price <= wallet.placed_balance) {
+        if (total_price <= wallet.placed_balance || placedBy == process.env.TRADEDESK_BOT || placedBy == process.env.TRADEDESK_MANUAL) {
           buyLimitOrderData.is_partially_fulfilled = true;
           buyLimitOrderData.is_filled = false;
           buyLimitOrderData.added = true;
@@ -843,7 +852,7 @@ class TradeController extends AppController {
     } else {
       buyLimitOrderData.activity_id = activity.id;
       var total_price = parseFloat(buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8);
-      if (total_price <= wallet.placed_balance) {
+      if (total_price <= wallet.placed_balance || placedBy == process.env.TRADEDESK_BOT || placedBy == process.env.TRADEDESK_MANUAL) {
         buyLimitOrderData.is_partially_fulfilled = true;
         buyLimitOrderData.is_filled = false;
         buyLimitOrderData.added = true;
@@ -974,7 +983,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Sell Order
-  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res) {
+  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     const checkUser = Helper.checkWhichUser(user_id);
@@ -985,6 +994,14 @@ class TradeController extends AppController {
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
     var priceValue = parseFloat(limit_price).toFixed(8);
+    var placedBy = "";
+    if (checkUser == true && flag == true) {
+      placedBy = process.env.TRADEDESK_BOT
+    } else if (checkUser == true) {
+      placedBy = process.env.TRADEDESK_MANUAL
+    } else {
+      placedBy = process.env.TRADEDESK_USER
+    }
 
     var sellLimitOrderData = {
       'user_id': user_id,
@@ -1004,7 +1021,7 @@ class TradeController extends AppController {
       'settle_currency': crypto,
       'maximum_time': now,
       'is_partially_fulfilled': false,
-      'placed_by':(checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+      'placed_by': placedBy
     }
 
     var resultData = {
@@ -1031,7 +1048,8 @@ class TradeController extends AppController {
         sellLimitOrderData.activity_id = activity.id;
         var total_price = parseFloat(sellLimitOrderData.quantity).toFixed(8);
         console.log("wallet", wallet)
-        if (total_price <= wallet.placed_balance) {
+        // if()
+        if (total_price <= wallet.placed_balance || placedBy == process.env.TRADEDESK_BOT || placedBy == process.env.TRADEDESK_MANUAL) {
           sellLimitOrderData.is_partially_fulfilled = true;
           sellLimitOrderData.is_filled = false;
           sellLimitOrderData.added = true;
@@ -1092,7 +1110,7 @@ class TradeController extends AppController {
     } else {
       sellLimitOrderData.activity_id = activity.id;
       var total_price = parseFloat(sellLimitOrderData.quantity).toFixed(8);
-      if (total_price <= wallet.placed_balance) {
+      if (total_price <= wallet.placed_balance || placedBy == process.env.TRADEDESK_BOT || placedBy == process.env.TRADEDESK_MANUAL) {
         sellLimitOrderData.is_partially_fulfilled = true;
         sellLimitOrderData.is_filled = false;
         sellLimitOrderData.added = true;
