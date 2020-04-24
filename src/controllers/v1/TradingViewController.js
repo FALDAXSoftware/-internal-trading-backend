@@ -61,7 +61,7 @@ class TradingViewController extends AppController {
     async getSymbolInfo(req, res) {
         res.json({
             description: req.query.symbol,
-            has_intraday: false,
+            has_intraday: true,
             has_no_volume: false,
             minmov: 1,
             minmov2: 0,
@@ -95,6 +95,12 @@ class TradingViewController extends AppController {
 
             // Covert Resolution In Day
             switch (resolution) {
+                case "1":
+                    resolutionInMinute = 1
+                case "15":
+                    resolutionInMinute = 15
+                case "240":
+                    resolutionInMinute = 240
                 // Day
                 case "D":
                     resolutionInMinute = 1440
