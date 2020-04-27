@@ -69,7 +69,7 @@ var getInstrumentData = async (currency) => {
         }
 
         var diffrence = current_price - previous_price
-        var percentChange = (diffrence / current_price) * 100;
+        var percentChange = (diffrence / previous_price) * 100;
 
         if (isNaN(percentChange)) {
             percentChange = 0;

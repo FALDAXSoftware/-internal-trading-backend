@@ -68,24 +68,15 @@ class DashboardController extends AppController {
 
             for (var i = 0; i < coinBalance.length; i++) {
                 var total_price = 0;
-                var price = await TradeHistoryModel
-                    .query()
-                    .select('fill_price')
-                    .where('settle_currency', coinBalance[i].coin)
-                    .andWhere('currency', currency)
-                    .andWhere('created_at', '<=', today)
-                    .andWhere('created_at', '>=', yesterday)
-                    .orderBy('id', 'DESC')
-
-                if (price.length == 0) {
-                    average_price = 0;
-                } else {
-                    for (var j = 0; j < price.length; j++) {
-                        total_price = total_price + price[j].fill_price;
-                    }
-
-                    average_price = total_price / (price.length);
-                }
+                // var price = await TradeHistoryModel
+                //     .query()
+                //     .avg('fill_price')
+                //     .select('fill_price')
+                //     .where('settle_currency', coinBalance[i].coin)
+                //     .andWhere('currency', currency)
+                //     .andWhere('created_at', '<=', today)
+                //     .andWhere('created_at', '>=', yesterday)
+                //     .orderBy('id', 'DESC')
 
                 var percentChange = 0.0;
                 var currentPrice = 0.0;
@@ -93,7 +84,6 @@ class DashboardController extends AppController {
 
                 var currentPriceFiat = await TempCoinMArketCapModel
                     .query()
-                    .first()
                     .select()
                     .where('deleted_at', null)
                     .andWhere('coin', coinBalance[i].coin)
@@ -103,26 +93,18 @@ class DashboardController extends AppController {
 
                 console.log(currentPriceFiat)
 
-                if (currentPriceFiat == undefined) {
+                if (currentPriceFiat.length == 0) {
                     currentPrice = 0;
                 } else {
-                    currentPrice = currentPriceFiat.price;
+                    currentPrice = currentPriceFiat[0].price;
                 }
 
-                var previousPriceFiat = await TempCoinMArketCapModel
-                    .query()
-                    .first()
-                    .select()
-                    .where('deleted_at', null)
-                    .andWhere('coin', coinBalance[i].coin)
-                    .andWhere("created_at", "<=", today)
-                    .andWhere("created_at", ">=", yesterday)
-                    .orderBy('id', 'ASC');
+                average_price = currentPrice
 
-                if (previousPriceFiat == undefined) {
-                    currentPrice = 0;
+                if (currentPriceFiat.length == 0) {
+                    previousPrice = 0;
                 } else {
-                    previousPrice = previousPriceFiat.price;
+                    previousPrice = currentPriceFiat[currentPriceFiat.length - 1].price;
                 }
 
 
