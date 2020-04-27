@@ -385,14 +385,12 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
         }
         // Get and check Crypto Wallet details
-        let crypto_wallet_data = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-        if (crypto_wallet_data == 1)
+        let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+        if (!walletData.currency) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-        let crypto_wallet_data_crypto1 = await WalletBalanceHelper.getWalletBalance(currency, crypto, user_id);
-        if (crypto_wallet_data_crypto1 == 1)
+        }
+        if (!walletData.crypto) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
-        if (crypto_wallet_data == 0) {
-          return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
         }
 
         // // Check balance sufficient or not
@@ -404,7 +402,7 @@ class TradeController extends AppController {
           order_type,
           orderQuantity,
           user_id,
-          res);
+          res, walletData.crypto.coin_id, walletData.currency.coin_id);
 
         if (responseData.status > 1) {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
@@ -425,7 +423,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id) {
     const checkUser = Helper.checkWhichUser(user_id);
     var userIds = [];
     userIds.push(user_id);
@@ -434,7 +432,7 @@ class TradeController extends AppController {
     console.log("crypto, currency", crypto, currency)
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
-    let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+    // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var quantityFixed = orderQuantity;
     var quantityValue = parseFloat(quantityFixed).toFixed(8);
     var tradeOrder;
@@ -482,8 +480,8 @@ class TradeController extends AppController {
           var trade_history_data = {
             ...orderData
           };
-          trade_history_data.maker_fee = (fees.makerFee).toFixed(8);
-          trade_history_data.taker_fee = (fees.takerFee).toFixed(8);
+          trade_history_data.maker_fee = 0;
+          trade_history_data.taker_fee = 0;
           trade_history_data.quantity = quantityValue;
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
@@ -502,10 +500,12 @@ class TradeController extends AppController {
             side: side,
             settle_currency: crypto,
             quantity: quantityValue,
-            fill_price: fillPriceValue
+            fill_price: fillPriceValue,
+            crypto_coin_id,
+            currency_coin_id
           }
 
-          var tradingFees = await TradingFees.getTraddingFees(request, fees.makerFee, fees.takerFee);
+          var tradingFees = await TradingFees.getTraddingFees(request);
           // if (tradingFees == 1) {
           //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
           // }
@@ -543,8 +543,8 @@ class TradeController extends AppController {
           var trade_history_data = {
             ...orderData
           };
-          trade_history_data.maker_fee = (fees.makerFee).toFixed(8);
-          trade_history_data.taker_fee = (fees.takerFee).toFixed(8);
+          trade_history_data.maker_fee = 0;
+          trade_history_data.taker_fee = 0;
           trade_history_data.quantity = availableQuantity;
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
@@ -560,7 +560,9 @@ class TradeController extends AppController {
             side: side,
             settle_currency: crypto,
             quantity: availableQuantity,
-            fill_price: fillPriceValue
+            fill_price: fillPriceValue,
+            crypto_coin_id,
+            currency_coin_id
           }
           console.log(request);
           var tradingFees = await TradingFees.getTraddingFees(request, fees.makerFee, fees.takerFee);
