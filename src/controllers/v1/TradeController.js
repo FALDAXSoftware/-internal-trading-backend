@@ -639,7 +639,6 @@ class TradeController extends AppController {
   async limitBuy(req, res) {
     let {
       symbol,
-      // user_id,
       side,
       order_type,
       orderQuantity,
@@ -663,21 +662,15 @@ class TradeController extends AppController {
       if (crypto == currency) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
       }
+
       // Get and check Crypto Wallet details
-      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-      if (wallet == 1)
+      let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+      if (!walletData.currency) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
-      let crypto_wallet_data_crypto1 = await WalletBalanceHelper.getWalletBalance(currency, crypto, user_id);
-      if (crypto_wallet_data_crypto1 == 1)
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
-
-      if (wallet == 0) {
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Coin not found").message, []);
       }
-
-      // if (parseFloat(wallet.balance) <= orderQuantity) {
-      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
-      // }
+      if (!walletData.crypto) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
 
       let responseData = await module.exports.limitBuyOrder(symbol,
         user_id,
@@ -685,7 +678,10 @@ class TradeController extends AppController {
         order_type,
         orderQuantity,
         limit_price,
-        res);
+        res,
+        false,
+        walletData.crypto.coin_id,
+        walletData.currency.coin_id);
 
       if (responseData.status > 2) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
@@ -704,14 +700,14 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
-    let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+    // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
     var priceValue = parseFloat(limit_price).toFixed(8);
@@ -753,8 +749,8 @@ class TradeController extends AppController {
     resultData.fix_quantity = quantityValue
 
     var activity = await ActivityHelper.addActivityData(resultData);
-    resultData.maker_fee = fees.makerFee;
-    resultData.taker_fee = fees.takerFee;
+    resultData.maker_fee = 0.0;
+    resultData.taker_fee = 0.0;
     console.log(resultData);
     console.log("sellBook.length", sellBook.length)
 
@@ -763,7 +759,7 @@ class TradeController extends AppController {
       console.log("priceValue", priceValue)
       console.log("currentPrice", currentPrice)
       if (priceValue >= currentPrice) {
-        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res);
+        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
         return {
           status: limitMatchData.status,
           message: limitMatchData.message
@@ -779,7 +775,6 @@ class TradeController extends AppController {
           buyLimitOrderData.is_partially_fulfilled = true;
           buyLimitOrderData.is_filled = false;
           buyLimitOrderData.added = true;
-          console.log(buyLimitOrderData);
           var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
           addBuyBook.added = true;
 

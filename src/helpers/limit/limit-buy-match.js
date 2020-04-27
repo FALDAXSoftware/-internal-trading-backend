@@ -15,7 +15,7 @@ var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 
-var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null) => {
+var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null) => {
     try {
         var quantityValue = buyLimitOrderData.quantity;
         var userIds = [];
@@ -29,7 +29,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         let wallet = await WalletBalanceHelper.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);
         let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
         // console.log("sellBook", sellBook)
-        let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+        // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
         var tradeOrder;
         if (buyLimitOrderData.order_type == "StopLimit") {
             const checkUser = Helper.checkWhichUser(buyLimitOrderData.user_id);
@@ -65,8 +65,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             trade_history_data.fix_quantity = buyLimitOrderData.quantity
                         }
                         console.log("trade_history_data", trade_history_data)
-                        trade_history_data.maker_fee = fees.makerFee;
-                        trade_history_data.taker_fee = fees.takerFee;
+                        trade_history_data.maker_fee = 0.0;
+                        trade_history_data.taker_fee = 0.0;
                         trade_history_data.requested_user_id = sellBook[0].user_id;
                         trade_history_data.created_at = new Date();
                         console.log("trade_history_data", trade_history_data)
@@ -80,14 +80,18 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             side: buyLimitOrderData.side,
                             settle_currency: buyLimitOrderData.settle_currency,
                             quantity: buyLimitOrderData.quantity,
-                            fill_price: buyLimitOrderData.fill_price
+                            fill_price: buyLimitOrderData.fill_price,
+                            crypto_coin_id,
+                            currency_coin_id
                         }
-                        var tradingFees = await TradingFees.getTraddingFees(request, fees.makerFee, fees.takerFee);
+                        var tradingFees = await TradingFees.getTraddingFees(request);
 
                         trade_history_data.user_fee = tradingFees.userFee;
                         trade_history_data.requested_fee = tradingFees.requestedFee;
                         trade_history_data.user_coin = buyLimitOrderData.settle_currency;
                         trade_history_data.requested_coin = buyLimitOrderData.currency;
+                        trade_history_data.maker_fee = getTraddingFees.maker_fee;
+                        trade_history_data.taker_fee = getTraddingFees.taker_fee;
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
                         }
@@ -198,7 +202,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     var remainigQuantity = buyLimitOrderData.quantity - sellBook[0].quantity;
                     remainigQuantity = parseFloat(remainigQuantity).toFixed(8);
                     console.log("remainigQuantity", remainigQuantity)
-                    var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
+                    // var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
                     if (((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                         console.log("INSIDE IF WALLET CHECKING");
                         var buyAddedData = {
@@ -226,8 +230,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             trade_history_data.fix_quantity = buyLimitOrderData.quantity;
                         }
 
-                        trade_history_data.maker_fee = feeResult.makerFee;
-                        trade_history_data.taker_fee = feeResult.takerFee;
+                        trade_history_data.maker_fee = 0.0;
+                        trade_history_data.taker_fee = 0.0;
                         trade_history_data.quantity = sellBook[0].quantity;
                         trade_history_data.requested_user_id = sellBook[0].user_id;
                         trade_history_data.created_at = new Date();
@@ -241,14 +245,18 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             side: buyLimitOrderData.side,
                             settle_currency: buyLimitOrderData.settle_currency,
                             quantity: sellBook[0].quantity,
-                            fill_price: buyLimitOrderData.fill_price
+                            fill_price: buyLimitOrderData.fill_price,
+                            crypto_coin_id,
+                            currency_coin_id
                         }
 
-                        var tradingFees = await TradingFees.getTraddingFees(request, fees.makerFee, fees.takerFee);
+                        var tradingFees = await TradingFees.getTraddingFees(request);
                         trade_history_data.user_fee = (tradingFees.userFee);
                         trade_history_data.requested_fee = (tradingFees.requestedFee);
                         trade_history_data.user_coin = crypto;
                         trade_history_data.requested_coin = currency;
+                        trade_history_data.maker_fee = tradingFees.maker_fee;
+                        trade_history_data.taker_fee = tradingFees.taker_fee;
 
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
@@ -309,7 +317,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         console.log("resendDataLimit, resendData.settle_currency, resendData.currency, activityResult", resendDataLimit, resendData.settle_currency, resendData.currency, activityResult)
 
                         if (remainigQuantity > 0) {
-                            var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res);
+                            var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res, crypto_coin_id, currency_coin_id);
                             return responseData;
                         }
                     } else {
@@ -328,8 +336,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         ...buyLimitOrderData
                     };
                     buyAddedData.fix_quantity = buyAddedData.quantity;
-                    buyAddedData.maker_fee = fees.makerFee;
-                    buyAddedData.taker_fee = fees.takerFee;
+                    buyAddedData.maker_fee = 0.0;
+                    buyAddedData.taker_fee = 0.0;
                     if (buyAddedData.order_type == "StopLimit") {
                         buyAddedData.order_type = "Limit";
                         buyAddedData.price = buyLimitOrderData.limit_price;
@@ -405,8 +413,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 };
                 // buyAddedData.price = buyLimitOrderData.limit_price;
                 buyAddedData.fix_quantity = buyAddedData.quantity;
-                buyAddedData.maker_fee = fees.makerFee;
-                buyAddedData.taker_fee = fees.takerFee;
+                buyAddedData.maker_fee = 0.0;
+                buyAddedData.taker_fee = 0.0;
                 delete buyAddedData.id;
                 delete buyAddedData.side;
                 delete buyAddedData.activity_id;
