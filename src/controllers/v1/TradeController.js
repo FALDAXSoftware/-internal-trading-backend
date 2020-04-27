@@ -467,15 +467,12 @@ class TradeController extends AppController {
 
       resultData.is_market = true;
       resultData.fix_quantity = quantityValue;
-      resultData.maker_fee = fees.makerFee;
-      resultData.taker_fee = fees.takerFee;
+      resultData.maker_fee = 0.0;
+      resultData.taker_fee = 0.0;
 
       var activity = await ActivityHelper.addActivityData(resultData);
 
       if (quantityValue <= availableQuantity) {
-        console.log("fillPriceValue", fillPriceValue);
-        console.log("quantityValue", quantityValue);
-        console.log("wallet.placed_balance", wallet.placed_balance)
         if (((fillPriceValue * quantityValue).toFixed(8) <= (wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
@@ -486,12 +483,9 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          console.log("currentSellBookDetails", currentSellBookDetails);
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
-          console.log("updatedActivity", updatedActivity)
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
-          console.log("userIds", userIds)
 
           var request = {
             requested_user_id: trade_history_data.requested_user_id,
@@ -506,21 +500,17 @@ class TradeController extends AppController {
           }
 
           var tradingFees = await TradingFees.getTraddingFees(request);
-          // if (tradingFees == 1) {
-          //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
-          // }
-          console.log("tradingFees", tradingFees)
           var usd_value = resultData * (request.fill_price * request.quantity);
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
           trade_history_data.user_coin = crypto;
           trade_history_data.requested_coin = currency;
-          console.log("trade_history_data", trade_history_data)
+          trade_history_data.maker_fee = tradingFees.maker_fee
+          trade_history_data.taker_fee = tradingFees.taker_fee
 
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = tradeHistory;
           let remainigQuantity = availableQuantity - quantityValue;
-          console.log("remainigQuantity", remainigQuantity)
           if (remainigQuantity > 0) {
             let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
               quantity: remainigQuantity
@@ -536,9 +526,6 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQuantity;
-        console.log("fillPriceValue", fillPriceValue);
-        console.log("quantityValue", quantityValue);
-        console.log("wallet.placed_balance", wallet.placed_balance)
         if ((parseFloat(fillPriceValue * quantityValue).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
@@ -564,12 +551,13 @@ class TradeController extends AppController {
             crypto_coin_id,
             currency_coin_id
           }
-          console.log(request);
-          var tradingFees = await TradingFees.getTraddingFees(request, fees.makerFee, fees.takerFee);
+          var tradingFees = await TradingFees.getTraddingFees(request);
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
           trade_history_data.user_coin = crypto;
           trade_history_data.requested_coin = currency;
+          trade_history_data.maker_fee = tradingFees.maker_fee
+          trade_history_data.taker_fee = tradingFees.taker_fee
 
           let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = TradeHistory;
@@ -582,10 +570,8 @@ class TradeController extends AppController {
             user_id
           }
           requestData.orderQuantity = parseFloat(remainingQty).toFixed(8);
-          console.log("requestData", requestData)
           // Again call same api
-          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res)
-          console.log(response);
+          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id)
         } else {
           return {
             status: 2,
@@ -960,7 +946,7 @@ class TradeController extends AppController {
         orderQuantity,
         limit_price,
         res,
-        flag = false,
+        false,
         walletData.crypto.coin_id,
         walletData.currency.coin_id);
 
