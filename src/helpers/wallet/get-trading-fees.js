@@ -12,6 +12,7 @@ var getTraddingFees = async (inputs) => {
     var makerTakerFees = {};
     try {
         var request = inputs;
+        console.log("inputs", inputs)
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
         // inputs.makerFee = 0.21
@@ -23,23 +24,26 @@ var getTraddingFees = async (inputs) => {
         var getCryptoPriceData = null
 
         let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
-                    FROM currency_conversion
-                        WHERE currency_conversion.deleted_at IS NOT NULL`
+                                FROM currency_conversion
+                                WHERE currency_conversion.deleted_at IS NULL`
 
         let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
 
-        var now = moment().format("YYYY-MM-DD HH:mm:ss");
+        console.log("conversionData", conversionData.rows)
+
+        var now = moment().format();
         var resultData;
         var yesterday = moment(now)
             .subtract(1, 'months')
-            .format("YYYY-MM-DD HH:mm:ss");
+            .format();
         let userTradeHistorySum = {}
         let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-        FROM(SELECT user_coin, sum(quantity) FROM trade_history
-        WHERE user_id = 1545 AND created_at >= '' AND created_at <= '' GROUP BY user_coin) a1
-        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-        WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-        ON a1.user_coin = a2.requested_coin`)
+                                                                FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                WHERE user_id = 1545 AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                ON a1.user_coin = a2.requested_coin`)
+        console.log("userTradesum", userTradesum.rows.length)
         for (let index = 0; index < userTradesum.rows.length; index++) {
             const element = userTradesum.rows[index];
             userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
@@ -48,7 +52,7 @@ var getTraddingFees = async (inputs) => {
         let requestedTradeHistorySum = {}
         let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
         FROM(SELECT user_coin, sum(quantity) FROM trade_history
-        WHERE user_id = 1545 AND created_at >= '' AND created_at <= '' GROUP BY user_coin) a1
+        WHERE user_id = 1545 AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
         FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
         WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
         ON a1.user_coin = a2.requested_coin`)
@@ -56,6 +60,8 @@ var getTraddingFees = async (inputs) => {
             const element = requestedTradesum.rows[index];
             requestedTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
         }
+
+        console.log("requestedTradeHistorySum", requestedTradeHistorySum)
 
         let userTotalUSDSum = 0
         let requestedTotalUSDSum = 0
@@ -98,6 +104,8 @@ var getTraddingFees = async (inputs) => {
         // Just Replace inputs.makerFee and inputs.takerFee with following
         inputs.makerFee = cryptoTakerFee.maker_fee
         inputs.takerFee = currencyMakerFee.taker_fee
+        var currency_coin_id = request.currency_coin_id;
+        var crypto_coin_id = request.crypto_coin_id
 
         var user_usd;
         let userWallets = await Wallet
@@ -106,7 +114,7 @@ var getTraddingFees = async (inputs) => {
             .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere(function () {
-                this.where(coin_id, currency_coin_id).orWhere(coin_id, crypto_coin_id)
+                this.where('coin_id', currency_coin_id).orWhere('coin_id', crypto_coin_id)
             })
             .andWhere('user_id', inputs.user_id);
         var currencyWalletUser = null
@@ -127,7 +135,7 @@ var getTraddingFees = async (inputs) => {
             .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere(function () {
-                this.where(coin_id, currency_coin_id).orWhere(coin_id, crypto_coin_id)
+                this.where("coin_id", currency_coin_id).orWhere("coin_id", crypto_coin_id)
             })
             .andWhere('user_id', inputs.requested_user_id);
         var currencyWalletRequested = null
@@ -147,7 +155,7 @@ var getTraddingFees = async (inputs) => {
             .where('deleted_at', null)
             .andWhere('is_active', true)
             .andWhere(function () {
-                this.where(coin_id, currency_coin_id).orWhere(coin_id, crypto_coin_id)
+                this.where("coin_id", currency_coin_id).orWhere("coin_id", crypto_coin_id)
             })
             .andWhere('user_id', 36);
         var adminWalletCrypto = null
@@ -170,6 +178,8 @@ var getTraddingFees = async (inputs) => {
         }
 
         // inputs.makerFee = 0.21
+        console.log("inputs.makerFee", inputs.makerFee)
+        console.log("inputs.takerFee", inputs.takerFee)
         // Calculating fees value on basis of the side and order executed
         if (inputs.side == "Buy") {
 
@@ -244,7 +254,7 @@ var getTraddingFees = async (inputs) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', cryptoData.id)
+                    .andWhere('coin_id', crypto_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminBalance,
@@ -262,7 +272,7 @@ var getTraddingFees = async (inputs) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', currencyData.id)
+                    .andWhere('coin_id', currency_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminCurrencyBalance,
@@ -273,10 +283,10 @@ var getTraddingFees = async (inputs) => {
             user_usd = ((inputs.quantity) * inputs.fill_price) * (resultData);
 
         } else if (inputs.side == "Sell") {
-            // console.log("cryptoWalletUser", cryptoWalletUser)
-            // console.log("cryptoWalletRequested", cryptoWalletRequested)
-            // console.log("currencyWalletUser", currencyWalletUser)
-            // console.log("currencyWalletRequested", currencyWalletRequested)
+            console.log("cryptoWalletUser", cryptoWalletUser)
+            console.log("cryptoWalletRequested", cryptoWalletRequested)
+            console.log("currencyWalletUser", currencyWalletUser)
+            console.log("currencyWalletRequested", currencyWalletRequested)
             // --------------------------------------crypto--------------------------- //
             var cryptouserbalance = parseFloat(cryptoWalletUser.balance).toFixed(8) - parseFloat((inputs.quantity)).toFixed(8);
             var cryptouserbalance = parseFloat(cryptouserbalance.toFixed(8))
@@ -353,7 +363,7 @@ var getTraddingFees = async (inputs) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', cryptoData.id)
+                    .andWhere('coin_id', crypto_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminBalance,
@@ -371,7 +381,7 @@ var getTraddingFees = async (inputs) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', currencyData.id)
+                    .andWhere('coin_id', currency_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminCurrencyBalance,
@@ -384,10 +394,12 @@ var getTraddingFees = async (inputs) => {
 
         return ({
             'userFee': userFee,
-            'requestedFee': requestedFee
+            'requestedFee': requestedFee,
+            "maker_fee": inputs.makerFee,
+            "taker_fee": inputs.takerFee
         })
     } catch (err) {
-        // console.log("fees Error", err);
+        console.log("fees Error", err);
         return (1);
     }
 }

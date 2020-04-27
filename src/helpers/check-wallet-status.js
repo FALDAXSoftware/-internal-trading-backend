@@ -12,7 +12,8 @@ var checkWalletStatus = async (crypto, currency, user_id) => {
     WHERE coins.is_active = 'true' AND coins.deleted_at IS NULL AND wallets.deleted_at is NULL AND wallets.receive_address is NOT NULL
     AND wallets.user_id = ${user_id} AND (coins.coin = '${currency}' OR coins.coin = '${crypto}')`
 
-    var walletBalance = await TradeHistoryModel.knex().raw(coinSql)
+    var walletBalance = await WalletModel.knex().raw(coinSql)
+    // console.log("walletBalance", walletBalance)
     let res = {
         crypto: null,
         currency: null
