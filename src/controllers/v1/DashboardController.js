@@ -245,7 +245,7 @@ class DashboardController extends AppController {
 
                 var now = new Date();
 
-                var bidValue = await module.exports.shuffle(bidValue);
+                // var bidValue = await module.exports.shuffle(bidValue);
 
                 for (var i = 0; i < bidValue.length; i++) {
                     // setTimeout(async () => {
@@ -375,7 +375,7 @@ class DashboardController extends AppController {
 
                 var now = new Date();
 
-                var askValue = await module.exports.shuffle(askValue);
+                // var askValue = await module.exports.shuffle(askValue);
                 for (var i = 0; i < askValue.length; i++) {
                     // setTimeout(async () => {
                     var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
