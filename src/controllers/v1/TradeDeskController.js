@@ -98,7 +98,7 @@ class TradeDeskController extends AppController {
 
     async getWalletTradeDeskBalance(req, res) {
         try {
-            var walletSql = `SELECT coins.coin, wallets.balance, wallets.placed_balance
+            var walletSql = `SELECT coins.coin, wallets.balance, wallets.placed_balance, wallets.receive_address
                                     FROM coins
                                     LEFT JOIN wallets
                                     ON wallets.coin_id = coins.id
