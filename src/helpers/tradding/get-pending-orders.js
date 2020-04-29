@@ -14,7 +14,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
             .andWhere('settle_currency', crypto)
             .andWhere('currency', currency)
             .andWhere('user_id', user_id)
-            .orderBy('id', 'DESC');
+            .orderBy('id', 'DESC')
+            .limit(100);
 
         var buyBookDetails = await BuyBookModel
             .query()
@@ -24,7 +25,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
             .andWhere('currency', currency)
             .andWhere('user_id', user_id)
             .andWhere('is_partially_fulfilled', true)
-            .orderBy('id', 'DESC');
+            .orderBy('id', 'DESC')
+            .limit(100);
 
         var pendingDetailsBuy = pendingOrderDetails.concat(buyBookDetails);
         var sellBookDetails = await SellBookModel
@@ -46,7 +48,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
             .andWhere('currency', currency)
             .andWhere('user_id', user_id)
             .andWhere('is_partially_fulfilled', true)
-            .orderBy('id', 'DESC');
+            .orderBy('id', 'DESC')
+            .limit(100);
         tradePendingDetails = pendingDetailsBuy.concat(sellBookDetails);
     } else {
         var yesterday = moment
@@ -62,7 +65,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
             .andWhere('currency', currency)
             .andWhere('user_id', user_id)
             .andWhere('created_at', '>=', yesterday)
-            .orderBy('id', 'DESC');
+            .orderBy('id', 'DESC')
+            .limit(100);
 
         var buyBookDetails = await BuyBookModel
             .query()
@@ -84,7 +88,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
             .andWhere('user_id', user_id)
             .andWhere('is_partially_fulfilled', true)
             .andWhere('created_at', '>=', yesterday)
-            .orderBy('id', 'DESC');
+            .orderBy('id', 'DESC')
+            .limit(100);
 
         console.log("buyBookDetails", buyBookDetails)
         var pendingDetailsBuy = pendingOrderDetails.concat(buyBookDetails);
@@ -109,7 +114,8 @@ var getPendingOrders = async (user_id, crypto, currency, month) => {
             .andWhere('user_id', user_id)
             .andWhere('is_partially_fulfilled', true)
             .andWhere('created_at', '>=', yesterday)
-            .orderBy('id', 'DESC');
+            .orderBy('id', 'DESC')
+            .limit(100);
         tradePendingDetails = pendingDetailsBuy.concat(sellBookDetails);
     }
     return tradePendingDetails;
