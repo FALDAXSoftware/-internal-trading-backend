@@ -128,6 +128,9 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
+        console.log("cryptoWalletUser", cryptoWalletUser);
+        console.log("currencyWalletUser", currencyWalletUser)
+
 
         let requestedWallets = await Wallet
             .query()
@@ -149,6 +152,9 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
+        console.log("currencyWalletRequested", currencyWalletRequested);
+        console.log("cryptoWalletRequested", cryptoWalletRequested)
+
         let adminWallets = await Wallet
             .query()
             .select()
@@ -168,6 +174,9 @@ var getTraddingFees = async (inputs) => {
                 adminWalletCrypto = element
             }
         }
+
+        console.log("adminWalletCurrency", adminWalletCurrency)
+        console.log("adminWalletCrypto", adminWalletCrypto)
 
         if (user_id == process.env.TRADEDESK_USER_ID) {
             inputs.takerFee = 0;
