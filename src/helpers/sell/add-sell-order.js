@@ -2,9 +2,7 @@ var SellBookModel = require("../../models/SellBook");
 var WalletModel = require("../../models/Wallet");
 var balanceValue = require("../wallet/get-sell-wallet-balance");
 
-var SellOrderAdd = async (sellLimitOrderData) => {
-    var currency = sellLimitOrderData.currency;
-    var crypto = sellLimitOrderData.settle_currency;
+var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
     var total_price = sellLimitOrderData.quantity;
     delete sellLimitOrderData.added;
     delete sellLimitOrderData.is_filled;
@@ -16,26 +14,30 @@ var SellOrderAdd = async (sellLimitOrderData) => {
 
     console.log("buyAdd", sellAdd);
 
-    var walletBalance = await balanceValue.getSellWalletBalance(sellLimitOrderData.settle_currency, sellLimitOrderData.currency, sellLimitOrderData.user_id);
-    console.log("walletBalance", walletBalance)
-    if (walletBalance != 0) {
-        var balance = walletBalance.placed_balance;
-        var updatedBalance = balance - total_price;
-        console.log(updatedBalance)
-        var updatedBalance = parseFloat((updatedBalance).toFixed(6));
+    var walletBalance = await WalletModel
+        .query()
+        .first()
+        .select()
+        .where('deleted_at', null)
+        .andWhere('coin_id', crypto_coin_id)
+        .andWhere("user_id", sellLimitOrderData.user_id)
+        .orderBy("id", "DESC")
 
-        var walletUpdate = await WalletModel
-            .query()
-            .where('deleted_at', null)
-            .andWhere('id', walletBalance.id)
-            .patch({
-                placed_balance: updatedBalance
-            });
+    var balance = walletBalance.placed_balance;
+    var updatedBalance = balance - total_price;
+    console.log(updatedBalance)
+    var updatedBalance = parseFloat((updatedBalance).toFixed(6));
 
-        return (sellAdd);
-    } else {
-        return ("Coin Not Found")
-    }
+    var walletUpdate = await WalletModel
+        .query()
+        .where('deleted_at', null)
+        .andWhere('coin_id', crypto_coin_id)
+        .andWhere("user_id", sellLimitOrderData.user_id)
+        .patch({
+            placed_balance: updatedBalance
+        });
+
+    return (sellAdd);
 }
 
 module.exports = {

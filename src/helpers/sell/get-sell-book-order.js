@@ -9,7 +9,8 @@ var sellOrderBook = async (crypto, currency) => {
         .where('deleted_at', null)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
-        .orderBy('price', 'ASC');
+        .orderBy('price', 'ASC')
+        .limit(1);
 
     // console.log("sellBookOrder", sellBookOrder)
 

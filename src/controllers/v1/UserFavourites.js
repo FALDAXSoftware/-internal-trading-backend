@@ -55,34 +55,36 @@ class UserFavourites extends AppController {
                 average_price = total_price / (price.length);
             }
 
-            var current_price = await TradeHistoryModel
-                .query()
-                .first()
-                .where('settle_currency', crypto)
-                .andWhere('currency', currency)
-                .andWhere('created_at', '<=', today)
-                .andWhere('created_at', '>=', yesterday)
-                .orderBy('id', 'DESC')
+            // var current_price = await TradeHistoryModel
+            //     .query()
+            //     .first()
+            //     .where('settle_currency', crypto)
+            //     .andWhere('currency', currency)
+            //     .andWhere('created_at', '<=', today)
+            //     .andWhere('created_at', '>=', yesterday)
+            //     .orderBy('id', 'DESC')
 
-            if (current_price == undefined) {
+            var current_price = 0.0
+            if (price.length == 0) {
                 current_price = 0;
             } else {
-                current_price = current_price.fill_price;
+                current_price = price[0]['fill_price'];
             }
 
-            var previous_price = await TradeHistoryModel
-                .query()
-                .first()
-                .where('settle_currency', crypto)
-                .andWhere('currency', currency)
-                .andWhere('created_at', '<=', today)
-                .andWhere('created_at', '>=', yesterday)
-                .orderBy('id', 'ASC')
+            // var previous_price = await TradeHistoryModel
+            //     .query()
+            //     .first()
+            //     .where('settle_currency', crypto)
+            //     .andWhere('currency', currency)
+            //     .andWhere('created_at', '<=', today)
+            //     .andWhere('created_at', '>=', yesterday)
+            //     .orderBy('id', 'ASC')
 
-            if (previous_price == undefined) {
+            var previous_price = 0.0
+            if (price.length == 0) {
                 previous_price = 0;
             } else {
-                previous_price = previous_price.fill_price;
+                previous_price = price[price.length - 1]['fill_price'];
             }
 
             var diffrence = current_price - previous_price;

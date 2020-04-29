@@ -188,5 +188,40 @@
 		"message_english": "Crypto and Currency should not be same.",
 		"message": "Crypto and Currency should not be same."
 	},
+	"pair details value": {
+		"page": "Trade Desk",
+		"context": "During time of pairs getting",
+		"message_type": "error",
+		"message_english": "Pairs value has been retrieved successfully",
+		"message": "Pairs value has been retrieved successfully"
+	},
+	"no pair details value": {
+		"page": "Trade Desk",
+		"context": "During time of pairs updation and not found",
+		"message_type": "error",
+		"message_english": "No Pairs has been found",
+		"message": "No Pairs has been found"
+	},
+	"pair value update success": {
+		"page": "Trade Desk",
+		"context": "During time of pairs updation",
+		"message_type": "error",
+		"message_english": "Pair Value has been updated successfully.",
+		"message": "Pair Value has been updated successfully."
+	},
+	"spread retrieve success": {
+		"page": "Trade Desk",
+		"context": "Spread Value success",
+		"message_type": "error",
+		"message_english": "Spread Value has been retrieved successfully.",
+		"message": "Spread Value has been retrieved successfully."
+	},
+	"trade desk user wallet success": {
+		"page": "Trade Desk",
+		"context": "Trade Desk Wallet Success",
+		"message_type": "error",
+		"message_english": "Trade Desk Wallet has been retrieved successfully.",
+		"message": "Trade Desk Wallet has been retrieved successfully."
+	},
 	"Campaign Offer invalid": "Campaign Offer invalid"
 }
