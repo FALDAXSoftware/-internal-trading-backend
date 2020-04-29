@@ -146,7 +146,7 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
-    socket.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, await socket_functions.getAllPendingOrders(pair[0], pair[1]));
+    // socket.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, await socket_functions.getAllPendingOrders(pair[0], pair[1]));
     // socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
     // console.log(user_id)
     // socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
