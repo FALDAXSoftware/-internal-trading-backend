@@ -10,10 +10,10 @@ cron.schedule('*/2 * * * *', async (req, res, next) => {
     await cronData.executeStopLimit();
 });
 
-cron.schedule('*/30 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
-});
+// cron.schedule('*/30 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
+// });
 
 // cron.schedule('*/30 * * * * *', async (req, res, next) => {
 //     console.log("Started cron....");
