@@ -149,7 +149,7 @@ module.exports = {
     getUserOrdersData,
     getCancelledOrdersData,
     getPendingOrdersData,
-    getAllPendingOrders,
+    // getAllPendingOrders,
     getMarketValue,
     getUserFavouritesData,
     getPortfolioData,
