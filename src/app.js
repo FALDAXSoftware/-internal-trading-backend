@@ -119,6 +119,7 @@ io.on('connection', async function (socket) {
   let socket_functions = require("./helpers/sockets/emit-all-data");
 
   socket.on("join", async function (room) {
+    console.log("room", room)
     socket.emit("test", { name: "le bhai" });
     if (authentication.status > 200) {
       socket.emit(constants.USER_LOGOUT, true);
