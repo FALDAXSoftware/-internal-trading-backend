@@ -68,15 +68,6 @@ class DashboardController extends AppController {
 
             for (var i = 0; i < coinBalance.length; i++) {
                 var total_price = 0;
-                // var price = await TradeHistoryModel
-                //     .query()
-                //     .avg('fill_price')
-                //     .select('fill_price')
-                //     .where('settle_currency', coinBalance[i].coin)
-                //     .andWhere('currency', currency)
-                //     .andWhere('created_at', '<=', today)
-                //     .andWhere('created_at', '>=', yesterday)
-                //     .orderBy('id', 'DESC')
 
                 var percentChange = 0.0;
                 var currentPrice = 0.0;
