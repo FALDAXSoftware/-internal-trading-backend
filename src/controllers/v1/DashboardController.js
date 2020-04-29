@@ -310,7 +310,7 @@ class DashboardController extends AppController {
                         currency_coin_id.id);
 
                     console.log("responseData", responseData)
-                    await module.exports.sleep(800);
+                    await module.exports.sleep(1000);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
@@ -438,7 +438,7 @@ class DashboardController extends AppController {
 
 
                     console.log("responseData", responseData)
-                    await module.exports.sleep(800);
+                    await module.exports.sleep(1000);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }

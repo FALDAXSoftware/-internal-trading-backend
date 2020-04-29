@@ -71,13 +71,14 @@ var getUserOrdersData = async (data) => {
     var crypto = pair[0];
     var currency = pair[1];
     var month = data.month;
+    var limit = data.limit
     if (data.flag == 1) {
         let helper = require("../../helpers/tradding/get-completed-orders");
         let data = await helper.getCompletedOrders(user_id, crypto, currency, month);
         return data;
     } else if (data.flag == 2) {
         let helper = require("../../helpers/tradding/get-pending-orders");
-        let data = await helper.getPendingOrders(user_id, crypto, currency, month);
+        let data = await helper.getPendingOrders(user_id, crypto, currency, month, limit);
         return data;
     } else if (data.flag == 3) {
         let helper = require("../../helpers/tradding/get-cancelled-orders");
