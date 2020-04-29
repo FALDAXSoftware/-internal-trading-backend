@@ -44,7 +44,7 @@ var cancelPendingOrder = async (side, type, id) => {
 
         console.log("walletDetails", walletDetails)
 
-        var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsBuy.price * pendingBookDetailsBuy.quantity);
+        var userPlacedBalance = walletDetails[0].placed_balance + (pendingBookDetailsBuy.price * pendingBookDetailsBuy.quantity);
 
         var updateWalletDetails = await WalletModel
             .query()
@@ -106,7 +106,10 @@ var cancelPendingOrder = async (side, type, id) => {
         var walletDetails = await CoinsModel.knex().raw(sqlData);
         walletDetails = walletDetails.rows;
 
-        var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsSell.quantity);
+        console.log("walletDetails", walletDetails)
+
+        var userPlacedBalance = parseFloat(walletDetails[0].placed_balance) + (pendingBookDetailsSell.quantity);
+        console.log("userPlacedBalance", userPlacedBalance)
 
         var updateWalletDetails = await WalletModel
             .query()
