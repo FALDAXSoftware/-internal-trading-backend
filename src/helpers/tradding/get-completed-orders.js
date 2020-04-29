@@ -39,7 +39,8 @@ var getCompletedOrders = async (user_id, crypto, currency, month) => {
             builder.where('user_id', user_id)
                 .orWhere('requested_user_id', user_id)
         })
-        .orderBy('id', 'DESC');
+        .orderBy('id', 'DESC')
+        .limit(100);
     return tradeData;
 }
 
