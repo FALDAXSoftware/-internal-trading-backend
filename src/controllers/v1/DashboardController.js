@@ -24,6 +24,7 @@ var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var PairsModel = require("../../models/Pairs");
 var BuyBookModel = require("../../models/BuyBook");
 var SellBookModel = require("../../models/SellBook");
+var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 
 class DashboardController extends AppController {
@@ -275,6 +276,28 @@ class DashboardController extends AppController {
                     buyLimitOrderData.is_filled = false;
                     buyLimitOrderData.added = true;
                     console.log("buyLimitOrderData", buyLimitOrderData)
+
+                    let requestedWallets = await CoinsModel
+                        .query()
+                        .select()
+                        .where('deleted_at', null)
+                        .andWhere('is_active', true)
+                        .andWhere(function () {
+                            this.where("coin", currency).orWhere("coin", crypto)
+                        })
+                        .andWhere('user_id', inputs.requested_user_id);
+                    var crypto_coin_id = null
+                    var currency_coin_id = null
+                    for (let index = 0; index < requestedWallets.length; index++) {
+                        const element = requestedWallets[index];
+                        if (element.coin == crypto) {
+                            crypto_coin_id = element
+                        } else if (element.coin == currency) {
+                            currency_coin_id = element
+                        }
+                    }
+
+
                     let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
                         buyLimitOrderData.user_id,
                         buyLimitOrderData.side,
@@ -282,7 +305,9 @@ class DashboardController extends AppController {
                         buyLimitOrderData.quantity,
                         buyLimitOrderData.limit_price,
                         null,
-                        true);
+                        true,
+                        crypto_coin_id.id,
+                        currency_coin_id.id);
 
                     console.log("responseData", responseData)
                     await module.exports.sleep(800);
@@ -380,6 +405,26 @@ class DashboardController extends AppController {
                     sellLimitOrderData.is_partially_fulfilled = true;
                     sellLimitOrderData.is_filled = false;
                     sellLimitOrderData.added = true;
+                    let requestedWallets = await CoinsModel
+                        .query()
+                        .select()
+                        .where('deleted_at', null)
+                        .andWhere('is_active', true)
+                        .andWhere(function () {
+                            this.where("coin", currency).orWhere("coin", crypto)
+                        })
+                        .andWhere('user_id', inputs.requested_user_id);
+                    var crypto_coin_id = null
+                    var currency_coin_id = null
+                    for (let index = 0; index < requestedWallets.length; index++) {
+                        const element = requestedWallets[index];
+                        if (element.coin == crypto) {
+                            crypto_coin_id = element
+                        } else if (element.coin == currency) {
+                            currency_coin_id = element
+                        }
+                    }
+
                     let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
                         sellLimitOrderData.user_id,
                         sellLimitOrderData.side,
@@ -387,7 +432,9 @@ class DashboardController extends AppController {
                         sellLimitOrderData.quantity,
                         sellLimitOrderData.limit_price,
                         null,
-                        true);
+                        true,
+                        crypto_coin_id.id,
+                        currency_coin_id.id);
 
 
                     console.log("responseData", responseData)
