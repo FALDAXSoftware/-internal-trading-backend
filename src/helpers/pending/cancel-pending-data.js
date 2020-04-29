@@ -5,7 +5,6 @@ var WalletModel = require("../../models/Wallet");
 var CoinsModel = require("../../models/Coins");
 var ActivityTableModel = require("../../models/Activity");
 var SellBookModel = require("../../models/SellBook");
-var feesValue = require("../wallet/get-maker-taker-fees");
 var socketHelper = require("../sockets/emit-trades");
 
 var cancelPendingOrder = async (side, type, id) => {
@@ -30,26 +29,20 @@ var cancelPendingOrder = async (side, type, id) => {
         currency = pendingBookDetailsBuy.currency;
         userIds.push(pendingBookDetailsBuy.user_id);
 
+        console.log("pendingBookDetailsBuy", pendingBookDetailsBuy)
 
-        var fees = await feesValue.getFeesValue(pendingBookDetailsBuy.settle_currency, pendingBookDetailsBuy.currency);
-        var coinId = await CoinsModel
-            .query()
-            .first()
-            .select()
-            .where('coin', pendingBookDetailsBuy.currency)
-            .andWhere('deleted_at', null)
-            .orderBy('id', 'DESC');
+        var sqlData = `SELECT wallets.balance, wallets.placed_balance, coins.id
+                        FROM coins
+                        LEFT JOIN wallets
+                        ON coins.id = wallets.coin_id
+                        WHERE coins.is_active = 'true' AND coins.deleted_at IS NULL
+                        AND wallets.deleted_at IS NULL AND coins.coin = '${pendingBookDetailsBuy.currency}' 
+                        AND wallets.user_id = ${pendingBookDetailsBuy.user_id}`
 
-        var walletDetails = await WalletModel
-            .query()
-            .first()
-            .select()
-            .where('deleted_at', null)
-            .andWhere('coin_id', coinId.id)
-            .andWhere('user_id', pendingBookDetailsBuy.user_id)
-            .orderBy('id', 'DESC');
+        var walletDetails = await CoinsModel.knex().raw(sqlData);
+        walletDetails = walletDetails.rows;
 
-        console.log(walletDetails)
+        console.log("walletDetails", walletDetails)
 
         var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsBuy.price * pendingBookDetailsBuy.quantity);
 
@@ -57,7 +50,7 @@ var cancelPendingOrder = async (side, type, id) => {
             .query()
             .where('user_id', pendingBookDetailsBuy.user_id)
             .andWhere('deleted_at', null)
-            .andWhere('coin_id', coinId.id)
+            .andWhere('coin_id', walletDetails[0].id)
             .patch({
                 placed_balance: userPlacedBalance
             })
@@ -77,20 +70,13 @@ var cancelPendingOrder = async (side, type, id) => {
                 is_cancel: true
             })
 
-        deletePendingFirst = await BuyBookModel
-            .query()
-            .where('id', id)
-            .andWhere('deleted_at', null)
-            .patch({
-                deleted_at: now
-            });
+        var updateSql = `UPDATE buy_book 
+                            SET deleted_at = '${now}' 
+                            WHERE id = ${pendingBookDetailsBuy.id} AND deleted_at IS NULL
+                            RETURNING *`
 
-        console.log("deletePendingFirst", deletePendingFirst)
-
-        var deletePending = await BuyBookModel
-            .query()
-            .select()
-            .where('id', id)
+        var deletePending = await BuyBookModel.knex().raw(updateSql);
+        deletePending = deletePending.rows;
 
         console.log("deletePending", deletePending)
 
@@ -109,42 +95,23 @@ var cancelPendingOrder = async (side, type, id) => {
         currency = pendingBookDetailsSell.currency;
         userIds.push(pendingBookDetailsSell.user_id);
 
-        var fees = await feesValue.getFeesValue(pendingBookDetailsSell.settle_currency, pendingBookDetailsSell.currency);
+        var sqlData = `SELECT wallets.balance, wallets.placed_balance, coins.id
+                        FROM coins
+                        LEFT JOIN wallets
+                        ON coins.id = wallets.coin_id
+                        WHERE coins.is_active = 'true' AND coins.deleted_at IS NULL
+                        AND wallets.deleted_at IS NULL AND coins.coin = '${pendingBookDetailsSell.settle_currency}' 
+                        AND wallets.user_id = ${pendingBookDetailsSell.user_id}`
 
-        console.log("fees", fees)
-
-        var coinId = await CoinsModel
-            .query()
-            .select()
-            .first()
-            .where('deleted_at', null)
-            .andWhere('coin', pendingBookDetailsSell.settle_currency)
-            .orderBy('id', 'DESC');
-
-        console.log("coinId", coinId)
-
-        var walletDetails = await WalletModel
-            .query()
-            .first()
-            .select()
-            .where('user_id', pendingBookDetailsSell.user_id)
-            .andWhere('coin_id', coinId.id)
-            .andWhere('deleted_at', null)
-            .orderBy('id', 'DESC');
-
-        console.log("walletDetails", walletDetails)
-
-        console.log("pendingBookDetailsSell", pendingBookDetailsSell)
-
+        var walletDetails = await CoinsModel.knex().raw(sqlData);
+        walletDetails = walletDetails.rows;
 
         var userPlacedBalance = walletDetails.placed_balance + (pendingBookDetailsSell.quantity);
-
-        console.log("userPlacedBalance", userPlacedBalance)
 
         var updateWalletDetails = await WalletModel
             .query()
             .where('user_id', pendingBookDetailsSell.user_id)
-            .andWhere('coin_id', coinId.id)
+            .andWhere('coin_id', walletDetails[0].id)
             .andWhere('deleted_at', null)
             .patch({
                 placed_balance: userPlacedBalance
@@ -163,19 +130,15 @@ var cancelPendingOrder = async (side, type, id) => {
                 is_cancel: true
             })
 
-        deletePendingFirst = await SellBookModel
-            .query()
-            .where('id', id)
-            .patch({
-                deleted_at: now
-            })
+        var updateSql = `UPDATE sell_book 
+            SET deleted_at = '${now}' 
+            WHERE id = ${pendingBookDetailsSell.id} AND deleted_at IS NULL
+            RETURNING *`
 
-        deletePending = await SellBookModel
-            .query()
-            .select()
-            .where('id', id)
+        var deletePending = await SellBookModel.knex().raw(updateSql);
+        deletePending = deletePending.rows;
 
-        console.log(deletePending)
+        console.log("deletePending", deletePending)
 
     } else {
         var pendingDetails = await PendingBookModel
@@ -206,19 +169,13 @@ var cancelPendingOrder = async (side, type, id) => {
                 is_cancel: true
             })
 
-        deletePendingFirst = await PendingBookModel
-            .query()
-            .where('id', id)
-            .patch({
-                deleted_at: now
-            });
+        var updateSql = `UPDATE pending_book 
+            SET deleted_at = '${now}' 
+            WHERE id = ${pendingDetails.id} AND deleted_at IS NULL
+            RETURNING *`
 
-        deletePending = await PendingBookModel
-            .query()
-            .select()
-            .where('id', id)
-
-        console.log("deletePending", deletePending)
+        var deletePending = await PendingBookModel.knex().raw(updateSql);
+        deletePending = deletePending.rows;
 
         console.log("userIds", userIds)
     }

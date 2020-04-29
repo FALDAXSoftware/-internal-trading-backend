@@ -8,75 +8,81 @@ var TradeHistoryModel = require("../../models/TradeHistory");
 var Fees = require("../../models/Fees");
 var Wallet = require("../../models/Wallet");
 
-var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
+var getTraddingFees = async (inputs) => {
     var makerTakerFees = {};
     try {
         var request = inputs;
+        console.log("inputs", inputs)
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
         // inputs.makerFee = 0.21
 
-        // Fetching currency data value
-        var currencyData = await CoinsModel
-            .query()
-            .first()
-            .select()
-            .where('is_active', true)
-            .andWhere('deleted_at', null)
-            .andWhere('coin', request.currency);
 
-        // Fetching cryptocurrency data value
-        var cryptoData = await CoinsModel
-            .query()
-            .first()
-            .select()
-            .where('is_active', true)
-            .andWhere('deleted_at', null)
-            .andWhere('coin', request.settle_currency);
+        //Maker and Taker fee according to trades executed by user
+        var getCurrencyPriceData = null
+
+        var getCryptoPriceData = null
+
+        let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
+                                FROM currency_conversion
+                                WHERE currency_conversion.deleted_at IS NULL`
+
+        let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
+
+        console.log("conversionData", conversionData.rows)
 
         var now = moment().format();
         var resultData;
         var yesterday = moment(now)
             .subtract(1, 'months')
             .format();
+        let userTradeHistorySum = {}
+        let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+                                                                FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                WHERE user_id = 1545 AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                ON a1.user_coin = a2.requested_coin`)
+        console.log("userTradesum", userTradesum.rows.length)
+        for (let index = 0; index < userTradesum.rows.length; index++) {
+            const element = userTradesum.rows[index];
+            userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+        }
 
-        //Maker and Taker fee according to trades executed by user
-        var getCurrencyPriceData = await CurrencyConversionModel.query()
-            .first()
-            .select()
-            .where('coin_id', currencyData.id)
-            .andWhere('deleted_at', null);
+        let requestedTradeHistorySum = {}
+        let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+        FROM(SELECT user_coin, sum(quantity) FROM trade_history
+        WHERE user_id = 1545 AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+        WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+        ON a1.user_coin = a2.requested_coin`)
+        for (let index = 0; index < requestedTradesum.rows.length; index++) {
+            const element = requestedTradesum.rows[index];
+            requestedTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+        }
 
-        var getCryptoPriceData = await CurrencyConversionModel.query()
-            .first()
-            .select()
-            .where('coin_id', cryptoData.id)
-            .andWhere('deleted_at', null);
+        console.log("requestedTradeHistorySum", requestedTradeHistorySum)
 
-        var currencyAmount = await TradeHistoryModel
-            .query()
-            .sum('quantity')
-            .where(function () {
-                this.where("user_id", user_id)
-                    .orWhere("requested_user_id", user_id)
-            })
-            .andWhere('deleted_at', null)
-            .andWhere('created_at', '>=', yesterday)
-            .andWhere('created_at', '<=', now);
+        let userTotalUSDSum = 0
+        let requestedTotalUSDSum = 0
+        for (let index = 0; index < conversionData.rows.length; index++) {
+            const element = conversionData.rows[index];
+            if (element.coin_id == request.crypto_coin_id) {
+                getCryptoPriceData = element
+            }
+            if (element.coin_id == request.currency_coin_id) {
+                getCurrencyPriceData = element
+            }
+            if (userTradeHistorySum[element.symbol]) {
+                userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
+            }
+            if (requestedTradeHistorySum[element.symbol]) {
+                requestedTotalUSDSum += (requestedTradeHistorySum[element.symbol] * element.quote.USD.price)
+            }
+        }
 
-        var cryptoAmount = await TradeHistoryModel
-            .query()
-            .sum('quantity')
-            .where(function () {
-                this.where("user_id", requested_user_id)
-                    .orWhere("requested_user_id", requested_user_id)
-            })
-            .andWhere('deleted_at', null)
-            .andWhere('created_at', '>=', yesterday)
-            .andWhere('created_at', '<=', now);
-
-        var totalCurrencyAmount = currencyAmount[0].sum * (getCurrencyPriceData.quote.USD.price);
-        var totalCryptoAmount = cryptoAmount[0].sum * (getCryptoPriceData.quote.USD.price);
+        var totalCurrencyAmount = userTotalUSDSum;
+        var totalCryptoAmount = requestedTotalUSDSum;
 
         var currencyMakerFee = await Fees
             .query()
@@ -98,62 +104,70 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         // Just Replace inputs.makerFee and inputs.takerFee with following
         inputs.makerFee = cryptoTakerFee.maker_fee
         inputs.takerFee = currencyMakerFee.taker_fee
+        var currency_coin_id = request.currency_coin_id;
+        var crypto_coin_id = request.crypto_coin_id
 
         var user_usd;
-        var currencyWalletUser = await Wallet
+        let userWallets = await Wallet
             .query()
-            .first()
             .select()
             .where('deleted_at', null)
             .andWhere('is_active', true)
-            .andWhere('coin_id', currencyData.id)
+            .andWhere(function () {
+                this.where('coin_id', currency_coin_id).orWhere('coin_id', crypto_coin_id)
+            })
             .andWhere('user_id', inputs.user_id);
+        var currencyWalletUser = null
+        var cryptoWalletUser
+        for (let index = 0; index < userWallets.length; index++) {
+            const element = userWallets[index];
+            if (element.coin_id == currency_coin_id) {
+                currencyWalletUser = element
+            } else if (element.coin_id == crypto_coin_id) {
+                cryptoWalletUser = element
+            }
+        }
 
-        var cryptoWalletRequested = await Wallet
+
+        let requestedWallets = await Wallet
             .query()
-            .first()
             .select()
             .where('deleted_at', null)
             .andWhere('is_active', true)
-            .andWhere('coin_id', cryptoData.id)
+            .andWhere(function () {
+                this.where("coin_id", currency_coin_id).orWhere("coin_id", crypto_coin_id)
+            })
             .andWhere('user_id', inputs.requested_user_id);
+        var currencyWalletRequested = null
+        var cryptoWalletRequested = null
+        for (let index = 0; index < requestedWallets.length; index++) {
+            const element = requestedWallets[index];
+            if (element.coin_id == currency_coin_id) {
+                currencyWalletRequested = element
+            } else if (element.coin_id == crypto_coin_id) {
+                cryptoWalletRequested = element
+            }
+        }
 
-        var currencyWalletRequested = await Wallet
+        let adminWallets = await Wallet
             .query()
-            .first()
             .select()
             .where('deleted_at', null)
             .andWhere('is_active', true)
-            .andWhere('coin_id', currencyData.id)
-            .andWhere('user_id', inputs.requested_user_id);
-        // console.log("cryptoData.id", cryptoData.id);
-        // console.log("user_id", user_id);
-        var cryptoWalletUser = await Wallet
-            .query()
-            .first()
-            .select()
-            .where('deleted_at', null)
-            .andWhere('is_active', true)
-            .andWhere('coin_id', cryptoData.id)
-            .andWhere('user_id', inputs.user_id);
-        // console.log("cryptoWalletUser",cryptoWalletUser);
-        var adminWalletCrypto = await Wallet
-            .query()
-            .first()
-            .select()
-            .where('deleted_at', null)
-            .andWhere('is_active', true)
-            .andWhere('coin_id', cryptoData.id)
+            .andWhere(function () {
+                this.where("coin_id", currency_coin_id).orWhere("coin_id", crypto_coin_id)
+            })
             .andWhere('user_id', 36);
-
-        var adminWalletCurrency = await Wallet
-            .query()
-            .first()
-            .select()
-            .where('deleted_at', null)
-            .andWhere('is_active', true)
-            .andWhere('coin_id', currencyData.id)
-            .andWhere('user_id', 36);
+        var adminWalletCrypto = null
+        var adminWalletCurrency = null
+        for (let index = 0; index < adminWallets.length; index++) {
+            const element = adminWallets[index];
+            if (element.coin_id == currency_coin_id) {
+                adminWalletCurrency = element
+            } else if (element.coin_id == crypto_coin_id) {
+                adminWalletCrypto = element
+            }
+        }
 
         if (user_id == process.env.TRADEDESK_USER_ID) {
             inputs.takerFee = 0;
@@ -164,6 +178,8 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
         }
 
         // inputs.makerFee = 0.21
+        console.log("inputs.makerFee", inputs.makerFee)
+        console.log("inputs.takerFee", inputs.takerFee)
         // Calculating fees value on basis of the side and order executed
         if (inputs.side == "Buy") {
 
@@ -238,7 +254,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', cryptoData.id)
+                    .andWhere('coin_id', crypto_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminBalance,
@@ -256,7 +272,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', currencyData.id)
+                    .andWhere('coin_id', currency_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminCurrencyBalance,
@@ -267,10 +283,10 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
             user_usd = ((inputs.quantity) * inputs.fill_price) * (resultData);
 
         } else if (inputs.side == "Sell") {
-            // console.log("cryptoWalletUser", cryptoWalletUser)
-            // console.log("cryptoWalletRequested", cryptoWalletRequested)
-            // console.log("currencyWalletUser", currencyWalletUser)
-            // console.log("currencyWalletRequested", currencyWalletRequested)
+            console.log("cryptoWalletUser", cryptoWalletUser)
+            console.log("cryptoWalletRequested", cryptoWalletRequested)
+            console.log("currencyWalletUser", currencyWalletUser)
+            console.log("currencyWalletRequested", currencyWalletRequested)
             // --------------------------------------crypto--------------------------- //
             var cryptouserbalance = parseFloat(cryptoWalletUser.balance).toFixed(8) - parseFloat((inputs.quantity)).toFixed(8);
             var cryptouserbalance = parseFloat(cryptouserbalance.toFixed(8))
@@ -347,7 +363,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', cryptoData.id)
+                    .andWhere('coin_id', crypto_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminBalance,
@@ -365,7 +381,7 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
                     .select()
                     .where('deleted_at', null)
                     .andWhere('is_active', true)
-                    .andWhere('coin_id', currencyData.id)
+                    .andWhere('coin_id', currency_coin_id)
                     .andWhere('user_id', 36)
                     .patch({
                         balance: adminCurrencyBalance,
@@ -378,10 +394,12 @@ var getTraddingFees = async (inputs, maker_fees, taker_fees) => {
 
         return ({
             'userFee': userFee,
-            'requestedFee': requestedFee
+            'requestedFee': requestedFee,
+            "maker_fee": inputs.makerFee,
+            "taker_fee": inputs.takerFee
         })
     } catch (err) {
-        // console.log("fees Error", err);
+        console.log("fees Error", err);
         return (1);
     }
 }

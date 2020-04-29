@@ -9,6 +9,7 @@ var TradeController = require('../controllers/v1/TradeController');
 var TradingViewController = require('../controllers/v1/TradingViewController');
 var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
+var TradeDesk = require("../controllers/v1/TradeDeskController");
 
 router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
@@ -40,6 +41,10 @@ router.get('/get-activity-data', DashboardController.getActivityData)
 router.get('/get-portfolio-data', DashboardController.getPortfolioData);
 router.get('/update-order-book', DashboardController.updateBuyOrderBook);
 router.get('/update-sell-order-book', DashboardController.updateSellOrderBook);
+router.get("/get-pairs-value", TradeDesk.getQuantityMinMaxValue);
+router.post("/update-pairs-value", TradeDesk.updateQuantityMinMaxValue)
+router.get("/get-spread-value", TradeDesk.getSpreadValue)
+router.get("/get-tradedesk-user-balances", TradeDesk.getWalletTradeDeskBalance)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 
 // Trading View API
