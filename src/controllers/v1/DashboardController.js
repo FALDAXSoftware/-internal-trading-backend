@@ -285,7 +285,7 @@ class DashboardController extends AppController {
                         .andWhere(function () {
                             this.where("coin", currency).orWhere("coin", crypto)
                         })
-                        .andWhere('user_id', inputs.requested_user_id);
+                    // .andWhere('user_id', inputs.requested_user_id);
                     var crypto_coin_id = null
                     var currency_coin_id = null
                     for (let index = 0; index < requestedWallets.length; index++) {
@@ -413,7 +413,7 @@ class DashboardController extends AppController {
                         .andWhere(function () {
                             this.where("coin", currency).orWhere("coin", crypto)
                         })
-                        .andWhere('user_id', inputs.requested_user_id);
+                    // .andWhere('user_id', inputs.requested_user_id);
                     var crypto_coin_id = null
                     var currency_coin_id = null
                     for (let index = 0; index < requestedWallets.length; index++) {
