@@ -53,6 +53,7 @@ var TradeHistoryModel = require("../../models/TradeHistory");
 var TradeStatusChecking = require("../../helpers/user-trade-checking");
 var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
 var RefferalHelper = require("../../helpers/get-refffered-amount");
+var fiatValueHelper = require("../../helpers/get-fiat-value");
 /**
  * Trade Controller : Used for live tradding
  */
@@ -231,6 +232,8 @@ class TradeController extends AppController {
         trade_history_data.requested_coin = crypto;
         trade_history_data.maker_fee = tradingFees.maker_fee;
         trade_history_data.taker_fee = tradingFees.taker_fee;
+        trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
+        console.log("trade_history_data", trade_history_data)
         // Log into trade history
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
         tradeOrder = tradeHistory;
@@ -283,6 +286,8 @@ class TradeController extends AppController {
         trade_history_data.requested_coin = crypto;
         trade_history_data.maker_fee = tradingFees.maker_fee;
         trade_history_data.taker_fee = tradingFees.taker_fee;
+        trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
+        console.log("trade_history_data", trade_history_data)
 
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
         tradeOrder = tradeHistory;
@@ -507,6 +512,7 @@ class TradeController extends AppController {
           trade_history_data.requested_coin = currency;
           trade_history_data.maker_fee = tradingFees.maker_fee
           trade_history_data.taker_fee = tradingFees.taker_fee
+          trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
 
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = tradeHistory;
@@ -558,6 +564,7 @@ class TradeController extends AppController {
           trade_history_data.requested_coin = currency;
           trade_history_data.maker_fee = tradingFees.maker_fee
           trade_history_data.taker_fee = tradingFees.taker_fee
+          trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
 
           let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = TradeHistory;
