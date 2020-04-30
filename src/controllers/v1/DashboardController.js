@@ -247,10 +247,31 @@ class DashboardController extends AppController {
 
                 // var bidValue = await module.exports.shuffle(bidValue);
 
+                let requestedWallets = await CoinsModel
+                    .query()
+                    .select()
+                    .where('deleted_at', null)
+                    .andWhere('is_active', true)
+                    .andWhere(function () {
+                        this.where("coin", currency).orWhere("coin", crypto)
+                    })
+                // .andWhere('user_id', inputs.requested_user_id);
+                var crypto_coin_id = null
+                var currency_coin_id = null
+                for (let index = 0; index < requestedWallets.length; index++) {
+                    const element = requestedWallets[index];
+                    if (element.coin == crypto) {
+                        crypto_coin_id = element
+                    } else if (element.coin == currency) {
+                        currency_coin_id = element
+                    }
+                }
+
                 for (var i = 0; i < bidValue.length; i++) {
                     // setTimeout(async () => {
                     var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
                     var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
+
                     var buyLimitOrderData = {
                         'user_id': process.env.TRADEDESK_USER_ID,
                         'symbol': pair_name,
@@ -277,25 +298,6 @@ class DashboardController extends AppController {
                     buyLimitOrderData.added = true;
                     console.log("buyLimitOrderData", buyLimitOrderData)
 
-                    let requestedWallets = await CoinsModel
-                        .query()
-                        .select()
-                        .where('deleted_at', null)
-                        .andWhere('is_active', true)
-                        .andWhere(function () {
-                            this.where("coin", currency).orWhere("coin", crypto)
-                        })
-                    // .andWhere('user_id', inputs.requested_user_id);
-                    var crypto_coin_id = null
-                    var currency_coin_id = null
-                    for (let index = 0; index < requestedWallets.length; index++) {
-                        const element = requestedWallets[index];
-                        if (element.coin == crypto) {
-                            crypto_coin_id = element
-                        } else if (element.coin == currency) {
-                            currency_coin_id = element
-                        }
-                    }
 
 
                     let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
@@ -370,12 +372,27 @@ class DashboardController extends AppController {
                     askValue[i][1] = highlightedNumber
                 }
 
-                // console.log(bidValue)
-                console.log(askValue);
-
                 var now = new Date();
+                let requestedWallets = await CoinsModel
+                    .query()
+                    .select()
+                    .where('deleted_at', null)
+                    .andWhere('is_active', true)
+                    .andWhere(function () {
+                        this.where("coin", currency).orWhere("coin", crypto)
+                    })
+                // .andWhere('user_id', inputs.requested_user_id);
+                var crypto_coin_id = null
+                var currency_coin_id = null
+                for (let index = 0; index < requestedWallets.length; index++) {
+                    const element = requestedWallets[index];
+                    if (element.coin == crypto) {
+                        crypto_coin_id = element
+                    } else if (element.coin == currency) {
+                        currency_coin_id = element
+                    }
+                }
 
-                // var askValue = await module.exports.shuffle(askValue);
                 for (var i = 0; i < askValue.length; i++) {
                     // setTimeout(async () => {
                     var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
@@ -405,25 +422,6 @@ class DashboardController extends AppController {
                     sellLimitOrderData.is_partially_fulfilled = true;
                     sellLimitOrderData.is_filled = false;
                     sellLimitOrderData.added = true;
-                    let requestedWallets = await CoinsModel
-                        .query()
-                        .select()
-                        .where('deleted_at', null)
-                        .andWhere('is_active', true)
-                        .andWhere(function () {
-                            this.where("coin", currency).orWhere("coin", crypto)
-                        })
-                    // .andWhere('user_id', inputs.requested_user_id);
-                    var crypto_coin_id = null
-                    var currency_coin_id = null
-                    for (let index = 0; index < requestedWallets.length; index++) {
-                        const element = requestedWallets[index];
-                        if (element.coin == crypto) {
-                            crypto_coin_id = element
-                        } else if (element.coin == currency) {
-                            currency_coin_id = element
-                        }
-                    }
 
                     let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
                         sellLimitOrderData.user_id,

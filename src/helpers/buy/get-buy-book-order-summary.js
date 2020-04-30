@@ -11,9 +11,21 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
         .groupBy('price')
-        .orderBy('price', 'DESC').limit(100);
+        .orderBy('price', 'DESC')
+        .limit(100);
 
-    return (buyBookOrders)
+    var totalSql = `SELECT SUM(price * quantity) as total 
+                        FROM buy_book WHERE settle_currency='${crypto}' AND currency='${currency}' 
+                        AND deleted_at IS NULL`
+
+    var totalData = await BuyBookModel.knex().raw(totalSql)
+
+    var buyTotal = {
+        "data": buyBookOrders,
+        "total": totalData
+    }
+
+    return (buyTotal)
 }
 
 module.exports = {
