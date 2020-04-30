@@ -12,9 +12,19 @@ var sellOrderBookSummary = async (crypto, currency) => {
         .groupBy('price')
         .orderBy('price', 'ASC').limit(100);
 
-    console.log("sellBookOrder", sellBookOrder)
+    var totalSql = `SELECT SUM(price * quantity) as total 
+                        FROM sell_book WHERE settle_currency='${crypto}' AND currency='${currency}' 
+                        AND deleted_at IS NULL`
 
-    return (sellBookOrder);
+    var totalData = await SellBookModel.knex().raw(totalSql)
+
+    var sellTotal = {
+        "data": sellBookOrder,
+        "total": totalData
+    }
+
+
+    return (sellTotal);
 }
 
 module.exports = {
