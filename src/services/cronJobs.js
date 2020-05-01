@@ -20,12 +20,12 @@ cron.schedule('*/2 * * * *', async (req, res, next) => {
 //     await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
 // });
 
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
+cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
     await dashBoardUpdate.deletePendingOrder();
 })
 
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
+cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
     await dashBoardUpdate.deleteSellPendingOrder();
 })
