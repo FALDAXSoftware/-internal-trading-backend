@@ -195,7 +195,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -312,7 +312,7 @@ class DashboardController extends AppController {
                         currency_coin_id.id);
 
                     console.log("responseData", responseData)
-                    await module.exports.sleep(1000);
+                    await module.exports.sleep(600);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
@@ -330,7 +330,7 @@ class DashboardController extends AppController {
         try {
             let pair = pair_name.split("-").join("")
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -436,7 +436,7 @@ class DashboardController extends AppController {
 
 
                     console.log("responseData", responseData)
-                    await module.exports.sleep(1000);
+                    await module.exports.sleep(600);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                 }
