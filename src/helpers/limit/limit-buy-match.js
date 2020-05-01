@@ -91,8 +91,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.requested_fee = tradingFees.requestedFee;
                         trade_history_data.user_coin = buyLimitOrderData.settle_currency;
                         trade_history_data.requested_coin = buyLimitOrderData.currency;
-                        trade_history_data.maker_fee = getTraddingFees.maker_fee;
-                        trade_history_data.taker_fee = getTraddingFees.taker_fee;
+                        trade_history_data.maker_fee = tradingFees.maker_fee;
+                        trade_history_data.taker_fee = tradingFees.taker_fee;
                         trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
 
                         if (trade_history_data.activity_id) {

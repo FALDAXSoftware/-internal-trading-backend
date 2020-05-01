@@ -1,9 +1,26 @@
+var dotenv = require('dotenv');
+
+dotenv.load(); // Configuration load (ENV file)
+
+console.log("process.env", process.env)
+if (process.env.ENVIROMENT == "preprod") {
+  console.log("ISNIDE PREPROD")
+  // Add this to the VERY top of the first file loaded in your app
+  var apm = require('elastic-apm-node').start({
+    // Override service name from package.json
+    // Allowed characters: a-z, A-Z, 0-9, -, _, and space
+    serviceName: "internal-trading-preprod-faldax",
+
+    // Set custom APM Server URL (default: http://localhost:8200)
+    serverUrl: 'http://apm.orderhive.plus:8200'
+  })
+}
+
 var express = require('express');
 var fs = require('fs')
 var path = require('path');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var dotenv = require('dotenv');
 var app = express();
 var https = require('https');
 var http = require('http');
@@ -35,7 +52,6 @@ app.use(session({
 }));
 app.use(cors())
 
-dotenv.load(); // Configuration load (ENV file)
 // Json parser
 app.use(bodyParser.json({
   limit: "2.7mb",
@@ -145,7 +161,7 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
     socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
-    socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
+    // socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
     // socket.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, await socket_functions.getAllPendingOrders(pair[0], pair[1]));
     // socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
