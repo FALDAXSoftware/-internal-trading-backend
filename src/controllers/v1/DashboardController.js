@@ -482,6 +482,7 @@ class DashboardController extends AppController {
                 .andWhere("created_at", "<=", now)
                 .andWhere("placed_by", process.env.TRADEDESK_BOT)
                 .orderBy("id", "DESC")
+                .limit(20);
 
             console.log("getPendingBuyOrder", getPendingBuyOrder)
             console.log("getPendingBuyOrder.length", getPendingBuyOrder.length)
@@ -505,6 +506,7 @@ class DashboardController extends AppController {
                 .andWhere("created_at", "<=", now)
                 .andWhere("placed_by", process.env.TRADEDESK_BOT)
                 .orderBy("id", "DESC")
+                .limit(20);
 
             console.log("getPendingBuyOrder", getPendingSellOrder)
             console.log("getPendingSellOrder.length", getPendingSellOrder.length)
