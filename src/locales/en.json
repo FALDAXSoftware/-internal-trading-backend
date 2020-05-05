@@ -223,5 +223,32 @@
 		"message_english": "Trade Desk Wallet has been retrieved successfully.",
 		"message": "Trade Desk Wallet has been retrieved successfully."
 	},
-	"Campaign Offer invalid": "Campaign Offer invalid"
+	"Api key is missing": {
+		"page": "On each Authernicated routes",
+		"context": "When api key is not sent",
+		"message_type": "error",
+		"message_english": "Missing API key.",
+		"message": "Missing API key."
+	},
+	"Api key is invalid": {
+		"page": "On each Authernicated routes",
+		"context": "When api key is invalid",
+		"message_type": "error",
+		"message_english": "API key is invalid.",
+		"message": "API key is invalid."
+	},
+	"Your KYC is under process. Please wait until KYC is approved": {
+		"page": "When user submit kyc",
+		"context": "Your KYC is under process. Please wait until KYC is approved",
+		"message_type": "success",
+		"message_english": "Your KYC is under process. Please wait until KYC is approved",
+		"message": "Your identity verification is currently in process. Please wait until your identity verification is complete."
+	},
+	"You are allowed to trade": {
+		"page": "When trade is allowed in user's region",
+		"context": "You are allowed to trade",
+		"message_type": "success",
+		"message_english": "You are allowed to trade",
+		"message": "All trading services are available in your area."
+	}
 }

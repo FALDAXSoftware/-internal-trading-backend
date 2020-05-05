@@ -36,7 +36,7 @@ class DashboardController extends AppController {
     async getPortfolioData(req, res) {
         // return new Promise(async (resolve, reject) => {
         try {
-            var user_id = await Helper.getUserId(req.headers);
+            var user_id = await Helper.getUserId(req.headers, res);
             console.log("user_id", user_id)
             var total = 0;
             var diffrenceValue = 0;
@@ -162,7 +162,7 @@ class DashboardController extends AppController {
     async getActivityData(req, res) {
         // return new Promise(async (resolve, reject) => {
         try {
-            var user_id = await Helper.getUserId(req.headers);
+            var user_id = await Helper.getUserId(req.headers, res);
             var data = await ActivityModel
                 .query()
                 .select()
