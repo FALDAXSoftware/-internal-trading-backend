@@ -1,5 +1,5 @@
 /* Common functions which can be used anywhere */
-
+var constants = require("../config/constants");
 // Used for Response Output in JSON Format
 var jsonFormat = async (res, status, message, data, extra = "") => {
   var output = {
@@ -105,9 +105,14 @@ var formatEmail = async (emailContent, data) => {
 }
 
 // Get User ID
-var getUserId = async function (headers) {
+var getUserId = async function (headers, res) {
   var authorization = headers;
-  var authentication = require("../config/authorization")(authorization);
+  console.log("authorization",authorization);
+  var authentication = await require("../config/authorization")(authorization);
+  console.log("authentication",authentication)
+  if( authentication.status != constants.SUCCESS_CODE ){
+    return res.status(authentication.status).json(authentication);
+  }
   let user_id = authentication.user_id;
   if (authentication.isAdmin) {
     user_id = process.env.TRADEDESK_USER_ID;

@@ -19,7 +19,7 @@ var getFeesValue = async (crypto_id, currency_id) => {
     //     .andWhere('deleted_at', null)
     //     .andWhere('coin', currency);
 
-    if (coin1 && coin2) {
+    if (crypto_id && currency_id) {
         var pairData = await PairsModel
             .query()
             .select()
