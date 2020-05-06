@@ -40,33 +40,34 @@ var getInstrumentData = async (currency) => {
         var current_price = 0;
         var previous_price = 0;
 
-        var tradeData = await TradeHistoryModel
-            .query()
-            .where('symbol', instrumentData[i].name)
-            .andWhere('deleted_at', null)
-            .andWhere('created_at', '>=', yesterday)
-            .andWhere('created_at', '<=', now)
-            .orderBy('id', 'DESC');
+        var quantitySql = `SELECT sum(quantity) as quantity, symbol
+                            FROM trade_history 
+                            WHERE symbol LIKE '%${instrumentData[i].name}%' AND deleted_at IS NULL
+                            AND created_at >= '${yesterday}' AND created_at <= '${now}'
+                            GROUP BY symbol`
+        var quantityValue = await TradeHistoryModel.knex().raw(quantitySql);
+        console.log("quantityValue", quantityValue)
+        total_volume = (quantityValue.rows.length > 0) ? (quantityValue.rows[0].quantity) : 0.0;
 
-        var lastTradePrice = 0;
-        if (tradeData.length > 0) {
-            lastTradePrice = tradeData[0]['fill_price'];
-        } else {
-            lastTradePrice = 0;
-        }
-        for (var j = 0; j < tradeData.length; j++) {
-            total_volume = total_volume + tradeData[j]['quantity'];
-        }
-        if (tradeData.length == 0) {
-            current_price = 0
-        } else {
-            current_price = tradeData[0]['fill_price']
-        }
-        if (tradeData.length == 0) {
-            previous_price = 0;
-        } else {
-            previous_price = tradeData[tradeData.length - 1]['fill_price'];
-        }
+        var currentPriceSql = `SELECT fill_price, symbol
+                                FROM trade_history 
+                                WHERE symbol LIKE '%${instrumentData[i].name}%' AND deleted_at IS NULL
+                                AND created_at >= '${yesterday}' AND created_at <= '${now}'
+                                ORDER BY id DESC
+                                limit 1`
+        var currenctPriceValue = await TradeHistoryModel.knex().raw(currentPriceSql);
+        var lastTradePrice = (currenctPriceValue.rows.length > 0) ? (currenctPriceValue.rows[0].fill_price) : 0.0;
+        current_price = (currenctPriceValue.rows.length > 0) ? (currenctPriceValue.rows[0].fill_price) : 0.0;
+
+        var previousPriceSql = `SELECT fill_price, symbol
+                                    FROM trade_history 
+                                    WHERE symbol LIKE '%${instrumentData[i].name}%' AND deleted_at IS NULL
+                                    AND created_at >= '${yesterday}' AND created_at <= '${now}'
+                                    ORDER BY id ASC
+                                    limit 1`
+
+        var previousPriceValue = await TradeHistoryModel.knex().raw(previousPriceSql);
+        previous_price = (previousPriceValue.rows.length > 0) ? (previousPriceValue.rows[0].fill_price) : 0.0;
 
         var diffrence = current_price - previous_price
         var percentChange = (diffrence / previous_price) * 100;
@@ -90,6 +91,7 @@ var getInstrumentData = async (currency) => {
         }
         pairData.push(instrument_data);
     }
+    console.log("pairData", pairData)
     return pairData;
 }
 
