@@ -140,7 +140,9 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
+    console.log("authentication", JSON.parse(authentication))
     console.log("authentication", authentication)
+    console.log("authentication.id", authentication.id)
     console.log("authentication.isAdmin", authentication.isAdmin);
     console.log("authentication.isAdmin == true", authentication.isAdmin == true)
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.id);

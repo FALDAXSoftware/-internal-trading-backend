@@ -45,12 +45,13 @@ module.exports = async function (headers) {
             }
         }
 
-        return {
+        var object = {
             status: constants.SUCCESS_CODE,
             user_id: decoded.id,
             isAdmin: (decoded.isAdmin && decoded.isAdmin == true ? true : false),
             admin_id: (decoded.isAdmin && decoded.isAdmin == true ? decoded.id : 0)
         }
+        return (object)
     } catch (err) {
         console.log("err", err);
         return {
