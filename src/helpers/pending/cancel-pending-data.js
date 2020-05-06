@@ -25,6 +25,9 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('deleted_at', null)
                 .andWhere('id', id)
 
+            if( pendingBookDetailsBuy == undefined ){
+                return (0);
+            }
             console.log(pendingBookDetailsBuy)
             crypto = pendingBookDetailsBuy.settle_currency;
             currency = pendingBookDetailsBuy.currency;
@@ -37,7 +40,7 @@ var cancelPendingOrder = async (side, type, id) => {
                         LEFT JOIN wallets
                         ON coins.id = wallets.coin_id
                         WHERE coins.is_active = 'true' AND coins.deleted_at IS NULL
-                        AND wallets.deleted_at IS NULL AND coins.coin = '${pendingBookDetailsBuy.currency}' 
+                        AND wallets.deleted_at IS NULL AND coins.coin = '${pendingBookDetailsBuy.currency}'
                         AND wallets.user_id = ${pendingBookDetailsBuy.user_id}`
 
             var walletDetails = await CoinsModel.knex().raw(sqlData);
@@ -71,8 +74,8 @@ var cancelPendingOrder = async (side, type, id) => {
                     is_cancel: true
                 })
 
-            var updateSql = `UPDATE buy_book 
-                            SET deleted_at = '${now}' 
+            var updateSql = `UPDATE buy_book
+                            SET deleted_at = '${now}'
                             WHERE id = ${pendingBookDetailsBuy.id} AND deleted_at IS NULL
                             RETURNING *`
 
@@ -89,7 +92,9 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('deleted_at', null)
                 .andWhere('id', id)
                 .orderBy('id', 'DESC')
-
+            if( pendingBookDetailsSell == undefined ){
+                return (1);
+            }
             console.log(pendingBookDetailsSell)
 
             crypto = pendingBookDetailsSell.settle_currency;
@@ -101,7 +106,7 @@ var cancelPendingOrder = async (side, type, id) => {
                         LEFT JOIN wallets
                         ON coins.id = wallets.coin_id
                         WHERE coins.is_active = 'true' AND coins.deleted_at IS NULL
-                        AND wallets.deleted_at IS NULL AND coins.coin = '${pendingBookDetailsSell.settle_currency}' 
+                        AND wallets.deleted_at IS NULL AND coins.coin = '${pendingBookDetailsSell.settle_currency}'
                         AND wallets.user_id = ${pendingBookDetailsSell.user_id}`
 
             var walletDetails = await CoinsModel.knex().raw(sqlData);
@@ -134,8 +139,8 @@ var cancelPendingOrder = async (side, type, id) => {
                     is_cancel: true
                 })
 
-            var updateSql = `UPDATE sell_book 
-            SET deleted_at = '${now}' 
+            var updateSql = `UPDATE sell_book
+            SET deleted_at = '${now}'
             WHERE id = ${pendingBookDetailsSell.id} AND deleted_at IS NULL
             RETURNING *`
 
@@ -152,7 +157,9 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('id', id)
                 .andWhere('deleted_at', null)
                 .orderBy('id', 'DESC')
-
+            if( pendingDetails == undefined ){
+                return (3);
+            }
             console.log("pendingDetails", pendingDetails)
 
             crypto = pendingDetails.settle_currency;
@@ -173,8 +180,8 @@ var cancelPendingOrder = async (side, type, id) => {
                     is_cancel: true
                 })
 
-            var updateSql = `UPDATE pending_book 
-            SET deleted_at = '${now}' 
+            var updateSql = `UPDATE pending_book
+            SET deleted_at = '${now}'
             WHERE id = ${pendingDetails.id} AND deleted_at IS NULL
             RETURNING *`
 

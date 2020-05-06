@@ -73,7 +73,7 @@ class TradeController extends AppController {
         // user_id
       } = req.body;
       // get user id from header
-      var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
       let userIds = [];
       userIds.push(user_id);
 
@@ -369,7 +369,7 @@ class TradeController extends AppController {
         order_type,
         orderQuantity,
       } = req.body;
-      var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
       var userIds = [];
       userIds.push(user_id);
 
@@ -652,7 +652,7 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
-    var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
 
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
@@ -909,7 +909,7 @@ class TradeController extends AppController {
       orderQuantity,
       limit_price
     } = req.body;
-    var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
     if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
@@ -1150,7 +1150,7 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
-      var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
@@ -1258,7 +1258,7 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
-      var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
@@ -1342,7 +1342,7 @@ class TradeController extends AppController {
         console.log("stop_limit_buy_response", stop_limit_buy_response)
 
         if (stop_limit_buy_response.status > 1) {
-          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_buy_response.message).message, []);
         } else {
           return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Order Palce Success").message, []);
         }

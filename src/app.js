@@ -2,7 +2,6 @@ var dotenv = require('dotenv');
 
 dotenv.load(); // Configuration load (ENV file)
 
-console.log("process.env", process.env)
 if (process.env.ENVIROMENT == "preprod") {
   console.log("ISNIDE PREPROD")
   // Add this to the VERY top of the first file loaded in your app
