@@ -192,7 +192,7 @@ io.on('connection', async function (socket) {
     if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
-    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.id);
     data.user_id = user_id
     console.log(data);
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
