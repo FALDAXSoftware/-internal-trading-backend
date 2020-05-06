@@ -11,14 +11,16 @@ var getDepthChartDetails = async (crypto, currency) => {
         .where('settle_currency', crypto)
         .andWhere('currency', currency)
         .andWhere('deleted_at', null)
-        .orderBy('price', 'DESC');
+        .orderBy('price', 'DESC')
+        .limit(500);
 
     var sellDetails = await SellBookModel
         .query()
         .where('settle_currency', crypto)
         .andWhere('currency', currency)
         .andWhere('deleted_at', null)
-        .orderBy('price', 'ASC');
+        .orderBy('price', 'ASC')
+        .limit(500);
 
     let data = { "buyDetails": buyDetails, "sellDetails": sellDetails };
     return data;

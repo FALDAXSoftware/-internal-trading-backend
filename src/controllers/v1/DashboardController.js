@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 var moment = require('moment');
 var i18n = require("i18n");
+const logger = require("./logger");
 
 var { AppController } = require('./AppController');
 const constants = require('../../config/constants');
@@ -37,6 +38,12 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers);
+            await logger.info({
+                "module": "Portfolio Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Entry"
+            }, "Entered the function")
             console.log("user_id", user_id)
             var total = 0;
             var diffrenceValue = 0;
@@ -145,6 +152,12 @@ class DashboardController extends AppController {
                 'total': totalFiat,
                 "fiat": user_data.fiat
             };
+            await logger.info({
+                "module": "Portfolio Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("portfolio data").message + "  " + response)
             return res
                 .status(200)
                 .json({
@@ -155,6 +168,12 @@ class DashboardController extends AppController {
 
         } catch (error) {
             console.log(error);
+            await logger.info({
+                "module": "Portfolio Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Success"
+            }, error)
         }
         // })
     }
@@ -163,6 +182,12 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers);
+            await logger.info({
+                "module": "Activity Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Entry"
+            }, "Entered the function")
             var data = await ActivityModel
                 .query()
                 .select()
@@ -175,6 +200,12 @@ class DashboardController extends AppController {
                 value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
             });
 
+            await logger.info({
+                "module": "Activity Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("activity data").message + " " + data)
             return res
                 .status(200)
                 .json({
@@ -184,6 +215,12 @@ class DashboardController extends AppController {
                 });
         } catch (error) {
             console.log(error);
+            await logger.info({
+                "module": "Activity Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Error"
+            }, error)
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
         // })
