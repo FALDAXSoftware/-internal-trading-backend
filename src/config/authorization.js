@@ -14,18 +14,19 @@ module.exports = async function (headers) {
     var get_jwt_token = split_token[1];
     try {
         var decoded = jwt.decode(get_jwt_token, require('./secret')());
-        console.log("decoded",decoded);
+        console.log("decoded", decoded);
         // if (decoded.exp >= Date.now()) {
-        if( (moment().utc()).isAfter( moment.unix(decoded.exp).utc() ) ){
+        if ((moment().utc()).isAfter(moment.unix(decoded.exp).utc())) {
             // return Helper.jsonFormat(res, constants.BAD_REQUEST_CODE, i18n.__("TOKEN_EXPIRED"), []);
             return {
                 status: constants.BAD_REQUEST_CODE,
                 message: i18n.__("TOKEN_EXPIRED").message
             }
         }
+        console.log("decoded.isAdmin", decoded.isAdmin)
         // Check if institutional account, and yes, then check API key
-        if( decoded.isAdmin == undefined  ){
-            if( !headers["x-api-key"] || headers["x-api-key"] == null || headers["x-api-key"] == '' ){
+        if (decoded.isAdmin == undefined) {
+            if (!headers["x-api-key"] || headers["x-api-key"] == null || headers["x-api-key"] == '') {
                 return {
                     status: constants.BAD_REQUEST_CODE,
                     message: i18n.__("Api key is missing").message
@@ -33,11 +34,11 @@ module.exports = async function (headers) {
             }
             let api_key = headers["x-api-key"];
 
-            let getUserData = await userModel.getSingleData({id:decoded.id});
+            let getUserData = await userModel.getSingleData({ id: decoded.id });
             let userAPIKeyHelper = require("../helpers/users/get-user-api-key");
             let getUserAPIKey = await userAPIKeyHelper.getUserAPIKey(decoded.id);
 
-            if( getUserData.is_institutional_account && getUserAPIKey && getUserAPIKey.api_key != api_key ){
+            if (getUserData.is_institutional_account && getUserAPIKey && getUserAPIKey.api_key != api_key) {
                 return {
                     status: constants.BAD_REQUEST_CODE,
                     message: i18n.__("Api key is invalid").message
@@ -52,7 +53,7 @@ module.exports = async function (headers) {
             admin_id: (decoded.isAdmin && decoded.isAdmin == true ? decoded.id : 0)
         }
     } catch (err) {
-        console.log("err",err);
+        console.log("err", err);
         return {
             status: constants.UNAUTHORIZED_CODE,
             message: i18n.__("UNAUTHORIZED_ACCESS").message
