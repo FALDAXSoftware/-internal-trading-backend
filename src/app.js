@@ -123,7 +123,7 @@ io.on('connection', async function (socket) {
   if (!socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == "") {
     return Error("Not authorized")
   }
-  var authentication = require("./config/authorization")(socket_headers);
+  var authentication = await require("./config/authorization")(socket_headers);
   console.log("Socket Headers", authentication);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
   if (authentication.status > constants.SUCCESS_CODE) {
@@ -142,10 +142,10 @@ io.on('connection', async function (socket) {
 
     // console.log("authentication", JSON.parse(authentication))
     console.log("authentication", authentication)
-    console.log("authentication.id", authentication.id)
+    console.log("authentication.id", authentication.user_id)
     console.log("authentication.isAdmin", authentication.isAdmin);
     console.log("authentication.isAdmin == true", authentication.isAdmin == true)
-    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.id);
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     console.log("user_id", user_id);
     if (room.previous_room) {
       socket.leave(room.previous_room);
@@ -194,11 +194,11 @@ io.on('connection', async function (socket) {
     console.log("data", data)
     console.log("headers", socket.request.headers)
     var socket_headers = socket.request.headers;
-    var authentication = require("./config/authorization")(socket_headers);
+    var authentication = await require("./config/authorization")(socket_headers);
     if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
-    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.id);
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id
     console.log(data);
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
@@ -216,7 +216,8 @@ io.on('connection', async function (socket) {
     console.log(socket.request.headers)
     console.log("INCOMING DATA", data)
     var socket_headers = socket.request.headers;
-    var authentication = require("./config/authorization")(socket_headers);
+    var authentication = await require("./config/authorization")(socket_headers);
+    console.log("authentication", authentication)
     if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
