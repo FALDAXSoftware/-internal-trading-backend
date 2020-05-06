@@ -65,7 +65,7 @@ class TradeController extends AppController {
 
   async marketSell(req, res, next) {
     try {
-      var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
       await logger.info({
         "module": "Market Sell",
         "user_id": "user_" + user_id,
@@ -473,7 +473,7 @@ class TradeController extends AppController {
   async marketBuy(req, res) {
 
     try {
-      var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
       await logger.info({
         "module": "Market Buy",
         "user_id": "user_" + user_id,
@@ -486,6 +486,8 @@ class TradeController extends AppController {
         order_type,
         orderQuantity,
       } = req.body;
+      // var user_id = await Helper.getUserId(req.headers, res);
+
       var userIds = [];
       userIds.push(user_id);
 
@@ -850,7 +852,8 @@ class TradeController extends AppController {
 
   // Used to Create Buy Limit order
   async limitBuy(req, res) {
-    var user_id = await Helper.getUserId(req.headers);
+    // var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
     await logger.info({
       "module": "Limit Buy",
       "user_id": "user_" + user_id,
@@ -1203,7 +1206,7 @@ class TradeController extends AppController {
 
   // Used to create Sell Limit Order
   async limitSell(req, res) {
-    var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
     await logger.info({
       "module": "Limit Sell",
       "user_id": "user_" + user_id,
@@ -1531,7 +1534,8 @@ class TradeController extends AppController {
 
   // Create Stop Limit Buy Order
   async stopLimitBuyOrder(req, res) {
-    var user_id = await Helper.getUserId(req.headers);
+    // var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
     await logger.info({
       "module": "Stop Limit Buy",
       "user_id": "user_" + user_id,
@@ -1718,7 +1722,8 @@ class TradeController extends AppController {
   // Create Stop Limit Sell Order
   async stopLimitSellOrder(req, res) {
     try {
-      var user_id = await Helper.getUserId(req.headers);
+      // var user_id = await Helper.getUserId(req.headers);
+      var user_id = await Helper.getUserId(req.headers, res);
       await logger.info({
         "module": "Stop Limit Sell",
         "user_id": "user_" + user_id,
@@ -1865,8 +1870,8 @@ class TradeController extends AppController {
             "user_id": "user_" + user_id,
             "url": "Trade Function",
             "type": "Success"
-          }, i18n.__(stop_limit_sell_response.message).message)
-          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_sell_response.message).message, []);
+          }, i18n.__(stop_limit_buy_response.message).message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(stop_limit_buy_response.message).message, []);
         } else {
           await logger.info({
             "module": "Stop Limit Sell",

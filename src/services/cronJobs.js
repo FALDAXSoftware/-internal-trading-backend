@@ -7,25 +7,25 @@ var dashBoardUpdate = require("../controllers/v1/DashboardController");
 // On Every Minute
 cron.schedule('*/2 * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await cronData.executeStopLimit();
+    // await cronData.executeStopLimit();
 });
 
 // cron.schedule('*/15 * * * * *', async (req, res, next) => {
 //     console.log("Started cron....");
-//     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
+//     // await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
 // });
 
 // cron.schedule('*/15 * * * * *', async (req, res, next) => {
 //     console.log("Started cron....");
-//     await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
+//     // await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
 // });
 
 // cron.schedule('* * * * *', async (req, res, next) => {
 //     console.log("INISDER FGJ");
-//     await dashBoardUpdate.deletePendingOrder();
+//     // await dashBoardUpdate.deletePendingOrder();
 // })
 
 // cron.schedule('* * * * *', async (req, res, next) => {
 //     console.log("INISDER FGJ");
-//     await dashBoardUpdate.deleteSellPendingOrder();
+//     // await dashBoardUpdate.deleteSellPendingOrder();
 // })
