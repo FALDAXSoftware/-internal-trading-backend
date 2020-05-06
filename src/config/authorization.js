@@ -25,7 +25,8 @@ module.exports = async function (headers) {
         }
         console.log("decoded.isAdmin", decoded.isAdmin)
         // Check if institutional account, and yes, then check API key
-        if (decoded.isAdmin == undefined) {
+        let getUserData = await userModel.getSingleData({ id: decoded.id });
+        if (decoded.isAdmin == undefined && getUserData.is_institutional_account) {
             if (!headers["x-api-key"] || headers["x-api-key"] == null || headers["x-api-key"] == '') {
                 return {
                     status: constants.BAD_REQUEST_CODE,
@@ -33,12 +34,10 @@ module.exports = async function (headers) {
                 }
             }
             let api_key = headers["x-api-key"];
-
-            let getUserData = await userModel.getSingleData({ id: decoded.id });
             let userAPIKeyHelper = require("../helpers/users/get-user-api-key");
             let getUserAPIKey = await userAPIKeyHelper.getUserAPIKey(decoded.id);
 
-            if (getUserData.is_institutional_account && getUserAPIKey && getUserAPIKey.api_key != api_key) {
+            if (getUserAPIKey && getUserAPIKey.api_key != api_key) {
                 return {
                     status: constants.BAD_REQUEST_CODE,
                     message: i18n.__("Api key is invalid").message
