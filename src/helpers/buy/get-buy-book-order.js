@@ -10,7 +10,8 @@ var getBuyBookOrder = async (crypto, currency) => {
         .where('deleted_at', null)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
-        .orderBy('price', 'DESC').limit(1);
+        .orderBy('price', 'DESC')
+        .limit(1);
 
     return (buyBookOrders)
 }
