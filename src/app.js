@@ -139,7 +139,7 @@ io.on('connection', async function (socket) {
     if (authentication.status > 200) {
       socket.emit(constants.USER_LOGOUT, true);
     }
-    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.id);
     console.log("user_id", user_id);
     if (room.previous_room) {
       socket.leave(room.previous_room);
