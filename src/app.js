@@ -124,7 +124,7 @@ io.on('connection', async function (socket) {
     return Error("Not authorized")
   }
   var authentication = require("./config/authorization")(socket_headers);
-  // console.log("Socket Headers", socket_headers);
+  console.log("Socket Headers", authentication);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
   if (authentication.status > constants.SUCCESS_CODE) {
     socket.emit(constants.USER_LOGOUT, true);
@@ -140,7 +140,7 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
-    console.log("authentication", JSON.parse(authentication))
+    // console.log("authentication", JSON.parse(authentication))
     console.log("authentication", authentication)
     console.log("authentication.id", authentication.id)
     console.log("authentication.isAdmin", authentication.isAdmin);
