@@ -43,6 +43,7 @@ var getTraddingFees = async (inputs) => {
                                                                     FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
                                                                     WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                     ON a1.user_coin = a2.requested_coin`)
+
         console.log("userTradesum", userTradesum.rows.length)
         for (let index = 0; index < userTradesum.rows.length; index++) {
             const element = userTradesum.rows[index];
@@ -52,7 +53,7 @@ var getTraddingFees = async (inputs) => {
         let requestedTradeHistorySum = {}
         let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
                                                                         FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                        WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                        WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
                                                                         FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
                                                                         WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                         ON a1.user_coin = a2.requested_coin`)
@@ -84,26 +85,30 @@ var getTraddingFees = async (inputs) => {
         var totalCurrencyAmount = userTotalUSDSum;
         var totalCryptoAmount = requestedTotalUSDSum;
 
-        var currencyMakerFee = await Fees
-            .query()
-            .first()
-            .select('maker_fee', 'taker_fee')
-            .where('deleted_at', null)
-            .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
-            .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
+        if ((user_id != process.env.TRADEDESK_USER_ID)) {
+            var currencyMakerFee = await Fees
+                .query()
+                .first()
+                .select('maker_fee', 'taker_fee')
+                .where('deleted_at', null)
+                .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
+                .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
+            inputs.makerFee = cryptoTakerFee.maker_fee
+        }
 
-        var cryptoTakerFee = await Fees
-            .query()
-            .first()
-            .select('maker_fee', 'taker_fee')
-            .where('deleted_at', null)
-            .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
-            .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
+        if (requested_user_id != process.env.TRADEDESK_USER_ID) {
+            var cryptoTakerFee = await Fees
+                .query()
+                .first()
+                .select('maker_fee', 'taker_fee')
+                .where('deleted_at', null)
+                .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
+                .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
 
 
-        // Just Replace inputs.makerFee and inputs.takerFee with following
-        inputs.makerFee = cryptoTakerFee.maker_fee
-        inputs.takerFee = currencyMakerFee.taker_fee
+            // Just Replace inputs.makerFee and inputs.takerFee with following
+            inputs.takerFee = currencyMakerFee.taker_fee
+        }
         var currency_coin_id = request.currency_coin_id;
         var crypto_coin_id = request.crypto_coin_id
 
@@ -191,26 +196,26 @@ var getTraddingFees = async (inputs) => {
         console.log("inputs.takerFee", inputs.takerFee)
         // Calculating fees value on basis of the side and order executed
         if (inputs.side == "Buy") {
-
             // ---------------------------crypto-------------------------------------- //
             var cryptouserbalance = cryptoWalletUser.balance + ((inputs.quantity) - ((inputs.quantity * inputs.takerFee / 100)));
             var cryptouserbalance = parseFloat(cryptouserbalance.toFixed(8));
-            // console.log("cryptouserbalance", cryptouserbalance)
-            // console.log("(inputs.quantity * inputs.takerFee / 100))", (inputs.quantity * inputs.takerFee / 100))
             var cryptouserPlacedbalance = cryptoWalletUser.placed_balance + ((inputs.quantity) - ((inputs.quantity * inputs.takerFee / 100)));
             var cryptouserPlacedbalance = parseFloat(cryptouserPlacedbalance.toFixed(8));
-            // console.log(cryptouserPlacedbalance)
 
-            var a = await Wallet
-                .query()
-                .where('id', cryptoWalletUser.id)
-                .update({
-                    balance: cryptouserbalance,
-                    placed_balance: cryptouserPlacedbalance
-                });
+            var updateSql = await Wallet.knex().raw(`UPDATE wallets
+                                                        SET balance = ${cryptouserbalance}, placed_balance = ${cryptouserPlacedbalance}
+                                                        WHERE id = ${cryptoWalletUser.id}
+                                                        RETURNING *`)
+            var a = updateSql.rows[0]
 
-            var cryptorequestedbalance = cryptoWalletRequested.balance - ((inputs.quantity));
-            var cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+            if (user_id == requested_user_id) {
+                var cryptorequestedbalance = a.balance - ((inputs.quantity));
+                var cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+            } else {
+                var cryptorequestedbalance = cryptoWalletRequested.balance - ((inputs.quantity));
+                var cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+            }
+
 
             var a = await Wallet
                 .query()
@@ -218,29 +223,30 @@ var getTraddingFees = async (inputs) => {
                 .update({
                     balance: cryptorequestedbalance
                 });
+
             // -----------------------currency-------------------------------------- //
             var currencyuserbalance = currencyWalletUser.balance - (((inputs.quantity) * inputs.fill_price));
             var currencyuserbalance = parseFloat(currencyuserbalance.toFixed(8))
-            // console.log("currencyuserbalance"), currencyuserbalance
             var currencyuserplacedbalance = currencyWalletUser.placed_balance - (((inputs.quantity) * (inputs.fill_price)));
             var currencyuserplacedbalance = parseFloat(currencyuserplacedbalance.toFixed(8))
-            // console.log("currencyuserplacedbalance", currencyuserplacedbalance)
 
-            var b = await Wallet
-                .query()
-                .where('id', currencyWalletUser.id)
-                .update({
-                    balance: currencyuserbalance,
-                    placed_balance: currencyuserplacedbalance
-                });
+            var updateSql = await Wallet.knex().raw(`UPDATE wallets
+                                                        SET balance = ${currencyuserbalance}, placed_balance = ${currencyuserplacedbalance}
+                                                        WHERE id = ${currencyWalletUser.id}
+                                                        RETURNING *`)
+            var b = updateSql.rows[0]
 
-            var currencyrequestedbalance = currencyWalletRequested.balance + (((inputs.quantity) * inputs.fill_price) - ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)));
-            var currencyrequestedbalance = parseFloat(currencyrequestedbalance.toFixed(8));
-            // console.log(" ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100))", ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)))
-            // console.log("currencyrequestedbalance"), currencyrequestedbalance
-            var currencyrequestedplacedbalance = currencyWalletRequested.placed_balance + (((inputs.quantity) * inputs.fill_price) - ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)));
-            var currencyrequestedplacedbalance = parseFloat(currencyrequestedplacedbalance.toFixed(8));
-            // console.log("currencyrequestedplacedbalance", currencyrequestedplacedbalance)
+            if (user_id == requested_user_id) {
+                var currencyrequestedbalance = b.balance + (((inputs.quantity) * inputs.fill_price) - ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)));
+                var currencyrequestedbalance = parseFloat(currencyrequestedbalance.toFixed(8));
+                var currencyrequestedplacedbalance = b.placed_balance + (((inputs.quantity) * inputs.fill_price) - ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)));
+                var currencyrequestedplacedbalance = parseFloat(currencyrequestedplacedbalance.toFixed(8));
+            } else {
+                var currencyrequestedbalance = currencyWalletRequested.balance + (((inputs.quantity) * inputs.fill_price) - ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)));
+                var currencyrequestedbalance = parseFloat(currencyrequestedbalance.toFixed(8));
+                var currencyrequestedplacedbalance = currencyWalletRequested.placed_balance + (((inputs.quantity) * inputs.fill_price) - ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100)));
+                var currencyrequestedplacedbalance = parseFloat(currencyrequestedplacedbalance.toFixed(8));
+            }
 
             var b = await Wallet
                 .query()
@@ -299,27 +305,27 @@ var getTraddingFees = async (inputs) => {
             // --------------------------------------crypto--------------------------- //
             var cryptouserbalance = parseFloat(cryptoWalletUser.balance).toFixed(8) - parseFloat((inputs.quantity)).toFixed(8);
             var cryptouserbalance = parseFloat(cryptouserbalance.toFixed(8))
-            // console.log("cryptouserbalance", cryptouserbalance)
             var cryptouserPlacedbalance = parseFloat(cryptoWalletUser.placed_balance).toFixed(8) - parseFloat(inputs.quantity).toFixed(8);
             var cryptouserPlacedbalance = parseFloat(cryptouserPlacedbalance.toFixed(8))
 
-            var a = await Wallet
-                .query()
-                .where('id', cryptoWalletUser.id)
-                .update({
-                    balance: cryptouserbalance,
-                    placed_balance: cryptouserPlacedbalance
-                });
-            // console.log("cryptoWalletRequested.balance", cryptoWalletRequested.balance)
-            var cryptorequestedbalance = parseFloat(cryptoWalletRequested.balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
-            var cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8)
-            // console.log("cryptorequestedbalance", cryptorequestedbalance)
-            // console.log("(inputs.makerFee / 100)", (inputs.makerFee / 100))
-            // console.log("(inputs.quantity)", (inputs.quantity))
-            // console.log("(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100))", (inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100)))
-            var cryptorequestedplacedbalance = parseFloat(cryptoWalletRequested.placed_balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
-            var cryptorequestedplacedbalance = parseFloat(cryptorequestedplacedbalance).toFixed(8)
-            // console.log("cryptorequestedplacedbalance", cryptorequestedplacedbalance)
+            var updateSql = await Wallet.knex().raw(`UPDATE wallets
+                                                        SET balance = ${cryptouserbalance}, placed_balance = ${cryptouserPlacedbalance}
+                                                        WHERE id = ${cryptoWalletUser.id}
+                                                        RETURNING *`)
+            var a = updateSql.rows[0]
+
+            if (user_id == requested_user_id) {
+                var cryptorequestedbalance = parseFloat(a.balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
+                var cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8)
+                var cryptorequestedplacedbalance = parseFloat(a.placed_balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
+                var cryptorequestedplacedbalance = parseFloat(cryptorequestedplacedbalance).toFixed(8)
+
+            } else {
+                var cryptorequestedbalance = parseFloat(cryptoWalletRequested.balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
+                var cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8)
+                var cryptorequestedplacedbalance = parseFloat(cryptoWalletRequested.placed_balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
+                var cryptorequestedplacedbalance = parseFloat(cryptorequestedplacedbalance).toFixed(8)
+            }
 
 
             var a = await Wallet
@@ -334,13 +340,8 @@ var getTraddingFees = async (inputs) => {
 
             var currencyuserbalance = (currencyWalletUser.balance) + parseFloat((inputs.quantity) * (inputs.fill_price)) - ((((inputs.quantity) * (inputs.fill_price)) * (inputs.takerFee / 100)));
             var currencyuserbalance = parseFloat(currencyuserbalance).toFixed(8)
-            // console.log("currencyuserbalance", currencyuserbalance)
-            // console.log("(inputs.takerFee / 100)", (inputs.takerFee / 100))
-            // console.log("(inputs.quantity) * (inputs.fill_price) - (((inputs.quantity) * (inputs.fill_price) * (inputs.takerFee / 100)))", (inputs.quantity) * (inputs.fill_price) - (((inputs.quantity) * (inputs.fill_price) * (inputs.takerFee / 100))))
             var currencyuserplacedbalance = (currencyWalletUser.placed_balance) + parseFloat((inputs.quantity) * (inputs.fill_price)) - ((((inputs.quantity) * (inputs.fill_price)) * (inputs.takerFee / 100)));
             var currencyuserplacedbalance = parseFloat(currencyuserplacedbalance).toFixed(8)
-            // console.log("currencyuserplacedbalance", currencyuserplacedbalance)
-            // console.log("parseFloat((inputs.quantity) * (inputs.fill_price)) - ((((inputs.quantity) * (inputs.fill_price)) * (inputs.takerFee / 100)))", parseFloat((inputs.quantity) * (inputs.fill_price)) - ((((inputs.quantity) * (inputs.fill_price)) * (inputs.takerFee / 100))))
 
             var b = await Wallet
                 .query()
@@ -349,9 +350,21 @@ var getTraddingFees = async (inputs) => {
                     balance: currencyuserbalance,
                     placed_balance: currencyuserplacedbalance
                 });
-            var currencyrequestedbalance = currencyWalletRequested.balance - ((((inputs.quantity) * (inputs.fill_price))));
-            var currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
-            // console.log("currencyrequestedbalance", currencyrequestedbalance)
+
+            var updateSql = await Wallet.knex().raw(`UPDATE wallets
+                                                        SET balance = ${currencyuserbalance}, placed_balance = ${currencyuserplacedbalance}
+                                                        WHERE id = ${currencyWalletUser.id}
+                                                        RETURNING *`)
+            var b = updateSql.rows[0]
+
+            if (user_id == requested_user_id) {
+                var currencyrequestedbalance = b.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                var currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+            } else {
+                var currencyrequestedbalance = currencyWalletRequested.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                var currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+            }
+
 
             var b = await Wallet
                 .query()
