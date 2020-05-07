@@ -38,11 +38,11 @@ var getTraddingFees = async (inputs) => {
             .format();
         let userTradeHistorySum = {}
         let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                WHERE user_id = 1545 AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-                                                                WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-                                                                ON a1.user_coin = a2.requested_coin`)
+                                                                    FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                    WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                    FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                    WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                    ON a1.user_coin = a2.requested_coin`)
         console.log("userTradesum", userTradesum.rows.length)
         for (let index = 0; index < userTradesum.rows.length; index++) {
             const element = userTradesum.rows[index];
@@ -51,11 +51,11 @@ var getTraddingFees = async (inputs) => {
 
         let requestedTradeHistorySum = {}
         let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-        FROM(SELECT user_coin, sum(quantity) FROM trade_history
-        WHERE user_id = 1545 AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-        WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-        ON a1.user_coin = a2.requested_coin`)
+                                                                        FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                        WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                        WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                        ON a1.user_coin = a2.requested_coin`)
         for (let index = 0; index < requestedTradesum.rows.length; index++) {
             const element = requestedTradesum.rows[index];
             requestedTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
