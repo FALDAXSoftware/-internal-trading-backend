@@ -602,6 +602,7 @@ class TradeController extends AppController {
   // Used for function to make Market Buy order
   async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id) {
     const checkUser = Helper.checkWhichUser(user_id);
+    console.log("checkUser", checkUser)
     await logger.info({
       "module": "Market Buy Execution",
       "user_id": "user_" + user_id,
@@ -641,7 +642,7 @@ class TradeController extends AppController {
         order_status: "partially_filled",
         currency: currency,
         settle_currency: crypto,
-        placed_by: (checkUser ? process.env.TRADEDESK_BOT : process.env.TRADEDESK_USER)
+        placed_by: (checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
       }
 
       var resultData = {
