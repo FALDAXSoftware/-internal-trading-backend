@@ -85,30 +85,30 @@ var getTraddingFees = async (inputs) => {
         var totalCurrencyAmount = userTotalUSDSum;
         var totalCryptoAmount = requestedTotalUSDSum;
 
-        if ((user_id != process.env.TRADEDESK_USER_ID)) {
-            var currencyMakerFee = await Fees
-                .query()
-                .first()
-                .select('maker_fee', 'taker_fee')
-                .where('deleted_at', null)
-                .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
-                .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
-            inputs.makerFee = cryptoTakerFee.maker_fee
-        }
+        // if ((user_id != process.env.TRADEDESK_USER_ID)) {
+        var currencyMakerFee = await Fees
+            .query()
+            .first()
+            .select('maker_fee', 'taker_fee')
+            .where('deleted_at', null)
+            .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
+            .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
+        inputs.makerFee = cryptoTakerFee.maker_fee
+        // }
 
-        if (requested_user_id != process.env.TRADEDESK_USER_ID) {
-            var cryptoTakerFee = await Fees
-                .query()
-                .first()
-                .select('maker_fee', 'taker_fee')
-                .where('deleted_at', null)
-                .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
-                .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
+        // if (requested_user_id != process.env.TRADEDESK_USER_ID) {
+        var cryptoTakerFee = await Fees
+            .query()
+            .first()
+            .select('maker_fee', 'taker_fee')
+            .where('deleted_at', null)
+            .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
+            .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
 
 
-            // Just Replace inputs.makerFee and inputs.takerFee with following
-            inputs.takerFee = currencyMakerFee.taker_fee
-        }
+        // Just Replace inputs.makerFee and inputs.takerFee with following
+        inputs.takerFee = currencyMakerFee.taker_fee
+        // }
         var currency_coin_id = request.currency_coin_id;
         var crypto_coin_id = request.crypto_coin_id
 
