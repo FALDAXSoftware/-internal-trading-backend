@@ -250,5 +250,12 @@
 		"message_type": "success",
 		"message_english": "You are allowed to trade",
 		"message": "All trading services are available in your area."
+	},
+	"You are not allowed to trade in this regoin as your country is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as your country is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as your country is illegal",
+		"message": "You are not allowed to trade in this regoin as your country is illegal"
 	}
 }
