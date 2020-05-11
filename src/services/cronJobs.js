@@ -10,22 +10,22 @@ cron.schedule('*/2 * * * *', async (req, res, next) => {
     // await cronData.executeStopLimit();
 });
 
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
+// });
 
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
+// });
 
-cron.schedule('* * * * *', async (req, res, next) => {
-    console.log("INISDER FGJ");
-    await dashBoardUpdate.deletePendingOrder();
-})
+// cron.schedule('* * * * *', async (req, res, next) => {
+//     console.log("INISDER FGJ");
+//     await dashBoardUpdate.deletePendingOrder();
+// })
 
-cron.schedule('* * * * *', async (req, res, next) => {
-    console.log("INISDER FGJ");
-    await dashBoardUpdate.deleteSellPendingOrder();
-})
+// cron.schedule('* * * * *', async (req, res, next) => {
+//     console.log("INISDER FGJ");
+//     await dashBoardUpdate.deleteSellPendingOrder();
+// })
