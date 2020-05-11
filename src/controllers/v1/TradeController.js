@@ -492,7 +492,7 @@ class TradeController extends AppController {
       userIds.push(user_id);
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
-
+      console.log("tradeDataChecking", tradeDataChecking)
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);

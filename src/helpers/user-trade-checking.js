@@ -57,8 +57,6 @@ var tradeStatus = async (user_id) => {
                         .andWhere('name', userKYC.state)
                         .orderBy('id', 'DESC');
 
-                    console.log("stateData", stateData)
-
                     if (stateData != undefined) {
                         if (stateData.legality == 1) {
                             response = true;
@@ -71,6 +69,9 @@ var tradeStatus = async (user_id) => {
                         response = false;
                         msg = "You are not allowed to trade in this regoin";
                     }
+                } else {
+                    response = false;
+                    msg = "You are not allowed to trade in this regoin as your country is illegal";
                 }
             } else {
                 response = false;
