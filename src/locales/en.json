@@ -257,5 +257,19 @@
 		"message_type": "error",
 		"message_english": "You are not allowed to trade in this regoin as your country is illegal",
 		"message": "You are not allowed to trade in this regoin as your country is illegal"
+	},
+	"instrument data": {
+		"page": "Trade Page",
+		"context": "intrument data fetch",
+		"message_type": "error",
+		"message_english": "Instrument Data has been retrieved successfully.",
+		"message": "Instrument Data has been retrieved successfully."
+	},
+	"depth data": {
+		"page": "Trade Page",
+		"context": "Depth Chart data fetch",
+		"message_type": "error",
+		"message_english": "Depth Chart Data has been retrieved successfully.",
+		"message": "Depth Chart Data has been retrieved successfully."
 	}
 }

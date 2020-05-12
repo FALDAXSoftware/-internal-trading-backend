@@ -4,7 +4,7 @@ Get depth chart detail
 var BuyBookModel = require("../../models/BuyBook");
 var SellBookModel = require("../../models/SellBook");
 
-var getDepthChartDetails = async (crypto, currency) => {
+var getDepthChartDetails = async (crypto, currency, limit = 100) => {
     var depthChartDetail;
     var buyDetails = await BuyBookModel
         .query()
@@ -12,7 +12,7 @@ var getDepthChartDetails = async (crypto, currency) => {
         .andWhere('currency', currency)
         .andWhere('deleted_at', null)
         .orderBy('price', 'DESC')
-        .limit(500);
+        .limit(limit);
 
     var sellDetails = await SellBookModel
         .query()
@@ -20,7 +20,7 @@ var getDepthChartDetails = async (crypto, currency) => {
         .andWhere('currency', currency)
         .andWhere('deleted_at', null)
         .orderBy('price', 'ASC')
-        .limit(500);
+        .limit(limit);
 
     let data = { "buyDetails": buyDetails, "sellDetails": sellDetails };
     return data;

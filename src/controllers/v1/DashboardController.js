@@ -27,6 +27,8 @@ var BuyBookModel = require("../../models/BuyBook");
 var SellBookModel = require("../../models/SellBook");
 var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
+var intrumentData = require("../../helpers/tradding/get-instrument-data");
+var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 
 class DashboardController extends AppController {
 
@@ -554,6 +556,66 @@ class DashboardController extends AppController {
             }
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    async getInstrumentDataValue(req, res) {
+        try {
+            var instrumentDataValue = await intrumentData.getInstrumentData();
+
+            await logger.info({
+                "module": "Instrument Data",
+                "user_id": "user_",
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("instrument data").message + "  " + instrumentDataValue)
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("instrument data").message,
+                    "data": instrumentDataValue
+                });
+        } catch (error) {
+            console.log(error);
+            await logger.info({
+                "module": "Portfolio Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Success"
+            }, error)
+        }
+    }
+
+    async getDepthChartDetails(req, res) {
+        try {
+            var {
+                symbol,
+                limit
+            } = req.query;
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+            var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
+            await logger.info({
+                "module": "Depth Chart Data",
+                "user_id": "user_",
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("depth data").message + "  " + depthChartValue)
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("depth data").message,
+                    "data": depthChartValue
+                });
+        } catch (error) {
+            console.log(error);
+            await logger.info({
+                "module": "Portfolio Data",
+                "user_id": "user_" + user_id,
+                "url": "Trade Function",
+                "type": "Success"
+            }, error)
         }
     }
 }
