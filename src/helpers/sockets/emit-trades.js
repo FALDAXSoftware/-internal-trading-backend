@@ -28,8 +28,8 @@ var emitTrades = async (crypto, currency, userIds) => {
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "tradehistoryUpdate", tradeDetails);
-    let cardDate = await DashboardCardDetailsHelper.getCardData(crypto + "-" + currency);
-    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_CARD_EVENT, cardDate)
+    // let cardDate = await DashboardCardDetailsHelper.getCardData(crypto + "-" + currency);
+    // global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_CARD_EVENT, cardDate)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "cardDataUpdate", cardDate);
