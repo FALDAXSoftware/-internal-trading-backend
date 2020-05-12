@@ -9,9 +9,9 @@ var FeesModel = require("../../models/Fees");
 var TradeHistoryModel = require("../../models/TradeHistory");
 var SellBookOrderHelper = require("../../helpers/sell/get-sell-book-order");
 var BuyBookOrderHelper = require("../../helpers/buy/get-buy-book-order");
+var Fees = require("../../models/Fees");
 
 var getUserWalletBalance = async (user_id, currency, crypto) => {
-    console.log("user_id, currency, crypto", user_id, currency, crypto)
     var userWalletBalance;
     var coinId = await CoinsModel
         .query()
@@ -19,52 +19,6 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .select()
         .where('coin', currency)
         .andWhere('deleted_at', null);
-
-    // var currencyMessage = '';
-    // var userWalletCurrencyBalance = 0.0;
-    // if (coinId != undefined) {
-    //     if (coinId.is_active == false || coinId.is_active == "false") {
-    //         currencyMessage = "Coin is Currently inactive"
-    //     } else {
-    //         userWalletCurrencyBalance = await WalletsModel
-    //             .query()
-    //             .select()
-    //             .where('coin_id', coinId.id)
-    //             .andWhere('deleted_at', null)
-    //             .andWhere('is_active', true)
-    //             .andWhere('user_id', user_id);
-
-    //         if (userWalletCurrencyBalance.length == 0) {
-    //             currencyMessage = "Please create wallet for " + currency;
-    //         }
-    //     }
-    // }
-
-    // var cryptoId = await CoinsModel
-    //     .query()
-    //     .first()
-    //     .select()
-    //     .where('coin', crypto)
-    //     .andWhere('deleted_at', null);
-
-    // var cryptoMessage = '';
-    // if (cryptoId != undefined) {
-    //     if (cryptoId.is_active == false) {
-    //         currencyMessage = "Coin is Inactive"
-    //     } else {
-    //         var userWalletCryptoBalance = await WalletsModel
-    //             .query()
-    //             .select()
-    //             .where('coin_id', cryptoId.id)
-    //             .andWhere('deleted_at', null)
-    //             .andWhere('is_active', true)
-    //             .andWhere('user_id', user_id);
-
-    //         if (userWalletCryptoBalance.length == 0) {
-    //             cryptoMessage = "Please create the wallet for " + crypto;
-    //         }
-    //     }
-    // }
 
     var coinWalletSql = `SELECT coins.coin, coins.is_active , wallets.balance, coins.id,
                             wallets.placed_balance, wallets.receive_address
@@ -76,8 +30,6 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
                             AND (coins.coin = '${currency}' OR coins.coin = '${crypto}');`
 
     var walletStatusBalance = await WalletsModel.knex().raw(coinWalletSql);
-    // walletStatusBalance = walletStatusBalance.rows;
-    console.log("walletStatusBalance", walletStatusBalance)
 
     var currencyMessage = '';
     var userWalletCurrencyBalance = [];
@@ -128,29 +80,43 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         }
     }
 
+    let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
+                            FROM currency_conversion
+                            WHERE currency_conversion.deleted_at IS NULL`
 
-    // Fetching Amount of trade done on the basis of time and usd value
-    var currencyAmount = await TradeHistoryModel
-        .query()
-        .sum('quantity')
-        .where(function () {
-            this.where("user_id", user_id)
-                .orWhere("requested_user_id", user_id)
-        })
-        .andWhere('deleted_at', null)
-        .andWhere('created_at', '>=', yesterday)
-        .andWhere('created_at', '<=', now);
-    console.log("CurrencyAmount", currencyAmount[0].sum)
-    var totalCryptoAmount = currencyAmount[0].sum * (cryptoUsdValue);
+    let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
 
-    // Fetching the fees on the basis of the total trade done in last 30 days
-    var cryptoTakerFee = await FeesModel
+    let userTradeHistorySum = {}
+    let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+                                                                    FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                    WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                    FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                    WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                    ON a1.user_coin = a2.requested_coin`)
+
+    for (let index = 0; index < userTradesum.rows.length; index++) {
+        const element = userTradesum.rows[index];
+        userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+    }
+
+    let userTotalUSDSum = 0
+    for (let index = 0; index < conversionData.rows.length; index++) {
+        const element = conversionData.rows[index];
+        if (userTradeHistorySum[element.symbol]) {
+            userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
+        }
+    }
+
+    var totalCurrencyAmount = userTotalUSDSum;
+
+    var currencyMakerFee = await Fees
         .query()
         .first()
         .select('maker_fee', 'taker_fee')
         .where('deleted_at', null)
-        .andWhere('min_trade_volume', '<=', parseFloat(totalCryptoAmount))
-        .andWhere('max_trade_volume', '>=', parseFloat(totalCryptoAmount));
+        .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
+        .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
+    var takerFee = currencyMakerFee.taker_fee
 
     let sellBook = await SellBookOrderHelper.sellOrderBook(crypto, currency);
     let buyBook = await BuyBookOrderHelper.getBuyBookOrder(crypto, currency);
@@ -165,8 +131,8 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
     } else {
         buyBookValue = buyBook[0].price;
     }
-    var buyEstimatedFee = sellBookValue - (sellBookValue * (cryptoTakerFee.taker_fee / 100));
-    var sellEstimatedFee = buyBookValue - (buyBookValue * (cryptoTakerFee.taker_fee / 100));
+    var buyEstimatedFee = sellBookValue - (sellBookValue * (takerFee / 100));
+    var sellEstimatedFee = buyBookValue - (buyBookValue * (takerFee / 100));
 
     var buyPay = sellBookValue;
     var sellPay = buyBookValue;
@@ -180,7 +146,7 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         'sellEstimatedPrice': sellEstimatedFee,
         'buyPay': buyPay,
         'sellPay': sellPay,
-        'fees': cryptoTakerFee.taker_fee,
+        'fees': takerFee,
         'cryptoFiat': cryptoUsdValue,
         "currencyFiat": currencyUsdValue
     };
