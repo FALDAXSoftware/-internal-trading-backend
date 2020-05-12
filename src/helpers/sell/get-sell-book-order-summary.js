@@ -12,7 +12,7 @@ var sellOrderBookSummary = async (crypto, currency) => {
         .groupBy('price')
         .orderBy('price', 'ASC').limit(100);
 
-    var totalSql = `SELECT SUM(price * quantity) as total 
+    var totalSql = `SELECT SUM(quantity) as total 
                         FROM sell_book WHERE settle_currency='${crypto}' AND currency='${currency}' 
                         AND deleted_at IS NULL`
 

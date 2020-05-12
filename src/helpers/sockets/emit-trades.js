@@ -28,19 +28,19 @@ var emitTrades = async (crypto, currency, userIds) => {
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "tradehistoryUpdate", tradeDetails);
-    let cardDate = await DashboardCardDetailsHelper.getCardData(crypto + "-" + currency);
-    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_CARD_EVENT, cardDate)
+    // let cardDate = await DashboardCardDetailsHelper.getCardData(crypto + "-" + currency);
+    // global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_CARD_EVENT, cardDate)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "cardDataUpdate", cardDate);
-    let depthChartData = await ChartHelper.getDepthChartDetails(crypto, currency);
-    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_DEPTH_CHART_EVENT, depthChartData)
+    // let depthChartData = await ChartHelper.getDepthChartDetails(crypto, currency);
+    // global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_DEPTH_CHART_EVENT, depthChartData)
     // sails
     //   .sockets
     //   .broadcast(inputs.crypto + "-" + inputs.currency, "depthChartUpdate", depthChartData);
 
-    var cryptoInstrumentUpdate = await InstrumentHelper.getInstrumentData(currency);
-    global.io.sockets.emit(constants.TRADE_INSTRUMENT_EVENT, cryptoInstrumentUpdate)
+    // var cryptoInstrumentUpdate = await InstrumentHelper.getInstrumentData(currency);
+    // global.io.sockets.emit(constants.TRADE_INSTRUMENT_EVENT, cryptoInstrumentUpdate)
     // sails
     //   .sockets
     //   .broadcast(inputs.currency, "instrumentUpdate", cryptoInstrumentUpdate);

@@ -3,7 +3,6 @@ var dotenv = require('dotenv');
 dotenv.load(); // Configuration load (ENV file)
 
 if (process.env.ENVIROMENT == "preprod") {
-  console.log("ISNIDE PREPROD")
   // Add this to the VERY top of the first file loaded in your app
   var apm = require('elastic-apm-node').start({
     // Override service name from package.json
@@ -30,13 +29,11 @@ var server = http.createServer(app);
 // var io = require('socket.io')(server);
 var io = require('socket.io')(server, {
   handlePreflightRequest: (req, res) => {
-    console.log(req.headers)
     const headers = {
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Allow-Origin": req.headers.origin, //or the specific origin you want to give access to,
       "Access-Control-Allow-Credentials": true
     };
-    console.log(headers)
     res.writeHead(200, headers);
     res.end();
   }
@@ -113,40 +110,29 @@ app.set("pairData", {
 // Socket Implementation //Socket config
 
 io.on('connection', async function (socket) {
-  var constants = require("./config/constants");
-  console.log("Socket connected.....");
+  var
+    constants = require("./config/constants");
   socket.to("join").emit("test", { name: "le bhai" });
   var socket_headers = socket.request.headers;
 
-  // console.log("socket_headers",socket_headers)
-  console.log("Auth", socket_headers.authorization);
   if (!socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == "") {
     return Error("Not authorized")
   }
   var authentication = await require("./config/authorization")(socket_headers);
-  console.log("Socket Headers", authentication);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
   if (authentication.status > constants.SUCCESS_CODE) {
     socket.emit(constants.USER_LOGOUT, true);
   }
 
-  console.log("RRRRR", rooms)
   let socket_functions = require("./helpers/sockets/emit-all-data");
 
   socket.on("join", async function (room) {
-    console.log("room", room)
     socket.emit("test", { name: "le bhai" });
     if (authentication.status > 200) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
-    // console.log("authentication", JSON.parse(authentication))
-    console.log("authentication", authentication)
-    console.log("authentication.id", authentication.user_id)
-    console.log("authentication.isAdmin", authentication.isAdmin);
-    console.log("authentication.isAdmin == true", authentication.isAdmin == true)
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
-    console.log("user_id", user_id);
     if (room.previous_room) {
       socket.leave(room.previous_room);
       let previous_pair = (room.previous_room).split("-");
@@ -163,24 +149,8 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
-    socket.emit(constants.TRADE_DEPTH_CHART_EVENT, await socket_functions.getDepthChartData(pair[0], pair[1]));
-    socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(pair[1]));
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
-    // socket.emit(constants.TRADE_CARD_EVENT, await socket_functions.getCardData(symbol));
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
-    // socket.emit(constants.TRADE_ALL_PENDING_ORDERS_EVENT, await socket_functions.getAllPendingOrders(pair[0], pair[1]));
-    // socket.emit(constants.USER_FAVOURITES_CARD_DATA_EVENT, await socket_functions.getUserFavouritesData(user_id, socket.id))
-    // console.log(user_id)
-    // socket.emit(constants.USER_PORTFOLIO_DATA_EVENT, await socket_functions.getPortfolioData(user_id))
-    // socket.emit(constants.USER_ACTIVITY_DATA_EVENT, await socket_functions.getActivityData(user_id))
-
-
-    // socket.on("trade_users_history_event", async function (data) {
-    //   console.log(data);
-    //   data.user_id = user_id
-    //   socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
-    // })
-
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
@@ -191,8 +161,6 @@ io.on('connection', async function (socket) {
   })
 
   socket.on("trade_users_history_event", async function (data) {
-    console.log("data", data)
-    console.log("headers", socket.request.headers)
     var socket_headers = socket.request.headers;
     var authentication = await require("./config/authorization")(socket_headers);
     if (authentication.status > constants.SUCCESS_CODE) {
@@ -200,30 +168,23 @@ io.on('connection', async function (socket) {
     }
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id
-    console.log(data);
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
 
   // Temp FIXAPI
   socket.on("check-offer-code", async function (data) {
-    console.log("Check Offer");
-    console.log(data);
     let check_offer = require("./helpers/fixapi/check-offer-code-status");
     socket.emit("offercode-data", await check_offer.offerCodeStatus(data));
   })
 
   socket.on("conversion-data-incoming", async function (data) {
-    console.log(socket.request.headers)
-    console.log("INCOMING DATA", data)
     var socket_headers = socket.request.headers;
     var authentication = await require("./config/authorization")(socket_headers);
-    console.log("authentication", authentication)
     if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id;
-    console.log("After userd", data)
     let jst_value = require("./controllers/v1/FixApiController");
     socket.emit("conversion-data-outgoing", await jst_value.getConversionPrice(data))
   })
@@ -249,8 +210,6 @@ server.listen(app.get('port'), function () {
 });
 
 CronSendEmail = async (requestedData) => {
-  // console.log(res)
-  console.log("IN app.js")
   var EmailTemplate = require("./models/EmailTemplate");
   var template_name = requestedData.template;
   var email = requestedData.email;
@@ -272,8 +231,6 @@ CronSendEmail = async (requestedData) => {
   var emailContent = require("./helpers/helpers")
   language_content = await emailContent.formatEmail(language_content, format_data);
 
-  console.log(language_content)
-  console.log("template_name", template_name)
   var object = {
     to: email,
     subject: language_subject,
@@ -282,7 +239,6 @@ CronSendEmail = async (requestedData) => {
     SITE_URL: process.env.SITE_URL,
     homelink: process.env.SITE_URL
   }
-  console.log(object)
 
   try {
     await app.mailer

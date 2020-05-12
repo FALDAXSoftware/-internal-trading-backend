@@ -45,6 +45,8 @@ router.get("/get-pairs-value", TradeDesk.getQuantityMinMaxValue);
 router.post("/update-pairs-value", TradeDesk.updateQuantityMinMaxValue)
 router.get("/get-spread-value", TradeDesk.getSpreadValue)
 router.get("/get-tradedesk-user-balances", TradeDesk.getWalletTradeDeskBalance)
+router.get("/get-instrument-data", DashboardController.getInstrumentDataValue)
+router.get("/depth-chart-details", DashboardController.getDepthChartDetails)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 
 // Trading View API

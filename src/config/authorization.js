@@ -14,7 +14,6 @@ module.exports = async function (headers) {
     var get_jwt_token = split_token[1];
     try {
         var decoded = jwt.decode(get_jwt_token, require('./secret')());
-        console.log("decoded", decoded);
         // if (decoded.exp >= Date.now()) {
         if ((moment().utc()).isAfter(moment.unix(decoded.exp).utc())) {
             // return Helper.jsonFormat(res, constants.BAD_REQUEST_CODE, i18n.__("TOKEN_EXPIRED"), []);
@@ -23,7 +22,6 @@ module.exports = async function (headers) {
                 message: i18n.__("TOKEN_EXPIRED").message
             }
         }
-        console.log("decoded.isAdmin", decoded.isAdmin)
         // Check if institutional account, and yes, then check API key
         let getUserData = await userModel.getSingleData({ id: decoded.id });
         if (decoded.isAdmin == undefined && getUserData.is_institutional_account) {

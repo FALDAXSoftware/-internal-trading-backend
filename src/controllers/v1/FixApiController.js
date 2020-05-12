@@ -50,7 +50,6 @@ class FixApiController extends AppController {
         });
       }
       // Symbol = Symbol.replace("/", "");
-      console.log("Symbol", Symbol);
       var req_body = {
         "Symbol": Symbol,
         "Side": Side,
@@ -68,9 +67,9 @@ class FixApiController extends AppController {
       req_body.user_id = user_id;
       var jstResponseValue = await FixApiHelper.priceObject(req_body);
       jstResponseValue.faldax_fee = jstResponseValue.faldax_fee;
-      if( usd_value == "" || usd_value == null ){
+      if (usd_value == "" || usd_value == null) {
         jstResponseValue.is_usd_set = false;
-      }else{
+      } else {
         jstResponseValue.is_usd_set = true;
       }
       return jstResponseValue;

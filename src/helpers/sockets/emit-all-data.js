@@ -50,20 +50,6 @@ var getUserBalance = async (user_id, crypto, currency) => {
 //     return data;
 // }
 
-// Get Depth chart details
-var getDepthChartData = async (crypto, currency) => {
-    let helper = require("../../helpers/chart/get-depth-chart-detail");
-    let data = await helper.getDepthChartDetails(crypto, currency);
-    return data;
-}
-
-// Get Instrument details
-var getInstrumentData = async (currency) => {
-    let helper = require("../../helpers/tradding/get-instrument-data");
-    let data = await helper.getInstrumentData(currency);
-    return data;
-}
-
 // Get Users Completed Orders details
 var getUserOrdersData = async (data) => {
     var user_id = data.user_id;
@@ -145,8 +131,8 @@ module.exports = {
     getTradeHistoryData,
     getUserBalance,
     // getCardData,
-    getDepthChartData,
-    getInstrumentData,
+    // getDepthChartData,
+    // getInstrumentData,
     getUserOrdersData,
     getCancelledOrdersData,
     getPendingOrdersData,
