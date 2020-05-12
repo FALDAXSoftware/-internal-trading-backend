@@ -46,7 +46,6 @@ class DashboardController extends AppController {
                 "url": "Trade Function",
                 "type": "Entry"
             }, "Entered the function")
-            console.log("user_id", user_id)
             var total = 0;
             var diffrenceValue = 0;
             var user_data = await UserModel
@@ -57,8 +56,6 @@ class DashboardController extends AppController {
                 .andWhere('deleted_at', null)
                 .andWhere('is_active', true)
                 .orderBy('id', 'DESC');
-
-            console.log("user_data", user_data)
 
             var currency = user_data.fiat;
             var yesterday = moment().subtract(1, 'days');
@@ -73,8 +70,6 @@ class DashboardController extends AppController {
                 .where('user_id', user_id)
                 .andWhere('coins.is_fiat', false)
                 .andWhere('wallets.deleted_at', null);
-
-            console.log("coinBalance", coinBalance)
 
             for (var i = 0; i < coinBalance.length; i++) {
                 var total_price = 0;
@@ -91,8 +86,6 @@ class DashboardController extends AppController {
                     .andWhere("created_at", "<=", today)
                     .andWhere("created_at", ">=", yesterday)
                     .orderBy('id', 'DESC');
-
-                console.log(currentPriceFiat)
 
                 if (currentPriceFiat.length == 0) {
                     currentPrice = 0;
@@ -138,13 +131,8 @@ class DashboardController extends AppController {
                     "fiatPrice": priceFiat,
                     "name": coinBalance[i].coin_name
                 }
-
-                console.log("portfolio_data", portfolio_data)
-
                 portfolioData.push(portfolio_data);
-
             }
-            console.log("portfolioData", portfolioData)
             var changeValue = user_data.diffrence_fiat - diffrenceValue;
             var totalFiat = user_data.total_value - total;
             // resolve(portfolioData)
@@ -230,7 +218,6 @@ class DashboardController extends AppController {
 
     async updateBuyOrderBook(pair_name) {
         try {
-            console.log("pair_name", pair_name)
             let pair = pair_name.split("-").join("")
 
             await request({
@@ -241,12 +228,8 @@ class DashboardController extends AppController {
                 },
                 json: true
             }, async function (err, httpResponse, body) {
-                console.log(body);
-                console.log(err);
                 var bidValue = body.bids;
                 var askValue = body.asks;
-                console.log(bidValue)
-                console.log(askValue);
 
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
@@ -257,8 +240,6 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
 
-                console.log("maxValue", maxValue)
-
                 var getCryptoValue = await CurrencyConversionModel
                     .query()
                     .first()
@@ -267,25 +248,14 @@ class DashboardController extends AppController {
                     .andWhere("symbol", "LIKE", '%' + crypto + '%')
                     .orderBy("id", "DESC");
 
-                console.log("getCryptoValue", getCryptoValue)
-
                 var usdValue = getCryptoValue.quote.USD.price
-                console.log("usdValue", usdValue)
                 var min = (maxValue.crypto_minimum) / (usdValue);
                 var max = (maxValue.crypto_maximum) / (usdValue);
-                console.log("min", min, " max", max)
                 for (var i = 0; i < bidValue.length; i++) {
                     var highlightedNumber = Math.random() * (max - min) + min;
                     bidValue[i][1] = highlightedNumber
                 }
-
-                // console.log(bidValue)
-                // console.log(askValue);
-
                 var now = new Date();
-
-                // var bidValue = await module.exports.shuffle(bidValue);
-
                 let requestedWallets = await CoinsModel
                     .query()
                     .select()
@@ -335,9 +305,6 @@ class DashboardController extends AppController {
                     buyLimitOrderData.is_partially_fulfilled = true;
                     buyLimitOrderData.is_filled = false;
                     buyLimitOrderData.added = true;
-                    console.log("buyLimitOrderData", buyLimitOrderData)
-
-
 
                     let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
                         buyLimitOrderData.user_id,
@@ -349,8 +316,6 @@ class DashboardController extends AppController {
                         true,
                         crypto_coin_id.id,
                         currency_coin_id.id);
-
-                    console.log("responseData", responseData)
                     await module.exports.sleep(1000);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
@@ -378,7 +343,6 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
 
                 var askValue = body.asks;
-                console.log(askValue);
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -388,8 +352,6 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
 
-                console.log("maxValue", maxValue)
-
                 var getCryptoValue = await CurrencyConversionModel
                     .query()
                     .first()
@@ -398,13 +360,9 @@ class DashboardController extends AppController {
                     .andWhere("symbol", "LIKE", '%' + crypto + '%')
                     .orderBy("id", "DESC");
 
-                console.log("getCryptoValue", getCryptoValue)
-
                 var usdValue = getCryptoValue.quote.USD.price
-                console.log("usdValue", usdValue)
                 var min = (maxValue.crypto_minimum) / (usdValue);
                 var max = (maxValue.crypto_maximum) / (usdValue);
-                console.log("min", min, " max", max)
 
                 for (var i = 0; i < askValue.length; i++) {
                     var highlightedNumber = Math.random() * (max - min) + min;
@@ -473,8 +431,6 @@ class DashboardController extends AppController {
                         crypto_coin_id.id,
                         currency_coin_id.id);
 
-
-                    console.log("responseData", responseData)
                     await module.exports.sleep(1000);
                     // }, i * 800)
                     // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
@@ -523,12 +479,8 @@ class DashboardController extends AppController {
                 .orderBy("id", "DESC")
                 .limit(30);
 
-            console.log("getPendingBuyOrder", getPendingBuyOrder)
-            console.log("getPendingBuyOrder.length", getPendingBuyOrder.length)
-
             for (var i = 0; i < getPendingBuyOrder.length; i++) {
                 var getData = await cancelOldOrder.cancelPendingOrder(getPendingBuyOrder[i].side, getPendingBuyOrder[i].order_type, getPendingBuyOrder[i].id)
-                console.log("getData", getData)
             }
         } catch (error) {
             console.log(error);
@@ -547,12 +499,8 @@ class DashboardController extends AppController {
                 .orderBy("id", "DESC")
                 .limit(30);
 
-            console.log("getPendingBuyOrder", getPendingSellOrder)
-            console.log("getPendingSellOrder.length", getPendingSellOrder.length)
-
             for (var i = 0; i < getPendingSellOrder.length; i++) {
                 var getData = await cancelOldOrder.cancelPendingOrder(getPendingSellOrder[i].side, getPendingSellOrder[i].order_type, getPendingSellOrder[i].id)
-                console.log("getData", getData)
             }
         } catch (error) {
             console.log(error);
