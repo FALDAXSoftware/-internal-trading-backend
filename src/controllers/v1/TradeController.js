@@ -2090,6 +2090,28 @@ class TradeController extends AppController {
     }
   }
 
+  // Get Users Completed Orders details
+  async getUserOrdersData(req, res, next) {
+    var user_id = await Helper.getUserId(req.headers, res);
+    console.log('params', req.query);
+    let { pair, limit, page, month, action, fromDate, toDate } = req.query;
+    pair = (pair).split("-");
+    var crypto = pair[0];
+    var currency = pair[1];
+    let allData;
+    if (action == 1) {
+      let helper = require("../../helpers/tradding/get-completed-orders");
+      allData = await helper.getUserCompletedOrders(user_id, crypto, currency, limit, page, fromDate, toDate);
+    } else if (action == 2) {
+      let helper = require("../../helpers/tradding/get-pending-orders");
+      allData = await helper.getUserPendingOrders(user_id, crypto, currency, limit, page, fromDate, toDate);
+    } else if (action == 3) {
+      let helper = require("../../helpers/tradding/get-cancelled-orders");
+      allData = await helper.getUserCancelledOrders(user_id, crypto, currency, limit, page, fromDate, toDate);
+    }
+    return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Trade retrieve success").message, allData);
+  }
+
 }
 
 module.exports = new TradeController();
