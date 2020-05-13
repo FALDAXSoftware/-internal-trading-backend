@@ -12,7 +12,7 @@ var getTraddingFees = async (inputs) => {
     var makerTakerFees = {};
     try {
         var request = inputs;
-        console.log("inputs", inputs)
+        console.log("inputs", JSON.stringify(inputs))
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
         // inputs.makerFee = 0.21
@@ -29,7 +29,7 @@ var getTraddingFees = async (inputs) => {
 
         let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
 
-        console.log("conversionData", conversionData.rows)
+        // console.log("conversionData", conversionData.rows)
 
         var now = moment().format();
         var resultData;
@@ -44,7 +44,7 @@ var getTraddingFees = async (inputs) => {
                                                                     WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                     ON a1.user_coin = a2.requested_coin`)
 
-        console.log("userTradesum", userTradesum.rows.length)
+        // console.log("userTradesum", userTradesum.rows.length)
         for (let index = 0; index < userTradesum.rows.length; index++) {
             const element = userTradesum.rows[index];
             userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
@@ -62,7 +62,7 @@ var getTraddingFees = async (inputs) => {
             requestedTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
         }
 
-        console.log("requestedTradeHistorySum", requestedTradeHistorySum)
+        // console.log("requestedTradeHistorySum", requestedTradeHistorySum)
 
         let userTotalUSDSum = 0
         let requestedTotalUSDSum = 0
@@ -133,8 +133,8 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
-        console.log("cryptoWalletUser", cryptoWalletUser);
-        console.log("currencyWalletUser", currencyWalletUser)
+        // console.log("cryptoWalletUser", cryptoWalletUser);
+        // console.log("currencyWalletUser", currencyWalletUser)
 
 
         let requestedWallets = await Wallet
@@ -157,8 +157,8 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
-        console.log("currencyWalletRequested", currencyWalletRequested);
-        console.log("cryptoWalletRequested", cryptoWalletRequested)
+        // console.log("currencyWalletRequested", currencyWalletRequested);
+        // console.log("cryptoWalletRequested", cryptoWalletRequested)
 
         let adminWallets = await Wallet
             .query()
@@ -180,8 +180,8 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
-        console.log("adminWalletCurrency", adminWalletCurrency)
-        console.log("adminWalletCrypto", adminWalletCrypto)
+        // console.log("adminWalletCurrency", adminWalletCurrency)
+        // console.log("adminWalletCrypto", adminWalletCrypto)
 
         if (user_id == process.env.TRADEDESK_USER_ID) {
             inputs.takerFee = 0;
@@ -192,8 +192,8 @@ var getTraddingFees = async (inputs) => {
         }
 
         // inputs.makerFee = 0.21
-        console.log("inputs.makerFee", inputs.makerFee)
-        console.log("inputs.takerFee", inputs.takerFee)
+        // console.log("inputs.makerFee", inputs.makerFee)
+        // console.log("inputs.takerFee", inputs.takerFee)
         // Calculating fees value on basis of the side and order executed
         if (inputs.side == "Buy") {
             // ---------------------------crypto-------------------------------------- //
@@ -418,7 +418,7 @@ var getTraddingFees = async (inputs) => {
             "taker_fee": inputs.takerFee
         })
     } catch (err) {
-        console.log("fees Error", err);
+        console.log("fees Error", JSON.stringify(err));
         return (1);
     }
 }

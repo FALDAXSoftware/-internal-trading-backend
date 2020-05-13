@@ -116,7 +116,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                     recipientName: user_data.first_name
                                                 }
                                             }
-                                            console.log(res)
+                                            // console.log(res)
                                             await Helper.SendEmail(res, allData)
                                         }
                                     }
@@ -218,7 +218,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     trade_history_data.created_at = new Date();
 
                     var activityResult = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, trade_history_data);
-                    console.log("activityResult", activityResult)
+                    console.log("activityResult", JSON.stringify(activityResult))
 
                     var request = {
                         requested_user_id: trade_history_data.requested_user_id,
@@ -244,7 +244,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
-                    console.log(trade_history_data)
+                    console.log(JSON.stringify(trade_history_data))
 
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                     tradeOrder = tradeHistory;
@@ -436,7 +436,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         }
     } catch (error) {
-        console.log(error);
+        console.log(JSON.stringify(error));
     }
 }
 

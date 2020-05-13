@@ -157,7 +157,7 @@ class DashboardController extends AppController {
                 });
 
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -204,7 +204,7 @@ class DashboardController extends AppController {
                     "data": data
                 });
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
             await logger.info({
                 "module": "Activity Data",
                 "user_id": "user_" + user_id,
@@ -483,7 +483,7 @@ class DashboardController extends AppController {
                 var getData = await cancelOldOrder.cancelPendingOrder(getPendingBuyOrder[i].side, getPendingBuyOrder[i].order_type, getPendingBuyOrder[i].id)
             }
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
         }
     }
 
@@ -503,7 +503,7 @@ class DashboardController extends AppController {
                 var getData = await cancelOldOrder.cancelPendingOrder(getPendingSellOrder[i].side, getPendingSellOrder[i].order_type, getPendingSellOrder[i].id)
             }
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
         }
     }
 
@@ -525,7 +525,7 @@ class DashboardController extends AppController {
                     "data": instrumentDataValue
                 });
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -557,7 +557,7 @@ class DashboardController extends AppController {
                     "data": depthChartValue
                 });
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,

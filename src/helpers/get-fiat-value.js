@@ -26,7 +26,7 @@ var getFiatValue = async (crypto, currency) => {
         }
     }
 
-    console.log("fiatObject", fiatObject)
+    console.log("fiatObject", JSON.stringify(fiatObject))
     return fiatObject;
 }
 
