@@ -69,8 +69,8 @@ class CampaignsOffers extends AppModel {
 
 	// Get User Data
 	static async getSingleData(filter, select = "") {
-		try{
-			console.log("filter",filter);
+		try {
+			console.log("filter", JSON.stringify(filter));
 			if (select != "") {
 				select = select;
 			} else {
@@ -83,8 +83,8 @@ class CampaignsOffers extends AppModel {
 				.first();
 
 			return getData;
-		}catch(err ){
-		console.log("err",err);
+		} catch (err) {
+			console.log("err", JSON.stringify(err));
 		}
 
 	}
