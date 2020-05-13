@@ -2,7 +2,7 @@ var ActivityTableModel = require("../../models/Activity")
 
 var addActivityData = async (orderData) => {
     try {
-        console.log(orderData)
+        console.log(JSON.stringify(orderData))
         var activityData = await ActivityTableModel
             .query()
             .insertAndFetch({
@@ -10,7 +10,7 @@ var addActivityData = async (orderData) => {
             })
         return (activityData)
     } catch (error) {
-        console.log(error)
+        console.log(JSON.stringify(error))
     }
 }
 

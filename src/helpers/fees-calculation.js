@@ -18,7 +18,7 @@ var feesValue = async (coin, quantity = null, price = null) => {
         .andWhere('coin', coin.toUpperCase())
         .orderBy('id', 'DESC')
 
-    console.log("coinData", coinData)
+    console.log("coinData", JSON.stringify(coinData))
 
     if (coinData != undefined) {
         if (coin == "btc" || coin == "tbtc") {
@@ -29,7 +29,7 @@ var feesValue = async (coin, quantity = null, price = null) => {
                 .where("deleted_at", null)
                 .andWhere("slug", "btc_fee")
                 .orderBy('id', 'DESC');
-            console.log("data", data)
+            console.log("data", JSON.stringify(data))
             value = (((quantity) / (25) * data.value));
         } else if (coin == 'bch' || coin == 'tbch') {
             var data = await AdminSettingModel

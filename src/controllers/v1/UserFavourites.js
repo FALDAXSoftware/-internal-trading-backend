@@ -22,7 +22,7 @@ class UserFavourites extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var socket_headers = req.headers;
-            console.log(socket_headers)
+            console.log(JSON.stringify(socket_headers))
             var authentication = require("../../config/authorization")(socket_headers);
             let user_id = authentication.user_id;
             var symbol = req.query.symbol;
@@ -132,7 +132,7 @@ class UserFavourites extends AppController {
                     "data": cardData
                 });
         } catch (error) {
-            console.log("err", error);
+            console.log("err", JSON.stringify(error));
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
         // })
@@ -251,7 +251,7 @@ class UserFavourites extends AppController {
                     "data": cardData
                 });
             } catch (error) {
-                console.log("err", error);
+                console.log("err", JSON.stringify(error));
                 // return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
             }
         })
@@ -316,7 +316,7 @@ class UserFavourites extends AppController {
 
 
         } catch (error) {
-            console.log(error)
+            console.log(JSON.stringify(error))
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
     }

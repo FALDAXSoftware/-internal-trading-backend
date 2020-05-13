@@ -15,7 +15,7 @@ var getLastTradePrice = async (crypto, currency) => {
         lastTradePrice = parseFloat((buyBookData + sellBookData) / 2);
     } else {
         var tradeData = await lastPrice.getLastPrice(crypto, currency);
-        console.log(tradeData)
+        console.log(JSON.stringify(tradeData))
         lastTradePrice = tradeData.fill_price;
     }
     return (lastTradePrice);

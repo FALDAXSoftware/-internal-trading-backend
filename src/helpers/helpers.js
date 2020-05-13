@@ -24,7 +24,7 @@ var randomString = (length) => {
 
 // Common Customized Mailer Function to send mail
 var SendEmail = async (res, requestedData) => {
-  console.log(res)
+  // console.log(res)
   if (res == null) {
     var express = require('express');
     var app = express();
@@ -74,7 +74,7 @@ var SendEmail = async (res, requestedData) => {
         }
       });
   } catch (err) {
-    console.log("EMail err:", err);
+    console.log("EMail err:", JSON.stringify(err));
     return 0;
   }
 }
@@ -83,7 +83,7 @@ var SendEmail = async (res, requestedData) => {
 var formatEmail = async (emailContent, data) => {
   let rex = /{{([^}]+)}}/g;
   let key;
-  console.log("data", data);
+  console.log("data", JSON.stringify(data));
   if ("object" in data) {
     data = data.object;
   }
@@ -107,10 +107,10 @@ var formatEmail = async (emailContent, data) => {
 // Get User ID
 var getUserId = async function (headers, res) {
   var authorization = headers;
-  console.log("authorization",authorization);
+  console.log("authorization", JSON.stringify(authorization));
   var authentication = await require("../config/authorization")(authorization);
-  console.log("authentication",authentication)
-  if( authentication.status != constants.SUCCESS_CODE ){
+  console.log("authentication", JSON.stringify(authentication))
+  if (authentication.status != constants.SUCCESS_CODE) {
     return res.status(authentication.status).json(authentication);
   }
   let user_id = authentication.user_id;

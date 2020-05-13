@@ -154,7 +154,7 @@ class TradingViewController extends AppController {
             }
 
         } catch (error) {
-            console.log(error);
+            console.log(JSON.stringify(error));
 
             return res
                 .status(200)
