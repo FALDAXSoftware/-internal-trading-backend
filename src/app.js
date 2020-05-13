@@ -114,11 +114,13 @@ io.on('connection', async function (socket) {
     constants = require("./config/constants");
   socket.to("join").emit("test", { name: "le bhai" });
   var socket_headers = socket.request.headers;
-
-  if (!socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == "") {
-    return Error("Not authorized")
-  }
+  console.log("socket_headers",socket_headers);
+  // if ((!socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == "") || (!socket_headers["x-api-key"] || socket_headers["x-api-key"] == undefined || socket_headers["x-api-key"] == "") ) {
+  //   console.log("No auth");
+  //   return Error("Not authorized")
+  // }
   var authentication = await require("./config/authorization")(socket_headers);
+  console.log("authentication",authentication);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
   if (authentication.status > constants.SUCCESS_CODE) {
     socket.emit(constants.USER_LOGOUT, true);
