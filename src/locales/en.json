@@ -271,5 +271,12 @@
 		"message_type": "error",
 		"message_english": "Depth Chart Data has been retrieved successfully.",
 		"message": "Depth Chart Data has been retrieved successfully."
+	},
+	"Trade retrieve success": {
+		"page": "Trade data",
+		"context": "Trade data has been retrieved successfully.",
+		"message_type": "success",
+		"message_english": "Trade data has been retrieved successfully.",
+		"message": "Trade data has been retrieved successfully."
 	}
 }

@@ -48,6 +48,7 @@ router.get("/get-tradedesk-user-balances", TradeDesk.getWalletTradeDeskBalance)
 router.get("/get-instrument-data", DashboardController.getInstrumentDataValue)
 router.get("/depth-chart-details", DashboardController.getDepthChartDetails)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
+router.get("/get-user-trade-history", TradeController.getUserOrdersData)
 
 // Trading View API
 router.get('/tradingview/config', TradingViewController.getConfig);
