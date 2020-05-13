@@ -4,7 +4,7 @@ Get Completed Orders of Users
 var moment = require('moment');
 var TradeHistoryModel = require("../../models/TradeHistory");
 
-var getCompletedOrders = async (user_id, crypto, currency, month, limit=100) => {
+var getCompletedOrders = async (user_id, crypto, currency, month, limit = 100) => {
     // Get completed data.
     var completedData;
     var yesterday = moment
@@ -44,7 +44,7 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit=100) => 
     return tradeData;
 }
 
-var getUserCompletedOrders = async (user_id, crypto, currency, limit=100, page, fromDate='', toDate='') => {
+var getUserCompletedOrders = async (user_id, crypto, currency, limit = 100, page, fromDate = '', toDate = '') => {
     console.log("fromDate", fromDate);
     console.log("toDate", toDate);
     var tradeData = await TradeHistoryModel
@@ -71,7 +71,7 @@ var getUserCompletedOrders = async (user_id, crypto, currency, limit=100, page, 
         .andWhere('currency', currency)
         // .andWhere('created_at', '>=', yesterday)
         .andWhere(builder => {
-            if(fromDate != '' && toDate != '' ) {
+            if (fromDate != '' && toDate != '') {
                 builder.where('created_at', '>=', fromDate)
                     .andWhere('created_at', '<=', toDate)
             }
@@ -80,10 +80,10 @@ var getUserCompletedOrders = async (user_id, crypto, currency, limit=100, page, 
             builder.where('user_id', user_id)
                 .orWhere('requested_user_id', user_id)
         })
-        .page( parseInt(page), limit )
+        .page(parseInt(page - 1), limit)
         .orderBy('id', 'DESC');
-       tradeData.nextPage = parseInt(page)+1;
-        // .limit(limit);
+    tradeData.nextPage = parseInt(page - 1) + 1;
+    // .limit(limit);
     return tradeData;
 }
 
