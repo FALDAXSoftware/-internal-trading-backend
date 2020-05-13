@@ -12,7 +12,7 @@ var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
         .query()
         .insertAndFetch({ ...sellLimitOrderData });
 
-    console.log("buyAdd", sellAdd);
+    console.log("buyAdd", JSON.stringify(sellAdd));
 
     var walletBalance = await WalletModel
         .query()

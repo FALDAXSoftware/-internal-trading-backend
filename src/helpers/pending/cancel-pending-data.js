@@ -25,15 +25,15 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('deleted_at', null)
                 .andWhere('id', id)
 
-            if( pendingBookDetailsBuy == undefined ){
+            if (pendingBookDetailsBuy == undefined) {
                 return (0);
             }
-            console.log(pendingBookDetailsBuy)
+            console.log(JSON.stringify(pendingBookDetailsBuy))
             crypto = pendingBookDetailsBuy.settle_currency;
             currency = pendingBookDetailsBuy.currency;
             userIds.push(pendingBookDetailsBuy.user_id);
 
-            console.log("pendingBookDetailsBuy", pendingBookDetailsBuy)
+            // console.log("pendingBookDetailsBuy", pendingBookDetailsBuy)
 
             var sqlData = `SELECT wallets.balance, wallets.placed_balance, coins.id
                         FROM coins
@@ -46,7 +46,7 @@ var cancelPendingOrder = async (side, type, id) => {
             var walletDetails = await CoinsModel.knex().raw(sqlData);
             walletDetails = walletDetails.rows;
 
-            console.log("walletDetails", walletDetails)
+            console.log("walletDetails", JSON.stringify(walletDetails))
 
             var userPlacedBalance = walletDetails[0].placed_balance + (pendingBookDetailsBuy.price * pendingBookDetailsBuy.quantity);
 
@@ -65,7 +65,7 @@ var cancelPendingOrder = async (side, type, id) => {
             }
 
 
-            console.log("pendingBookDetailsBuy", pendingBookDetailsBuy)
+            console.log("pendingBookDetailsBuy", JSON.stringify(pendingBookDetailsBuy))
             var activityCancel = await ActivityTableModel
                 .query()
                 .where('deleted_at', null)
@@ -82,7 +82,7 @@ var cancelPendingOrder = async (side, type, id) => {
             var deletePending = await BuyBookModel.knex().raw(updateSql);
             deletePending = deletePending.rows;
 
-            console.log("deletePending", deletePending)
+            console.log("deletePending", JSON.stringify(deletePending))
 
         } else if (type == "Limit" && side == "Sell") {
             var pendingBookDetailsSell = await SellBookModel
@@ -92,10 +92,10 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('deleted_at', null)
                 .andWhere('id', id)
                 .orderBy('id', 'DESC')
-            if( pendingBookDetailsSell == undefined ){
+            if (pendingBookDetailsSell == undefined) {
                 return (1);
             }
-            console.log(pendingBookDetailsSell)
+            console.log(JSON.stringify(pendingBookDetailsSell))
 
             crypto = pendingBookDetailsSell.settle_currency;
             currency = pendingBookDetailsSell.currency;
@@ -112,7 +112,7 @@ var cancelPendingOrder = async (side, type, id) => {
             var walletDetails = await CoinsModel.knex().raw(sqlData);
             walletDetails = walletDetails.rows;
 
-            console.log("walletDetails", walletDetails)
+            console.log("walletDetails", JSON.stringify(walletDetails))
 
             var userPlacedBalance = parseFloat(walletDetails[0].placed_balance) + (pendingBookDetailsSell.quantity);
             console.log("userPlacedBalance", userPlacedBalance)
@@ -147,7 +147,7 @@ var cancelPendingOrder = async (side, type, id) => {
             var deletePending = await SellBookModel.knex().raw(updateSql);
             deletePending = deletePending.rows;
 
-            console.log("deletePending", deletePending)
+            console.log("deletePending", JSON.stringify(deletePending))
 
         } else {
             var pendingDetails = await PendingBookModel
@@ -157,10 +157,10 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('id', id)
                 .andWhere('deleted_at', null)
                 .orderBy('id', 'DESC')
-            if( pendingDetails == undefined ){
+            if (pendingDetails == undefined) {
                 return (3);
             }
-            console.log("pendingDetails", pendingDetails)
+            console.log("pendingDetails", JSON.stringify(pendingDetails))
 
             crypto = pendingDetails.settle_currency;
             currency = pendingDetails.currency;
@@ -188,9 +188,9 @@ var cancelPendingOrder = async (side, type, id) => {
             var deletePending = await PendingBookModel.knex().raw(updateSql);
             deletePending = deletePending.rows;
 
-            console.log("userIds", userIds)
+            console.log("userIds", JSON.stringify(userIds))
         }
-        console.log(deletePending)
+        // console.log(deletePending)
         if (deletePending) {
             //Emit data in rooms
             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds);
@@ -205,7 +205,7 @@ var cancelPendingOrder = async (side, type, id) => {
             return (5);
         }
     } catch (error) {
-        console.log(error)
+        console.log(JSON.stringify(error))
     }
 }
 
