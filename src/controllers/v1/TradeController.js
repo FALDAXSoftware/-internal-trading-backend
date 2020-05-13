@@ -137,7 +137,7 @@ class TradeController extends AppController {
         const checkUser = Helper.checkWhichUser(user_id);
 
         // Check balance sufficient or not
-        console.log("crypto_wallet_data.placed_balance", walletData.crypto.placed_balance)
+        console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
         if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
@@ -158,11 +158,11 @@ class TradeController extends AppController {
           crypto_wallet_data: walletData.crypto,
           userIds: userIds
         };
-        console.log(walletData)
+        console.log(JSON.stringify(walletData))
 
-        console.log("walletData.crypto.coin_id", walletData.crypto.coin_id)
+        console.log("walletData.crypto.coin_id", JSON.stringify(walletData.crypto.coin_id))
         let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id);
-        console.log("market_sell_order", market_sell_order)
+        console.log("market_sell_order", JSON.stringify(market_sell_order))
 
         // await logger.info({
         //   "module": "Market Sell",
@@ -207,7 +207,7 @@ class TradeController extends AppController {
 
 
     } catch (err) {
-      console.log("err", err);
+      console.log("err", JSON.stringify(err));
       await logger.error({
         "module": "Market Sell",
         "user_id": "user_" + user_id,
@@ -313,7 +313,7 @@ class TradeController extends AppController {
         trade_history_data.maker_fee = tradingFees.maker_fee;
         trade_history_data.taker_fee = tradingFees.taker_fee;
         trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-        console.log("trade_history_data", trade_history_data)
+        console.log("trade_history_data", JSON.stringify(trade_history_data))
         // Log into trade history
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
         tradeOrder = tradeHistory;
@@ -351,11 +351,11 @@ class TradeController extends AppController {
         trade_history_data.created_at = now;
 
         trade_history_data.fix_quantity = quantityValue;
-        console.log("trade_history_data", trade_history_data)
+        console.log("trade_history_data", JSON.stringify(trade_history_data))
 
         let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
         userIds.push(parseInt(trade_history_data.requested_user_id));
-        console.log("userIds", userIds)
+        console.log("userIds", JSON.stringify(userIds))
         var request = {
           requested_user_id: trade_history_data.requested_user_id,
           user_id: user_id,
@@ -368,10 +368,10 @@ class TradeController extends AppController {
           currency_coin_id
         }
 
-        console.log("request", request)
+        console.log("request", JSON.stringify(request))
 
         var tradingFees = await TradingFees.getTraddingFees(request)
-        console.log("tradingFees", tradingFees)
+        console.log("tradingFees", JSON.stringify(tradingFees))
         trade_history_data.user_fee = (tradingFees.userFee);
         trade_history_data.requested_fee = (tradingFees.requestedFee);
         trade_history_data.user_coin = currency;
@@ -379,7 +379,7 @@ class TradeController extends AppController {
         trade_history_data.maker_fee = tradingFees.maker_fee;
         trade_history_data.taker_fee = tradingFees.taker_fee;
         trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-        console.log("trade_history_data", trade_history_data)
+        console.log("trade_history_data", JSON.stringify(trade_history_data))
 
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
         tradeOrder = tradeHistory;
@@ -492,7 +492,7 @@ class TradeController extends AppController {
       userIds.push(user_id);
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
-      console.log("tradeDataChecking", tradeDataChecking)
+      console.log("tradeDataChecking", JSON.stringify(tradeDataChecking))
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);
@@ -588,7 +588,7 @@ class TradeController extends AppController {
 
       // console.log(responseData)
     } catch (err) {
-      console.log("err", err);
+      console.log("err", JSON.stringify(err));
       await logger.info({
         "module": "Market Buy",
         "user_id": "user_" + user_id,
@@ -602,7 +602,13 @@ class TradeController extends AppController {
   // Used for function to make Market Buy order
   async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id) {
     const checkUser = Helper.checkWhichUser(user_id);
-    console.log("checkUser", checkUser)
+    console.log("checkUser", JSON.stringify(checkUser))
+    console.log(JSON.stringify({
+      "module": "Market Buy Execution",
+      "user_id": "user_" + user_id,
+      "url": "Trade Function",
+      "type": "Entry"
+    }))
     await logger.info({
       "module": "Market Buy Execution",
       "user_id": "user_" + user_id,
@@ -611,9 +617,9 @@ class TradeController extends AppController {
     }, "Entered the function With " + symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id)
     var userIds = [];
     userIds.push(user_id);
-    console.log("userIds", userIds)
+    console.log("userIds", JSON.stringify(userIds))
     let { crypto, currency } = await Currency.get_currencies(symbol);
-    console.log("crypto, currency", crypto, currency)
+    console.log("crypto, currency", JSON.stringify({ crypto, currency }))
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
@@ -621,7 +627,7 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(quantityFixed).toFixed(8);
     var tradeOrder;
     if (sellBook && sellBook.length > 0) {
-      console.log("sellBook[0]", sellBook[0])
+      console.log("sellBook[0]", JSON.stringify(sellBook[0]))
       var availableQuantity = sellBook[0].quantity;
       var currentSellBookDetails = sellBook[0];
       var fillPriceValue = parseFloat(currentSellBookDetails.price).toFixed(8);
@@ -727,7 +733,7 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          console.log(trade_history_data)
+          console.log(JSON.stringify(trade_history_data))
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -1034,8 +1040,8 @@ class TradeController extends AppController {
     var activity = await ActivityHelper.addActivityData(resultData);
     resultData.maker_fee = 0.0;
     resultData.taker_fee = 0.0;
-    console.log(resultData);
-    console.log("sellBook.length", sellBook.length)
+    console.log(JSON.stringify(resultData));
+    console.log("sellBook.length", JSON.stringify(sellBook))
 
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
@@ -1395,7 +1401,7 @@ class TradeController extends AppController {
     var activity = await ActivityHelper.addActivityData(resultData);
     resultData.maker_fee = 0.0;
     resultData.taker_fee = 0.0;
-    console.log(resultData);
+    console.log(JSON.stringify(resultData));
 
     if (buyBook && buyBook.length > 0) {
       var currentPrice = buyBook[0].price;
@@ -1557,7 +1563,7 @@ class TradeController extends AppController {
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-        console.log(req.body)
+        console.log(JSON.stringify(req.body))
 
         if (orderQuantity <= 0) {
           await logger.info({
@@ -1630,7 +1636,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCurrency", walletCurrency)
+        console.log("walletCurrency", JSON.stringify(walletCurrency))
 
         if (walletCurrency == undefined) {
           await logger.info({
@@ -1660,7 +1666,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCrypto", walletCrypto)
+        console.log("walletCrypto", JSON.stringify(walletCrypto))
 
         if (walletCrypto == undefined) {
           await logger.info({
@@ -1674,7 +1680,7 @@ class TradeController extends AppController {
 
         // Add Geofencing over here
         var stop_limit_sell_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
-        console.log("stop_limit_sell_response", stop_limit_sell_response)
+        console.log("stop_limit_sell_response", JSON.stringify(stop_limit_sell_response))
         if (stop_limit_sell_response.status > 1) {
           await logger.info({
             "module": "Stop Limit Buy",
@@ -1710,7 +1716,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
       }
     } catch (error) {
-      console.log(error);
+      console.log(JSON.stringify(error));
       await logger.info({
         "module": "Stop Limit Buy",
         "user_id": "user_" + user_id,
@@ -1745,7 +1751,7 @@ class TradeController extends AppController {
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-        console.log("req.body", req.body)
+        console.log("req.body", JSON.stringify(req.body))
 
         if (orderQuantity <= 0) {
           await logger.info({
@@ -1818,7 +1824,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCurrency", walletCurrency)
+        console.log("walletCurrency", JSON.stringify(walletCurrency))
 
         if (walletCurrency == undefined) {
           await logger.info({
@@ -1848,7 +1854,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCrypto", walletCrypto)
+        console.log("walletCrypto", JSON.stringify(walletCrypto))
 
         if (walletCrypto == undefined) {
           await logger.info({
@@ -1863,7 +1869,7 @@ class TradeController extends AppController {
         // Add Geofencing over here
         var stop_limit_buy_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
 
-        console.log("stop_limit_buy_response", stop_limit_buy_response)
+        console.log("stop_limit_buy_response", JSON.stringify(stop_limit_buy_response))
 
         if (stop_limit_buy_response.status > 1) {
           await logger.info({
@@ -1901,7 +1907,7 @@ class TradeController extends AppController {
       }
 
     } catch (error) {
-      console.log(error);
+      console.log(JSON.stringify(error));
       await logger.info({
         "module": "Stop Limit Sell",
         "user_id": "user_" + user_id,
@@ -1955,14 +1961,14 @@ class TradeController extends AppController {
         'activity_id': activity_id
       }
 
-      console.log("pendingOrderBook", pendingOrderBook)
+      console.log("pendingOrderBook", JSON.stringify(pendingOrderBook))
 
       if (pendingData.length > 0) {
         if (order_type == "StopLimit" && side == "Buy") {
           console.log("INSIDE BUY")
           var pendigBuy = await StopLimitBuyExecute.stopLimitBuy(now, pendingOrderBook);
         } else if (order_type == "StopLimit" && side == "Sell") {
-          console.log("INSIDE SELL", pendingOrderBook)
+          console.log("INSIDE SELL", JSON.stringify(pendingOrderBook))
           var pendingSell = await StopLimitSellExecute.stopLimitSell(now, pendingOrderBook);
         }
       }
@@ -1978,9 +1984,9 @@ class TradeController extends AppController {
         "type": "Entry"
       }, "Entered the function")
       var { side, id, order_type, user_id } = req.body;
-      console.log(req.body);
+      console.log(JSON.stringify(req.body));
       var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
-      console.log("cancel_pending_data", cancel_pending_data)
+      console.log("cancel_pending_data", JSON.stringify(cancel_pending_data))
       if (cancel_pending_data == 0) {
         await logger.info({
           "module": "Cancel PEnding Order",
@@ -2023,7 +2029,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
       }
     } catch (error) {
-      console.log(error);
+      console.log(JSON.stringify(error));
       await logger.info({
         "module": "Cancel PEnding Order",
         "user_id": "user_" + user_id,

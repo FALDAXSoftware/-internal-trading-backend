@@ -33,7 +33,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         'settle_currency': crypto,
         'order_status': "open",
         'currency': currency,
-        'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
+        'placed_by': (checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     });
 
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
@@ -55,7 +55,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
 
         limitSellOrder.activity_id = result.id;
         var data = await PendingAdd.addPendingBook(limitSellOrder);
-        console.log("data", data);
+        // console.log("data", data);
         // Send Notification to users
         for (var i = 0; i < userIds.length; i++) {
             // Notification Sending for users
