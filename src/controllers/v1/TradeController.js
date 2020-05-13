@@ -83,11 +83,20 @@ class TradeController extends AppController {
       let userIds = [];
       userIds.push(user_id);
 
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
       // Check user user is allowed to trade or not
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
-
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+        // console.log("INSIDE IF")
         orderQuantity = parseFloat(orderQuantity);
 
         // Order Quantity Validation
@@ -491,9 +500,18 @@ class TradeController extends AppController {
       var userIds = [];
       userIds.push(user_id);
 
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
       console.log("tradeDataChecking", JSON.stringify(tradeDataChecking))
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);
 
@@ -875,10 +893,18 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
 
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
       orderQuantity = parseFloat(orderQuantity);
 
@@ -1228,9 +1254,18 @@ class TradeController extends AppController {
       orderQuantity,
       limit_price
     } = req.body;
+
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
       orderQuantity = parseFloat(orderQuantity);
 
@@ -1559,9 +1594,17 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         console.log(JSON.stringify(req.body))
 
@@ -1746,10 +1789,17 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
-
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         console.log("req.body", JSON.stringify(req.body))
 
