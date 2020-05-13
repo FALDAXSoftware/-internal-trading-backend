@@ -83,11 +83,20 @@ class TradeController extends AppController {
       let userIds = [];
       userIds.push(user_id);
 
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
       // Check user user is allowed to trade or not
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
-
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+        // console.log("INSIDE IF")
         orderQuantity = parseFloat(orderQuantity);
 
         // Order Quantity Validation
@@ -491,9 +500,18 @@ class TradeController extends AppController {
       var userIds = [];
       userIds.push(user_id);
 
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
       console.log("tradeDataChecking", JSON.stringify(tradeDataChecking))
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);
 
@@ -875,10 +893,18 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
 
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
       orderQuantity = parseFloat(orderQuantity);
 
@@ -1228,9 +1254,18 @@ class TradeController extends AppController {
       orderQuantity,
       limit_price
     } = req.body;
+
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
     var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
       orderQuantity = parseFloat(orderQuantity);
 
@@ -1559,9 +1594,17 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         console.log(JSON.stringify(req.body))
 
@@ -1746,10 +1789,17 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
-
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true") && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         console.log("req.body", JSON.stringify(req.body))
 
@@ -2038,6 +2088,28 @@ class TradeController extends AppController {
       }, error)
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
     }
+  }
+
+  // Get Users Completed Orders details
+  async getUserOrdersData(req, res, next) {
+    var user_id = await Helper.getUserId(req.headers, res);
+    console.log('params', req.query);
+    let { pair, limit, page, month, action, fromDate, toDate } = req.query;
+    pair = (pair).split("-");
+    var crypto = pair[0];
+    var currency = pair[1];
+    let allData;
+    if (action == 1) {
+      let helper = require("../../helpers/tradding/get-completed-orders");
+      allData = await helper.getUserCompletedOrders(user_id, crypto, currency, limit, page, fromDate, toDate);
+    } else if (action == 2) {
+      let helper = require("../../helpers/tradding/get-pending-orders");
+      allData = await helper.getUserPendingOrders(user_id, crypto, currency, limit, page, fromDate, toDate);
+    } else if (action == 3) {
+      let helper = require("../../helpers/tradding/get-cancelled-orders");
+      allData = await helper.getUserCancelledOrders(user_id, crypto, currency, limit, page, fromDate, toDate);
+    }
+    return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Trade retrieve success").message, allData);
   }
 
 }
