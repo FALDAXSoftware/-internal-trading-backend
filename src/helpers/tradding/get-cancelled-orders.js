@@ -5,7 +5,7 @@ const {
 } = require('objection');
 
 
-var getCancelledOrders = async (user_id, crypto, currency, month, limit=100) => {
+var getCancelledOrders = async (user_id, crypto, currency, month, limit = 100) => {
 
     var cancelDetails;
 
@@ -38,8 +38,9 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit=100) => 
 
     return (cancelDetails);
 
-},
-var getUserCancelledOrders = async (user_id, crypto, currency, limit=100, page, fromDate, toDate) => {
+}
+
+var getUserCancelledOrders = async (user_id, crypto, currency, limit = 100, page, fromDate, toDate) => {
 
     var cancelDetails;
     cancelDetails = await ActivityModel
@@ -64,15 +65,15 @@ var getUserCancelledOrders = async (user_id, crypto, currency, limit=100, page, 
                 .orWhere('requested_user_id', user_id)
         })
         .andWhere(builder => {
-            if(fromDate != '' && toDate != '' ) {
+            if (fromDate != '' && toDate != '') {
                 builder.where('created_at', '>=', fromDate)
                     .andWhere('created_at', '<=', toDate)
             }
         })
-        .page( parseInt(page), limit )
+        .page(parseInt(page - 1), limit)
         .orderBy('id', 'DESC')
         .limit(limit);
-    cancelDetails.nextPage = parseInt(page)+1;
+    cancelDetails.nextPage = parseInt(page - 1) + 1;
     return (cancelDetails);
 
 }
