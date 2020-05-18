@@ -65,7 +65,7 @@ app.set('view engine', 'ejs');
 
 // Configure Locales
 i18n.configure({
-  locales: ['en', 'de'],
+  locales: ['en', 'ja'],
   directory: __dirname + '/locales',
   register: global
 });
@@ -90,8 +90,8 @@ app.all('/*', function (req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   // Set custom headers for CORS
   res.header('Access-Control-Allow-Headers', 'Content-type,Accept,X-Access-Token, Authorization');
-  if (req.headers.language) { // If header send language, then set to that language
-    i18n.setLocale(req.headers.language);
+  if (req.headers["accept-language"]) { // If header send language, then set to that language
+    i18n.setLocale(req.headers["accept-language"]);
   }
   if (req.method == 'OPTIONS') {
     res
