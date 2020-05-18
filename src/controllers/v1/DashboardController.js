@@ -467,7 +467,7 @@ class DashboardController extends AppController {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    async deletePendingOrder() {
+    async deletePendingOrder(pair) {
         try {
             var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
             var getPendingBuyOrder = await BuyBookModel
@@ -476,6 +476,7 @@ class DashboardController extends AppController {
                 .where("deleted_at", null)
                 .andWhere("created_at", "<=", now)
                 .andWhere("placed_by", process.env.TRADEDESK_BOT)
+                .andWhere("symbol", "LIKE", '%' + pair + '%')
                 .orderBy("id", "DESC")
                 .limit(30);
 
@@ -487,7 +488,7 @@ class DashboardController extends AppController {
         }
     }
 
-    async deleteSellPendingOrder() {
+    async deleteSellPendingOrder(pair) {
         try {
             var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
             var getPendingSellOrder = await SellBookModel
@@ -496,6 +497,7 @@ class DashboardController extends AppController {
                 .where("deleted_at", null)
                 .andWhere("created_at", "<=", now)
                 .andWhere("placed_by", process.env.TRADEDESK_BOT)
+                .andWhere("symbol", "LIKE", '%' + pair + '%')
                 .orderBy("id", "DESC")
                 .limit(30);
 
