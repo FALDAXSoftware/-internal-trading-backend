@@ -29,3 +29,24 @@ cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
     await dashBoardUpdate.deleteSellPendingOrder();
 })
+
+// Cron For XRP-BTC
+cron.schedule('*/15 * * * * *', async (req, res, next) => {
+    console.log("Started cron....");
+    await dashBoardUpdate.updateBuyOrderBook("XRP-BTC");
+});
+
+cron.schedule('*/15 * * * * *', async (req, res, next) => {
+    console.log("Started cron....");
+    await dashBoardUpdate.updateSellOrderBook("XRP-BTC");
+});
+
+cron.schedule('* * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await dashBoardUpdate.deletePendingOrder();
+})
+
+cron.schedule('* * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await dashBoardUpdate.deleteSellPendingOrder();
+})
