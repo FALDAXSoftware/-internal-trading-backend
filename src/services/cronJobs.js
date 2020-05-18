@@ -22,12 +22,12 @@ cron.schedule('*/15 * * * * *', async (req, res, next) => {
 
 cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
-    await dashBoardUpdate.deletePendingOrder();
+    await dashBoardUpdate.deletePendingOrder("LTC-BTC");
 })
 
 cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
-    await dashBoardUpdate.deleteSellPendingOrder();
+    await dashBoardUpdate.deleteSellPendingOrder("LTC-BTC");
 })
 
 // Cron For XRP-BTC
@@ -43,10 +43,10 @@ cron.schedule('*/15 * * * * *', async (req, res, next) => {
 
 cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
-    await dashBoardUpdate.deletePendingOrder();
+    await dashBoardUpdate.deletePendingOrder("XRP-BTC");
 })
 
 cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
-    await dashBoardUpdate.deleteSellPendingOrder();
+    await dashBoardUpdate.deleteSellPendingOrder("XRP-BTC");
 })
