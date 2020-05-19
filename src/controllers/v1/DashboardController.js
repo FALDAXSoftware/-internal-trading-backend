@@ -241,86 +241,89 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
 
-                var getCryptoValue = await CurrencyConversionModel
-                    .query()
-                    .first()
-                    .select()
-                    .where("deleted_at", null)
-                    .andWhere("symbol", "LIKE", '%' + crypto + '%')
-                    .orderBy("id", "DESC");
+                if (maxValue.bot_status == true || maxValue.bot_status == "true") {
 
-                var usdValue = getCryptoValue.quote.USD.price
-                var min = (maxValue.crypto_minimum) / (usdValue);
-                var max = (maxValue.crypto_maximum) / (usdValue);
-                for (var i = 0; i < bidValue.length; i++) {
-                    var highlightedNumber = Math.random() * (max - min) + min;
-                    bidValue[i][1] = highlightedNumber
-                }
-                var now = new Date();
-                let requestedWallets = await CoinsModel
-                    .query()
-                    .select()
-                    .where('deleted_at', null)
-                    .andWhere('is_active', true)
-                    .andWhere(function () {
-                        this.where("coin", currency).orWhere("coin", crypto)
-                    })
-                // .andWhere('user_id', inputs.requested_user_id);
-                var crypto_coin_id = null
-                var currency_coin_id = null
-                for (let index = 0; index < requestedWallets.length; index++) {
-                    const element = requestedWallets[index];
-                    if (element.coin == crypto) {
-                        crypto_coin_id = element
-                    } else if (element.coin == currency) {
-                        currency_coin_id = element
+                    var getCryptoValue = await CurrencyConversionModel
+                        .query()
+                        .first()
+                        .select()
+                        .where("deleted_at", null)
+                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                        .orderBy("id", "DESC");
+
+                    var usdValue = getCryptoValue.quote.USD.price
+                    var min = (maxValue.crypto_minimum) / (usdValue);
+                    var max = (maxValue.crypto_maximum) / (usdValue);
+                    for (var i = 0; i < bidValue.length; i++) {
+                        var highlightedNumber = Math.random() * (max - min) + min;
+                        bidValue[i][1] = highlightedNumber
                     }
-                }
+                    var now = new Date();
+                    let requestedWallets = await CoinsModel
+                        .query()
+                        .select()
+                        .where('deleted_at', null)
+                        .andWhere('is_active', true)
+                        .andWhere(function () {
+                            this.where("coin", currency).orWhere("coin", crypto)
+                        })
+                    // .andWhere('user_id', inputs.requested_user_id);
+                    var crypto_coin_id = null
+                    var currency_coin_id = null
+                    for (let index = 0; index < requestedWallets.length; index++) {
+                        const element = requestedWallets[index];
+                        if (element.coin == crypto) {
+                            crypto_coin_id = element
+                        } else if (element.coin == currency) {
+                            currency_coin_id = element
+                        }
+                    }
 
-                for (var i = 0; i < bidValue.length; i++) {
-                    // setTimeout(async () => {
-                    var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
-                    var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
+                    for (var i = 0; i < bidValue.length; i++) {
+                        // setTimeout(async () => {
+                        var quantityValue = parseFloat(bidValue[i][1]).toFixed(8);
+                        var priceValue = parseFloat(bidValue[i][0]).toFixed(8);
 
-                    var buyLimitOrderData = {
-                        'user_id': process.env.TRADEDESK_USER_ID,
-                        'symbol': pair_name,
-                        'side': 'Buy',
-                        'order_type': 'Limit',
-                        'created_at': now,
-                        'updated_at': now,
-                        'fill_price': 0.0,
-                        'limit_price': priceValue,
-                        'stop_price': 0.0,
-                        'price': priceValue,
-                        'quantity': quantityValue,
-                        'fix_quantity': quantityValue,
-                        'order_status': "open",
-                        'currency': currency,
-                        'settle_currency': crypto,
-                        'maximum_time': now,
-                        'is_partially_fulfilled': false,
-                        'placed_by': process.env.TRADEDESK_BOT
-                    };
-                    // console.log("buyLimitOrderData", buyLimitOrderData)
-                    buyLimitOrderData.is_partially_fulfilled = true;
-                    buyLimitOrderData.is_filled = false;
-                    buyLimitOrderData.added = true;
-                    var flag = true;
-                    // console.log("flag", flag)
-                    let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
-                        buyLimitOrderData.user_id,
-                        buyLimitOrderData.side,
-                        buyLimitOrderData.order_type,
-                        buyLimitOrderData.quantity,
-                        buyLimitOrderData.limit_price,
-                        null,
-                        flag,
-                        crypto_coin_id.id,
-                        currency_coin_id.id);
-                    await module.exports.sleep(1000);
-                    // }, i * 800)
-                    // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                        var buyLimitOrderData = {
+                            'user_id': process.env.TRADEDESK_USER_ID,
+                            'symbol': pair_name,
+                            'side': 'Buy',
+                            'order_type': 'Limit',
+                            'created_at': now,
+                            'updated_at': now,
+                            'fill_price': 0.0,
+                            'limit_price': priceValue,
+                            'stop_price': 0.0,
+                            'price': priceValue,
+                            'quantity': quantityValue,
+                            'fix_quantity': quantityValue,
+                            'order_status': "open",
+                            'currency': currency,
+                            'settle_currency': crypto,
+                            'maximum_time': now,
+                            'is_partially_fulfilled': false,
+                            'placed_by': process.env.TRADEDESK_BOT
+                        };
+                        // console.log("buyLimitOrderData", buyLimitOrderData)
+                        buyLimitOrderData.is_partially_fulfilled = true;
+                        buyLimitOrderData.is_filled = false;
+                        buyLimitOrderData.added = true;
+                        var flag = true;
+                        // console.log("flag", flag)
+                        let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
+                            buyLimitOrderData.user_id,
+                            buyLimitOrderData.side,
+                            buyLimitOrderData.order_type,
+                            buyLimitOrderData.quantity,
+                            buyLimitOrderData.limit_price,
+                            null,
+                            flag,
+                            crypto_coin_id.id,
+                            currency_coin_id.id);
+                        await module.exports.sleep(1000);
+                        // }, i * 800)
+                        // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                    }
                 }
 
                 // return res.status(200).json({ "status": "OK" })
@@ -353,90 +356,92 @@ class DashboardController extends AppController {
                     .where("deleted_at", null)
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
+                if (maxValue.bot_status == true || maxValue.bot_status == "true") {
 
-                var getCryptoValue = await CurrencyConversionModel
-                    .query()
-                    .first()
-                    .select()
-                    .where("deleted_at", null)
-                    .andWhere("symbol", "LIKE", '%' + crypto + '%')
-                    .orderBy("id", "DESC");
+                    var getCryptoValue = await CurrencyConversionModel
+                        .query()
+                        .first()
+                        .select()
+                        .where("deleted_at", null)
+                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                        .orderBy("id", "DESC");
 
-                var usdValue = getCryptoValue.quote.USD.price
-                var min = (maxValue.crypto_minimum) / (usdValue);
-                var max = (maxValue.crypto_maximum) / (usdValue);
+                    var usdValue = getCryptoValue.quote.USD.price
+                    var min = (maxValue.crypto_minimum) / (usdValue);
+                    var max = (maxValue.crypto_maximum) / (usdValue);
 
-                for (var i = 0; i < askValue.length; i++) {
-                    var highlightedNumber = Math.random() * (max - min) + min;
-                    askValue[i][1] = highlightedNumber
-                }
-
-                var now = new Date();
-                let requestedWallets = await CoinsModel
-                    .query()
-                    .select()
-                    .where('deleted_at', null)
-                    .andWhere('is_active', true)
-                    .andWhere(function () {
-                        this.where("coin", currency).orWhere("coin", crypto)
-                    })
-                // .andWhere('user_id', inputs.requested_user_id);
-                var crypto_coin_id = null
-                var currency_coin_id = null
-                for (let index = 0; index < requestedWallets.length; index++) {
-                    const element = requestedWallets[index];
-                    if (element.coin == crypto) {
-                        crypto_coin_id = element
-                    } else if (element.coin == currency) {
-                        currency_coin_id = element
+                    for (var i = 0; i < askValue.length; i++) {
+                        var highlightedNumber = Math.random() * (max - min) + min;
+                        askValue[i][1] = highlightedNumber
                     }
-                }
 
-                for (var i = 0; i < askValue.length; i++) {
-                    // setTimeout(async () => {
-                    var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
-                    var priceValue = parseFloat(askValue[i][0]).toFixed(8);
-                    let { crypto, currency } = await Currency.get_currencies(pair_name);
-                    var sellLimitOrderData = {
-                        'user_id': process.env.TRADEDESK_USER_ID,
-                        'symbol': pair_name,
-                        'side': 'Sell',
-                        'order_type': 'Limit',
-                        'created_at': now,
-                        'updated_at': now,
-                        'fill_price': 0.0,
-                        'limit_price': priceValue,
-                        'stop_price': 0.0,
-                        'price': priceValue,
-                        'quantity': quantityValue,
-                        'fix_quantity': quantityValue,
-                        'order_status': "open",
-                        'currency': currency,
-                        'settle_currency': crypto,
-                        'maximum_time': now,
-                        'is_partially_fulfilled': false,
-                        'placed_by': process.env.TRADEDESK_BOT
-                    };
+                    var now = new Date();
+                    let requestedWallets = await CoinsModel
+                        .query()
+                        .select()
+                        .where('deleted_at', null)
+                        .andWhere('is_active', true)
+                        .andWhere(function () {
+                            this.where("coin", currency).orWhere("coin", crypto)
+                        })
+                    // .andWhere('user_id', inputs.requested_user_id);
+                    var crypto_coin_id = null
+                    var currency_coin_id = null
+                    for (let index = 0; index < requestedWallets.length; index++) {
+                        const element = requestedWallets[index];
+                        if (element.coin == crypto) {
+                            crypto_coin_id = element
+                        } else if (element.coin == currency) {
+                            currency_coin_id = element
+                        }
+                    }
 
-                    sellLimitOrderData.is_partially_fulfilled = true;
-                    sellLimitOrderData.is_filled = false;
-                    sellLimitOrderData.added = true;
-                    // console.log("sellLimitOrderData", sellLimitOrderData)
+                    for (var i = 0; i < askValue.length; i++) {
+                        // setTimeout(async () => {
+                        var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
+                        var priceValue = parseFloat(askValue[i][0]).toFixed(8);
+                        let { crypto, currency } = await Currency.get_currencies(pair_name);
+                        var sellLimitOrderData = {
+                            'user_id': process.env.TRADEDESK_USER_ID,
+                            'symbol': pair_name,
+                            'side': 'Sell',
+                            'order_type': 'Limit',
+                            'created_at': now,
+                            'updated_at': now,
+                            'fill_price': 0.0,
+                            'limit_price': priceValue,
+                            'stop_price': 0.0,
+                            'price': priceValue,
+                            'quantity': quantityValue,
+                            'fix_quantity': quantityValue,
+                            'order_status': "open",
+                            'currency': currency,
+                            'settle_currency': crypto,
+                            'maximum_time': now,
+                            'is_partially_fulfilled': false,
+                            'placed_by': process.env.TRADEDESK_BOT
+                        };
 
-                    let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
-                        sellLimitOrderData.user_id,
-                        sellLimitOrderData.side,
-                        sellLimitOrderData.order_type,
-                        sellLimitOrderData.quantity,
-                        sellLimitOrderData.limit_price,
-                        null,
-                        true,
-                        crypto_coin_id.id,
-                        currency_coin_id.id);
+                        sellLimitOrderData.is_partially_fulfilled = true;
+                        sellLimitOrderData.is_filled = false;
+                        sellLimitOrderData.added = true;
+                        // console.log("sellLimitOrderData", sellLimitOrderData)
 
-                    await module.exports.sleep(1000);
-                    // }, i * 800)
-                    // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                        let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
+                            sellLimitOrderData.user_id,
+                            sellLimitOrderData.side,
+                            sellLimitOrderData.order_type,
+                            sellLimitOrderData.quantity,
+                            sellLimitOrderData.limit_price,
+                            null,
+                            true,
+                            crypto_coin_id.id,
+                            currency_coin_id.id);
+
+                        await module.exports.sleep(1000);
+                        // }, i * 800)
+                        // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                    }
                 }
 
                 // return res.status(200).json({ "status": "OK" })
