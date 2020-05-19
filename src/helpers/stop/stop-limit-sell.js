@@ -2,6 +2,7 @@ var lastTradePrice = require("../check-last-trade-price");
 var activityDetails = require("../activity/get-activity-details");
 var LimitSellMatch = require("../limit/limit-sell-match");
 var pendingOrderDelet = require("../pending/delete-pending-order");
+var CoinModel = require("../../models/Coins");
 
 var stopLimitSell = async (now, pending_order_book) => {
     var order = pending_order_book;
