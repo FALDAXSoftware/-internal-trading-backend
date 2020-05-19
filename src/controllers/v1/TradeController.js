@@ -1017,7 +1017,7 @@ class TradeController extends AppController {
       "user_id": "user_" + user_id,
       "url": "Trade Function",
       "type": "Entry"
-    }, symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null)
+    }, symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id = null, currency_coin_id = null)
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
@@ -1027,7 +1027,8 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
     var priceValue = parseFloat(limit_price).toFixed(8);
     var placedBy = "";
-
+    console.log("checkUser", checkUser)
+    console.log("flag", flag)
     if (checkUser == true && flag == true) {
       placedBy = process.env.TRADEDESK_BOT
     } else if (checkUser == true) {
@@ -1383,12 +1384,13 @@ class TradeController extends AppController {
   // Used to execute Limit Sell Order
   async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id) {
     var userIds = [];
-    userIds.push(parseInt(user_id)); await logger.info({
+    userIds.push(parseInt(user_id));
+    await logger.info({
       "module": "Limit Sell Execution",
       "user_id": "user_" + user_id,
       "url": "Trade Function",
       "type": "Entry"
-    }, "Entered the function " + symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id)
+    }, "Entered the function " + symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id, currency_coin_id)
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     // let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
@@ -1398,6 +1400,8 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
     var priceValue = parseFloat(limit_price).toFixed(8);
     var placedBy = "";
+    console.log("checkUser", checkUser)
+    console.log("flag", flag)
     if (checkUser == true && flag == true) {
       placedBy = process.env.TRADEDESK_BOT
     } else if (checkUser == true) {
