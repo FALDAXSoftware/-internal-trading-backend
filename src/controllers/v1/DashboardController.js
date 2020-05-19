@@ -29,6 +29,7 @@ var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
+// var ActivityModel
 
 class DashboardController extends AppController {
 
@@ -221,7 +222,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -301,11 +302,12 @@ class DashboardController extends AppController {
                         'is_partially_fulfilled': false,
                         'placed_by': process.env.TRADEDESK_BOT
                     };
-
+                    // console.log("buyLimitOrderData", buyLimitOrderData)
                     buyLimitOrderData.is_partially_fulfilled = true;
                     buyLimitOrderData.is_filled = false;
                     buyLimitOrderData.added = true;
-
+                    var flag = true;
+                    // console.log("flag", flag)
                     let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
                         buyLimitOrderData.user_id,
                         buyLimitOrderData.side,
@@ -313,7 +315,7 @@ class DashboardController extends AppController {
                         buyLimitOrderData.quantity,
                         buyLimitOrderData.limit_price,
                         null,
-                        true,
+                        flag,
                         crypto_coin_id.id,
                         currency_coin_id.id);
                     await module.exports.sleep(1000);
@@ -334,7 +336,7 @@ class DashboardController extends AppController {
         try {
             let pair = pair_name.split("-").join("")
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -419,6 +421,7 @@ class DashboardController extends AppController {
                     sellLimitOrderData.is_partially_fulfilled = true;
                     sellLimitOrderData.is_filled = false;
                     sellLimitOrderData.added = true;
+                    // console.log("sellLimitOrderData", sellLimitOrderData)
 
                     let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
                         sellLimitOrderData.user_id,
@@ -470,19 +473,37 @@ class DashboardController extends AppController {
     async deletePendingOrder(pair) {
         try {
             var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
-            var getPendingBuyOrder = await BuyBookModel
-                .query()
-                .select()
-                .where("deleted_at", null)
-                .andWhere("created_at", "<=", now)
-                .andWhere("placed_by", process.env.TRADEDESK_BOT)
-                .andWhere("symbol", "LIKE", '%' + pair + '%')
-                .orderBy("id", "DESC")
-                .limit(30);
+            var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
+            let { crypto, currency } = await Currency.get_currencies(pair);
+            var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
+                                                                    FROM buy_book
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                    AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+            balanceTotalQuery = balanceTotalQuery.rows[0];
 
-            for (var i = 0; i < getPendingBuyOrder.length; i++) {
-                var getData = await cancelOldOrder.cancelPendingOrder(getPendingBuyOrder[i].side, getPendingBuyOrder[i].order_type, getPendingBuyOrder[i].id)
-            }
+            var buyBookUpdate = await BuyBookModel.knex().raw(`UPDATE buy_book SET deleted_at = '${today}'
+                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+
+            var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true' 
+                                                                    WHERE id IN ( SELECT activity_id FROM buy_book 
+                                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                                AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
+                                                                            )`);
+
+            var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
+                                                                FROM wallets
+                                                                LEFT JOIN coins
+                                                                ON coins.id = wallets.coin_id
+                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL 
+                                                                AND coins.coin= '${currency}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
+            walletBalance = walletBalance.rows[0];
+            var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
+            var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balanceTotalQuery.total);
+            var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balanceTotalQuery.total);
+
+            var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
         } catch (error) {
             console.log(JSON.stringify(error));
         }
@@ -491,19 +512,38 @@ class DashboardController extends AppController {
     async deleteSellPendingOrder(pair) {
         try {
             var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
-            var getPendingSellOrder = await SellBookModel
-                .query()
-                .select()
-                .where("deleted_at", null)
-                .andWhere("created_at", "<=", now)
-                .andWhere("placed_by", process.env.TRADEDESK_BOT)
-                .andWhere("symbol", "LIKE", '%' + pair + '%')
-                .orderBy("id", "DESC")
-                .limit(30);
+            var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
+            let { crypto, currency } = await Currency.get_currencies(pair);
+            var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
+                                                                    FROM sell_book
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                    AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+            balanceTotalQuery = balanceTotalQuery.rows[0];
 
-            for (var i = 0; i < getPendingSellOrder.length; i++) {
-                var getData = await cancelOldOrder.cancelPendingOrder(getPendingSellOrder[i].side, getPendingSellOrder[i].order_type, getPendingSellOrder[i].id)
-            }
+            var buyBookUpdate = await SellBookModel.knex().raw(`UPDATE sell_book SET deleted_at = '${today}'
+                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+
+            var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true' 
+                                                                    WHERE id IN ( SELECT activity_id FROM sell_book 
+                                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                                AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
+                                                                            )`);
+
+            var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
+                                                                FROM wallets
+                                                                LEFT JOIN coins
+                                                                ON coins.id = wallets.coin_id
+                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL 
+                                                                AND coins.coin= '${crypto}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
+
+            walletBalance = walletBalance.rows[0];
+            var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
+            var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balance);
+            var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
+
+            var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
         } catch (error) {
             console.log(JSON.stringify(error));
         }
