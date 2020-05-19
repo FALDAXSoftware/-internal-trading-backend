@@ -222,7 +222,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -339,7 +339,7 @@ class DashboardController extends AppController {
         try {
             let pair = pair_name.split("-").join("")
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
