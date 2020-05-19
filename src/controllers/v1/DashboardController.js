@@ -485,17 +485,14 @@ class DashboardController extends AppController {
                                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
             balanceTotalQuery = balanceTotalQuery.rows[0];
-
             var buyBookUpdate = await BuyBookModel.knex().raw(`UPDATE buy_book SET deleted_at = '${today}'
                                                                 WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
                                                                 AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
-
             var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true' 
                                                                     WHERE id IN ( SELECT activity_id FROM buy_book 
                                                                                 WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
                                                                                 AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
                                                                             )`);
-
             var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
                                                                 FROM wallets
                                                                 LEFT JOIN coins
@@ -504,9 +501,8 @@ class DashboardController extends AppController {
                                                                 AND coins.coin= '${currency}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
             walletBalance = walletBalance.rows[0];
             var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
-            var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balanceTotalQuery.total);
-            var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balanceTotalQuery.total);
-
+            var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balance);
+            var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
             var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
                                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
         } catch (error) {
