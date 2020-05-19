@@ -485,7 +485,7 @@ class DashboardController extends AppController {
                                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
             balanceTotalQuery = balanceTotalQuery.rows[0];
-            var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true' 
+            var activityUpdate = await ActivityModel.knex().raw(`DELETE FROM activity_table 
                                                                     WHERE id IN ( SELECT activity_id FROM buy_book 
                                                                                 WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
                                                                                 AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
@@ -521,7 +521,7 @@ class DashboardController extends AppController {
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
             balanceTotalQuery = balanceTotalQuery.rows[0];
 
-            var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true' 
+            var activityUpdate = await ActivityModel.knex().raw(`DELETE FROM activity_table 
                                                                     WHERE id IN ( SELECT activity_id FROM sell_book 
                                                                         WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
                                                                         AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
