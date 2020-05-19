@@ -1,4 +1,5 @@
 var TradeHistoryModel = require("../../models/TradeHistory");
+var moment = require('moment');
 
 var getTradeDetails = async (crypto, currency, limit = 500) => {
     var now = moment().utc().subtract(1, 'days').format("YYYY-MM-DD HH:mm:ss");
@@ -6,7 +7,7 @@ var getTradeDetails = async (crypto, currency, limit = 500) => {
         .query()
         .select()
         .where('deleted_at', null)
-        .andWhere("created", "<=", now)
+        .andWhere("created_at", "<=", now)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
         .orderBy('id', 'DESC')
