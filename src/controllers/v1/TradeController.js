@@ -14,6 +14,12 @@ var request = require('request');
 var xmlParser = require('xml2json');
 var i18n = require("i18n");
 var logger = require("./logger");
+
+// Queue Import
+var amqp = require('amqplib/callback_api');
+const CONN_URL = 'amqp://localhost';
+let ch = null;
+
 // Files Inludes
 var { AppController } = require('./AppController');
 const constants = require('../../config/constants');
@@ -54,6 +60,7 @@ var TradeStatusChecking = require("../../helpers/user-trade-checking");
 var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
 var RefferalHelper = require("../../helpers/get-refffered-amount");
 var fiatValueHelper = require("../../helpers/get-fiat-value");
+var QueueValue = require("./QueueController");
 /**
  * Trade Controller : Used for live tradding
  */
@@ -173,12 +180,6 @@ class TradeController extends AppController {
         let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id);
         console.log("market_sell_order", JSON.stringify(market_sell_order))
 
-        // await logger.info({
-        //   "module": "Market Sell",
-        //   "user_id": "user_" + user_id,
-        //   "url": "Trade Function",
-        //   "type": "Success"
-        // }, market_sell_order)
         if (market_sell_order.status > 1) {
           await logger.info({
             "module": "Market Buy",
@@ -2116,6 +2117,185 @@ class TradeController extends AppController {
     return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Trade retrieve success").message, allData);
   }
 
+  // Queue Market Buy Order
+  async marketBuyQueue(req, res) {
+
+    try {
+      var user_id = await Helper.getUserId(req.headers, res);
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, "Entered the function")
+      let {
+        symbol,
+        side,
+        order_type,
+        orderQuantity,
+      } = req.body;
+      // var user_id = await Helper.getUserId(req.headers, res);
+
+      var userIds = [];
+      userIds.push(user_id);
+
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+      console.log("tradeDataChecking", JSON.stringify(tradeDataChecking))
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+        orderQuantity = parseFloat(orderQuantity);
+
+        if (orderQuantity <= 0) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Invalid Quantity").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
+
+        // Get Currency/Crypto each asset
+        let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        if (crypto == currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Currency and Crypto should not be same").message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
+        // Get and check Crypto Wallet details
+        let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+        if (!walletData.currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Create Currency Wallet").message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
+        if (!walletData.crypto) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Create Crypto Wallet").message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+
+        // // Check balance sufficient or not
+        // if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
+        //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        // }
+        // var queueData = {
+        var queueName = "orders-execution"
+        // type: "MarketBuy",
+        // payload: req.body
+        // }
+        var queueData = {
+          symbol,
+          side,
+          order_type,
+          orderQuantity,
+          user_id,
+          res: null,
+          crypto: walletData.crypto.coin_id,
+          currency: walletData.currency.coin_id
+        }
+        QueueValue.publishToQueue(queueName, queueData)
+        // var responseData = await module.exports.makeMarketBuyOrder(symbol,
+        //   side,
+        //   order_type,
+        //   orderQuantity,
+        //   user_id,
+        //   res, walletData.crypto.coin_id, walletData.currency.coin_id);
+
+        // if (responseData.status > 1) {
+        //   await logger.info({
+        //     "module": "Market Buy",
+        //     "user_id": "user_" + user_id,
+        //     "url": "Trade Function",
+        //     "type": "Success"
+        //   }, i18n.__(responseData.message).message)
+        //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
+        // } else {
+        //   await logger.info({
+        //     "module": "Market Buy",
+        //     "user_id": "user_" + user_id,
+        //     "url": "Trade Function",
+        //     "type": "Success"
+        //   }, i18n.__('Order Success').message)
+        //   return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__('Order Success').message, []);
+        // }
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('Order Success').message)
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('panic button enabled').message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__(tradeDataChecking.msg).message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+      }
+
+      // console.log(responseData)
+    } catch (err) {
+      console.log("err", JSON.stringify(err));
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Error"
+      }, err)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+    }
+  }
+
+  // amqp.connect(CONN_URL, function(err, conn) {
+  //   conn.createChannel(function (err, channel) {
+  //     ch = channel;
+  //     ch.consume('orders-execution', (msg) => {
+  //       orderQueueExecution(msg)
+  //     }, { noAck: true })
+  //   });
+  // });
+
 }
 
+// process.on('exit', (code) => {
+//   ch.close();
+//   console.log(`Closing rabbitmq channel`);
+// });
+
 module.exports = new TradeController();
+// module.exports = {
+//   makeMarketBuyOrder
+// };

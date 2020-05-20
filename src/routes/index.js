@@ -10,6 +10,7 @@ var TradingViewController = require('../controllers/v1/TradingViewController');
 var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
+var QueueController = require("../controllers/v1/QueueController");
 
 router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
@@ -55,5 +56,16 @@ router.get('/tradingview/config', TradingViewController.getConfig);
 router.get('/tradingview/time', TradingViewController.getCurrentTime);
 router.get('/tradingview/symbols', TradingViewController.getSymbolInfo);
 router.get('/tradingview/history', TradingViewController.getHistoryData);
+
+router.post('/orders/market-buy-create-queue', TradeController.marketBuyQueue)
+
+// Queue URL
+router.post('/msg', async (req, res, next) => {
+  let { queueName, payload } = req.body;
+  await QueueController.publishToQueue(req.body);
+  res.statusCode = 200;
+  res.data = { "message-sent": true };
+  next();
+})
 
 module.exports = router;
