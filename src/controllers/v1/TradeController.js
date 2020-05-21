@@ -2497,7 +2497,7 @@ class TradeController extends AppController {
         //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         // }
         // var queueData = {
-        var queueName = "orders-execution"
+        var queueName = process.env.QUEUE_NAME
         // type: "MarketBuy",
         // payload: req.body
         // }
@@ -2679,7 +2679,7 @@ class TradeController extends AppController {
           userIds: userIds
         };
 
-        var queueName = "orders-execution"
+        var queueName = process.env.QUEUE_NAME
         var queueData = {
           object,
           order_type: order_type,
@@ -2802,7 +2802,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
 
-      var queueName = "orders-execution"
+      var queueName = process.env.QUEUE_NAME
       var queueData = {
         symbol,
         user_id,
@@ -2968,7 +2968,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
 
-      var queueName = "orders-execution"
+      var queueName = process.env.QUEUE_NAME
       var queueData = {
         symbol,
         user_id,
