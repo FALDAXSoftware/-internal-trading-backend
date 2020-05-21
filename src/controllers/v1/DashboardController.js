@@ -280,7 +280,7 @@ class DashboardController extends AppController {
                         }
                     }
 
-                    bidValue = await module.exports.shuffle(bidValue)
+                    // bidValue = await module.exports.shuffle(bidValue)
 
                     for (var i = 0; i < bidValue.length; i++) {
                         // setTimeout(async () => {
@@ -413,7 +413,7 @@ class DashboardController extends AppController {
                         }
                     }
 
-                    askValue = await module.exports.shuffle(askValue)
+                    // askValue = await module.exports.shuffle(askValue)
 
                     for (var i = 0; i < askValue.length; i++) {
                         // setTimeout(async () => {
