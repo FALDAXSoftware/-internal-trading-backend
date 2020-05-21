@@ -1176,7 +1176,7 @@ class TradeController extends AppController {
           }
         }
       }
-    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
+    } else if (wallet.placed_balance < (sellBook[0].limit_price * sellBook[0].quantity)) {
       var userNotification = await UserNotifications.getSingleData({
         user_id: user_id,
         deleted_at: null,
