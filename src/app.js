@@ -244,7 +244,7 @@ CronSendEmail = async (requestedData) => {
   let template = await EmailTemplate.getSingleData({
     slug: requestedData.templateSlug
   });
-  user_language = 'ja';
+  // user_language = 'ja';
   let language_content = template.all_content[user_language].content;
   let language_subject = template.all_content[user_language].subject;
 
