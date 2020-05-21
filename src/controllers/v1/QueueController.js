@@ -5,7 +5,7 @@ let ch = null;
 amqp.connect(CONN_URL, opt, (err, conn) => {
     conn.createChannel(function (err, channel) {
         // ch.chequeQueue(queueName);
-        channel.prefetch(1)
+        channel.prefetch(10)
         ch = channel;
         ch.consume('orders-execution', (msg) => {
             // console.log("mesages");
