@@ -231,7 +231,7 @@ class DashboardController extends AppController {
                 json: true
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
-                console.log("bidValue", bidValue)
+                // console.log("bidValue", bidValue)
                 // var askValue = body.asks;
 
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
@@ -366,7 +366,7 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
 
                 var askValue = body.asks;
-                console.log("askValue", askValue)
+                // console.log("askValue", askValue)
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -375,6 +375,7 @@ class DashboardController extends AppController {
                     .where("deleted_at", null)
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
+                console.log("maxValue.bot_status", maxValue.bot_status)
                 if (maxValue.bot_status) {
 
                     var getCryptoValue = await CurrencyConversionModel
