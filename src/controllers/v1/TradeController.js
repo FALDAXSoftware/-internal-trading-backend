@@ -1732,6 +1732,7 @@ class TradeController extends AppController {
       if (priceValue <= currentPrice) {
         console.log("INSIDE IF")
         var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
+        console.log("limitSellMatchData", limitSellMatchData)
         await logger.info({
           "module": "Limit Sell Execution",
           "user_id": "user_" + user_id,

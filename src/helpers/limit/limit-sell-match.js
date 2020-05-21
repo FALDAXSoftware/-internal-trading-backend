@@ -18,7 +18,9 @@ var fiatValueHelper = require("../get-fiat-value");
 
 var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null) => {
     try {
+        console.log("sellLimitOrderData", sellLimitOrderData)
         var quantityValue = sellLimitOrderData.quantity;
+        console.log("quantityValue", quantityValue)
         var userIds = [];
         userIds.push(parseInt(sellLimitOrderData.user_id));
         if (sellLimitOrderData.orderQuantity) {
@@ -28,75 +30,89 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         }
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
-        let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
-        if (wallet == 1) {
-            var userNotification = await UserNotifications.getSingleData({
-                user_id: user_id,
-                deleted_at: null,
-                slug: 'trade_execute'
-            })
-            var user_data = await Users.getSingleData({
-                deleted_at: null,
-                id: sellLimitOrderData.user_id,
-                is_active: true
-            });
-            if (user_data != undefined) {
-                if (userNotification != undefined) {
-                    if (userNotification.email == true || userNotification.email == "true") {
-                        if (user_data.email != undefined) {
-                            var allData = {
-                                template: "emails/general_mail.ejs",
-                                templateSlug: "order_failed",
-                                email: user_data.email,
-                                user_detail: user_data,
-                                formatData: {
-                                    recipientName: user_data.first_name,
-                                    reason: i18n.__("Create Crypto Wallet").message
+        console.log("crypto, currency, user_id", crypto, currency, sellLimitOrderData.user_id)
+        console.log("buyBook", buyBook)
+        let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, sellLimitOrderData.user_id);
+        console.log("wallet", wallet)
+        console.log("sellLimitOrderData.placed_by", sellLimitOrderData.placed_by)
+        if (sellLimitOrderData.placed_by != process.env.TRADEDESK_BOT) {
+            if (wallet == 1) {
+                var userNotification = await UserNotifications.getSingleData({
+                    user_id: sellLimitOrderData.user_id,
+                    deleted_at: null,
+                    slug: 'trade_execute'
+                })
+                var user_data = await Users.getSingleData({
+                    deleted_at: null,
+                    id: sellLimitOrderData.user_id,
+                    is_active: true
+                });
+                if (user_data != undefined) {
+                    if (userNotification != undefined) {
+                        if (userNotification.email == true || userNotification.email == "true") {
+                            if (user_data.email != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "order_failed",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        reason: i18n.__("Create Crypto Wallet").message
+                                    }
                                 }
+                                await Helper.SendEmail(res, allData)
                             }
-                            await Helper.SendEmail(res, allData)
                         }
-                    }
-                    if (userNotification.text == true || userNotification.text == "true") {
-                        if (user_data.phone_number != undefined) {
-                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                        if (userNotification.text == true || userNotification.text == "true") {
+                            if (user_data.phone_number != undefined) {
+                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                            }
                         }
                     }
                 }
-            }
-        } else if (wallet.placed_balance < sellLimitOrderData.quantity) {
-            var userNotification = await UserNotifications.getSingleData({
-                user_id: user_id,
-                deleted_at: null,
-                slug: 'trade_execute'
-            })
-            var user_data = await Users.getSingleData({
-                deleted_at: null,
-                id: sellLimitOrderData.user_id,
-                is_active: true
-            });
-            if (user_data != undefined) {
-                if (userNotification != undefined) {
-                    if (userNotification.email == true || userNotification.email == "true") {
-                        if (user_data.email != undefined) {
-                            var allData = {
-                                template: "emails/general_mail.ejs",
-                                templateSlug: "order_failed",
-                                email: user_data.email,
-                                user_detail: user_data,
-                                formatData: {
-                                    recipientName: user_data.first_name,
-                                    reason: i18n.__("Insufficient balance to place order").message
+                return {
+                    status: 1,
+                    message: "Wallet not created"
+                }
+            } else if (wallet.placed_balance < sellLimitOrderData.quantity) {
+                var userNotification = await UserNotifications.getSingleData({
+                    user_id: sellLimitOrderData.user_id,
+                    deleted_at: null,
+                    slug: 'trade_execute'
+                })
+                var user_data = await Users.getSingleData({
+                    deleted_at: null,
+                    id: sellLimitOrderData.user_id,
+                    is_active: true
+                });
+                if (user_data != undefined) {
+                    if (userNotification != undefined) {
+                        if (userNotification.email == true || userNotification.email == "true") {
+                            if (user_data.email != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "order_failed",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        reason: i18n.__("Insufficient balance to place order").message
+                                    }
                                 }
+                                await Helper.SendEmail(res, allData)
                             }
-                            await Helper.SendEmail(res, allData)
+                        }
+                        if (userNotification.text == true || userNotification.text == "true") {
+                            if (user_data.phone_number != undefined) {
+                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                            }
                         }
                     }
-                    if (userNotification.text == true || userNotification.text == "true") {
-                        if (user_data.phone_number != undefined) {
-                            // await sails.helpers.notification.send.text("trade_execute", user_data)
-                        }
-                    }
+                }
+                return {
+                    status: 1,
+                    message: "Insufficient Funds"
                 }
             }
         }
