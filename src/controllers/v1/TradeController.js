@@ -1140,6 +1140,7 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    console.log("sellBook", sellBook[0])
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     if (wallet == 1) {
       var userNotification = await UserNotifications.getSingleData({
@@ -1176,7 +1177,7 @@ class TradeController extends AppController {
           }
         }
       }
-    } else if (wallet.placed_balance < (sellBook[0].limit_price * sellBook[0].quantity)) {
+    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
       var userNotification = await UserNotifications.getSingleData({
         user_id: user_id,
         deleted_at: null,
