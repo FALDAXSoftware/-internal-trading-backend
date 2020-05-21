@@ -58,6 +58,9 @@ router.get('/tradingview/symbols', TradingViewController.getSymbolInfo);
 router.get('/tradingview/history', TradingViewController.getHistoryData);
 
 router.post('/orders/market-buy-create-queue', TradeController.marketBuyQueue)
+router.post('/orders/market-sell-create-queue', TradeController.marketSellQueue)
+router.post("/orders/limit-buy-order-create-queue", TradeController.limitBuyOrderQueue);
+router.post("/orders/limit-sell-order-create-queue", TradeController.limitSellOrderQueue);
 
 // Queue URL
 router.post('/msg', async (req, res, next) => {

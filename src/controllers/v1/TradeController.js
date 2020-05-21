@@ -245,13 +245,49 @@ class TradeController extends AppController {
       orderQuantity,
       user_id,
       crypto_wallet_data,
-      currency_wallet_data,
       userIds
     } = alldata;
+    console.log(res, alldata, crypto_coin_id, currency_coin_id)
     const checkUser = Helper.checkWhichUser(user_id);
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
 
+    if (crypto_wallet_data.placed_balance < orderQuantity) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: userIds[i],
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Insufficient balance to place order").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+    }
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
 
     var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
@@ -451,7 +487,12 @@ class TradeController extends AppController {
                 email: user_data.email,
                 user_detail: user_data,
                 formatData: {
-                  recipientName: user_data.first_name
+                  recipientName: user_data.first_name,
+                  side: tradeOrder.side,
+                  pair: tradeOrder.symbol,
+                  order_type: tradeOrder.order_type,
+                  quantity: tradeOrder.quantity,
+                  price: tradeOrder.fill_price,
                 }
               }
               await Helper.SendEmail(res, allData)
@@ -641,6 +682,77 @@ class TradeController extends AppController {
     console.log("crypto, currency", JSON.stringify({ crypto, currency }))
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    if (wallet == 1) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: userIds[i],
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Create Currency Wallet").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: userIds[i],
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Insufficient balance to place order").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+    }
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var quantityFixed = orderQuantity;
     var quantityValue = parseFloat(quantityFixed).toFixed(8);
@@ -846,7 +958,12 @@ class TradeController extends AppController {
                 email: user_data.email,
                 user_detail: user_data,
                 formatData: {
-                  recipientName: user_data.first_name
+                  recipientName: user_data.first_name,
+                  side: tradeOrder.side,
+                  pair: tradeOrder.symbol,
+                  order_type: tradeOrder.order_type,
+                  quantity: tradeOrder.quantity,
+                  price: tradeOrder.fill_price,
                 }
               }
               await Helper.SendEmail(res, allData)
@@ -1024,6 +1141,77 @@ class TradeController extends AppController {
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
+    if (wallet == 1) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: userIds[i],
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Create Currency Wallet").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: userIds[i],
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Insufficient balance to place order").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+    }
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
     var priceValue = parseFloat(limit_price).toFixed(8);
@@ -1124,7 +1312,12 @@ class TradeController extends AppController {
                       email: user_data.email,
                       user_detail: user_data,
                       formatData: {
-                        recipientName: user_data.first_name
+                        recipientName: user_data.first_name,
+                        side: buyLimitOrderData.side,
+                        pair: buyLimitOrderData.symbol,
+                        order_type: buyLimitOrderData.order_type,
+                        quantity: buyLimitOrderData.quantity,
+                        price: buyLimitOrderData.limit_price,
                       }
                     }
                     await Helper.SendEmail(res, allData)
@@ -1197,7 +1390,12 @@ class TradeController extends AppController {
                     email: user_data.email,
                     user_detail: user_data,
                     formatData: {
-                      recipientName: user_data.first_name
+                      recipientName: user_data.first_name,
+                      side: buyLimitOrderData.side,
+                      pair: buyLimitOrderData.symbol,
+                      order_type: buyLimitOrderData.order_type,
+                      quantity: buyLimitOrderData.quantity,
+                      price: buyLimitOrderData.limit_price,
                     }
                   }
                   await Helper.SendEmail(res, allData)
@@ -1384,6 +1582,7 @@ class TradeController extends AppController {
 
   // Used to execute Limit Sell Order
   async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id) {
+    console.log(symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id, currency_coin_id)
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1394,8 +1593,83 @@ class TradeController extends AppController {
     }, "Entered the function " + symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id, currency_coin_id)
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
-    // let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
+    let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
+    console.log("wallet", wallet)
     let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+    console.log("buyBook", buyBook[0])
+    if (wallet == 1) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Create Currency Wallet").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+      return 1
+    } else if (wallet.placed_balance < (orderQuantity)) {
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Insufficient balance to place order").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
+      }
+      return 1
+    }
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
@@ -1490,7 +1764,12 @@ class TradeController extends AppController {
                     email: user_data.email,
                     user_detail: user_data,
                     formatData: {
-                      recipientName: user_data.first_name
+                      recipientName: user_data.first_name,
+                      side: sellLimitOrderData.side,
+                      pair: sellLimitOrderData.symbol,
+                      order_type: sellLimitOrderData.order_type,
+                      quantity: sellLimitOrderData.quantity,
+                      price: sellLimitOrderData.limit_price,
                     }
                   }
                   await Helper.SendEmail(res, allData)
@@ -1549,7 +1828,12 @@ class TradeController extends AppController {
                   email: user_data.email,
                   user_detail: user_data,
                   formatData: {
-                    recipientName: user_data.first_name
+                    recipientName: user_data.first_name,
+                    side: sellLimitOrderData.side,
+                    pair: sellLimitOrderData.symbol,
+                    order_type: sellLimitOrderData.order_type,
+                    quantity: sellLimitOrderData.quantity,
+                    price: sellLimitOrderData.limit_price,
                   }
                 }
                 await Helper.SendEmail(res, allData)
@@ -2279,23 +2563,478 @@ class TradeController extends AppController {
     }
   }
 
-  // amqp.connect(CONN_URL, function(err, conn) {
-  //   conn.createChannel(function (err, channel) {
-  //     ch = channel;
-  //     ch.consume('orders-execution', (msg) => {
-  //       orderQueueExecution(msg)
-  //     }, { noAck: true })
-  //   });
-  // });
+  async marketSellQueue(req, res) {
+    try {
+      var user_id = await Helper.getUserId(req.headers, res);
+      await logger.info({
+        "module": "Market Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, "Entered the function")
+      let {
+        symbol,
+        side,
+        order_type,
+        orderQuantity,
+        // user_id
+      } = req.body;
+      // get user id from header
+      let userIds = [];
+      userIds.push(user_id);
 
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
+      // Check user user is allowed to trade or not
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+        // console.log("INSIDE IF")
+        orderQuantity = parseFloat(orderQuantity);
+
+        // Order Quantity Validation
+        if (orderQuantity <= 0) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Invalid Quantity").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
+
+        // Get Currency/Crypto each asset
+        let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        if (crypto == currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Currency and Crypto should not be same").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
+
+        // Get and check Crypto Wallet details
+        let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+        if (!walletData.currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Create Currency Wallet").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
+        if (!walletData.crypto) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Create Crypto Wallet").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+        const checkUser = Helper.checkWhichUser(user_id);
+
+        // Check balance sufficient or not
+        console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
+        if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Insufficient balance to place order").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        }
+        let object = {
+          crypto: crypto,
+          currency: currency,
+          symbol: symbol,
+          side: side,
+          order_type: order_type,
+          orderQuantity: orderQuantity,
+          user_id: user_id,
+          crypto_wallet_data: walletData.crypto,
+          userIds: userIds
+        };
+
+        var queueName = "orders-execution"
+        var queueData = {
+          object,
+          order_type: order_type,
+          side: side,
+          res: null,
+          crypto: walletData.crypto.coin_id,
+          currency: walletData.currency.coin_id
+        }
+        QueueValue.publishToQueue(queueName, queueData)
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('Order Success').message)
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('panic button enabled').message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__(tradeDataChecking.msg).message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+      }
+
+
+    } catch (err) {
+      console.log("err", JSON.stringify(err));
+      await logger.error({
+        "module": "Market Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Error"
+      }, err)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+    }
+  }
+
+  async limitBuyOrderQueue(req, res) {
+    // var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
+    await logger.info({
+      "module": "Limit Buy",
+      "user_id": "user_" + user_id,
+      "url": "Trade Function",
+      "type": "Entry"
+    }, "Entered the function")
+    let {
+      symbol,
+      side,
+      order_type,
+      orderQuantity,
+      limit_price
+    } = req.body;
+
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
+
+    var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+      orderQuantity = parseFloat(orderQuantity);
+
+      if (orderQuantity <= 0) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Invalid Quantity").message)
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      }
+
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      if (crypto == currency) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Currency and Crypto should not be same").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+      }
+
+      // Get and check Crypto Wallet details
+      let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+      if (!walletData.currency) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Currency Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      }
+      if (!walletData.crypto) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Crypto Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+
+      var queueName = "orders-execution"
+      var queueData = {
+        symbol,
+        user_id,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        res: null,
+        flag: false,
+        crypto: walletData.crypto.coin_id,
+        currency: walletData.currency.coin_id
+      }
+      QueueValue.publishToQueue(queueName, queueData)
+
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Success"
+      }, i18n.__('Order Success').message)
+      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+
+      // let responseData = await module.exports.limitBuyOrder(symbol,
+      //   user_id,
+      //   side,
+      //   order_type,
+      //   orderQuantity,
+      //   limit_price,
+      //   res,
+      //   false,
+      //   walletData.crypto.coin_id,
+      //   walletData.currency.coin_id);
+
+      // if (responseData.status > 2) {
+      //   await logger.info({
+      //     "module": "Limit Buy",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__(responseData.message).message)
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
+      // } else if (responseData.status == 2) {
+      //   await logger.info({
+      //     "module": "Limit Buy",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__(responseData.message).message)
+      //   return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      // }
+      // else if (responseData.status == 1) {
+      //   await logger.info({
+      //     "module": "Limit Buy",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__(responseData.message).message)
+      //   return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      // }
+    } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+      await logger.info({
+        "module": "Limit Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__('panic button enabled').message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+    } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+      await logger.info({
+        "module": "Limit Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__(tradeDataChecking.msg).message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+    }
+
+  }
+
+  // Used to create Sell Limit Order
+  async limitSellOrderQueue(req, res) {
+    var user_id = await Helper.getUserId(req.headers, res);
+    await logger.info({
+      "module": "Limit Sell",
+      "user_id": "user_" + user_id,
+      "url": "Trade Function",
+      "type": "Entry"
+    }, "Entered the function")
+    let {
+      symbol,
+      side,
+      order_type,
+      orderQuantity,
+      limit_price
+    } = req.body;
+
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
+    var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+      orderQuantity = parseFloat(orderQuantity);
+
+      if (orderQuantity <= 0) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Invalid Quantity").message)
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      }
+
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      if (crypto == currency) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Currency and Crypto should not be same").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+      }
+      // Get and check Crypto Wallet details
+      // Get and check Crypto Wallet details
+      let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+      if (!walletData.currency) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Currency Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      }
+      if (!walletData.crypto) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Crypto Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+
+      const checkUser = Helper.checkWhichUser(user_id);
+
+      if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Insufficient balance to place order").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      }
+
+      var queueName = "orders-execution"
+      var queueData = {
+        symbol,
+        user_id,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        res: null,
+        flag: false,
+        crypto: walletData.crypto.coin_id,
+        currency: walletData.currency.coin_id
+      }
+      QueueValue.publishToQueue(queueName, queueData)
+
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Success"
+      }, i18n.__('Order Success').message)
+      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+
+      // let responseData = await module.exports.limitSellOrder(symbol,
+      //   user_id,
+      //   side,
+      //   order_type,
+      //   orderQuantity,
+      //   limit_price,
+      //   res,
+      //   false,
+      //   walletData.crypto.coin_id,
+      //   walletData.currency.coin_id);
+
+      // if (responseData.status > 2) {
+      //   await logger.info({
+      //     "module": "Limit Sell",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__(responseData.message).message)
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(responseData.message).message, []);
+      // } else if (responseData.status == 2) {
+      //   await logger.info({
+      //     "module": "Limit Sell",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__(responseData.message).message)
+      //   return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      // }
+      // else if (responseData.status == 1) {
+      //   await logger.info({
+      //     "module": "Limit Sell",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__(responseData.message).message)
+      //   return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__(responseData.message).message, []);
+      // }
+    } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+      await logger.info({
+        "module": "Limit Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__('panic button enabled').message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+    } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+      await logger.info({
+        "module": "Limit Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__(tradeDataChecking.msg).message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+    }
+  }
 }
 
-// process.on('exit', (code) => {
-//   ch.close();
-//   console.log(`Closing rabbitmq channel`);
-// });
-
 module.exports = new TradeController();
-// module.exports = {
-//   makeMarketBuyOrder
-// };

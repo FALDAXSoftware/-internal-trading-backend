@@ -15,17 +15,19 @@ if (process.env.ENVIROMENT == "preprod") {
 }
 
 var amqp = require('amqplib/callback_api');
-const CONN_URL = 'amqp://localhost';
+const CONN_URL = process.env.QUEUE_URL;
 
 amqp.connect(CONN_URL, function (err, conn) {
+  console.log("err", err)
+  console.log("conn", conn)
   conn.createChannel(function (err, ch) {
-    ch.consume('user-messages', function (msg) {
-      console.log('.....');
-      setTimeout(function () {
-        console.log("Message:", msg.content.toString());
-      }, 4000);
-    }, { noAck: true }
-    );
+    // ch.consume('user-messages', function (msg) {
+    //   console.log('.....');
+    //   setTimeout(function () {
+    //     console.log("Message:", msg.content.toString());
+    //   }, 4000);
+    // }, { noAck: true }
+    // );
   });
 });
 
@@ -241,7 +243,7 @@ CronSendEmail = async (requestedData) => {
   let template = await EmailTemplate.getSingleData({
     slug: requestedData.templateSlug
   });
-
+  user_language = 'ja';
   let language_content = template.all_content[user_language].content;
   let language_subject = template.all_content[user_language].subject;
 

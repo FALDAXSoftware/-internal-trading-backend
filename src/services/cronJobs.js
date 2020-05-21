@@ -10,7 +10,7 @@ var dashBoardUpdate = require("../controllers/v1/DashboardController");
 //     await cronData.executeStopLimit();
 // });
 
-// // Cron for LTC-BTC
+// Cron for LTC-BTC
 // cron.schedule('*/15 * * * * *', async (req, res, next) => {
 //     console.log("Started cron....");
 //     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
@@ -53,7 +53,7 @@ var dashBoardUpdate = require("../controllers/v1/DashboardController");
 // })
 
 // //  Cron for ETH-BTC
-// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+// cron.schedule('*/30 * * * * *', async (req, res, next) => {
 //     console.log("Started cron....");
 //     await dashBoardUpdate.updateBuyOrderBook("ETH-BTC");
 // });
