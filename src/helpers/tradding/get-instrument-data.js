@@ -54,6 +54,7 @@ var getInstrumentData = async () => {
                                             WHERE deleted_at IS NULL
                                             AND created_at >= '${yesterday}' AND created_at <= '${now}'
                                             GROUP BY symbol)`
+    // console.log("")
     var currentValueSql = await TradeHistoryModel.knex().raw(currentPriceSql);
     currentValueSql = currentValueSql.rows;
     var currenctPriceObjcet = {}
