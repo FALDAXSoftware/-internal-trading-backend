@@ -62,9 +62,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         console.log(JSON.stringify(trade_history_data))
                         console.log("buyLimitOrderData.quantity >= sellBook[0].quantity", buyLimitOrderData.quantity >= sellBook[0].quantity)
                         if (buyLimitOrderData.quantity >= sellBook[0].quantity) {
-                            trade_history_data.fix_quantity = sellBook[0].quantity
-                        } else {
                             trade_history_data.fix_quantity = buyLimitOrderData.quantity
+                        } else {
+                            trade_history_data.fix_quantity = sellBook[0].quantity
                         }
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
                         trade_history_data.maker_fee = 0.0;
@@ -274,9 +274,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             ...buyLimitOrderData
                         };
                         if (buyLimitOrderData.quantity >= sellBook[0].quantity) {
-                            trade_history_data.fix_quantity = sellBook[0].quantity;
+                            trade_history_data.fix_quantity = buyLimitOrderData.quantity
                         } else {
-                            trade_history_data.fix_quantity = buyLimitOrderData.quantity;
+                            trade_history_data.fix_quantity = sellBook[0].quantity
                         }
 
                         trade_history_data.maker_fee = 0.0;
