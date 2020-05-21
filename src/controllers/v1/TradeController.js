@@ -2531,7 +2531,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Success"
         }, i18n.__('Order Success').message)
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
       } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
         await logger.info({
           "module": "Market Buy",
@@ -2684,7 +2684,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Success"
         }, i18n.__('Order Success').message)
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
       } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
         await logger.info({
           "module": "Market Buy",
@@ -2812,7 +2812,7 @@ class TradeController extends AppController {
         "url": "Trade Function",
         "type": "Success"
       }, i18n.__('Order Success').message)
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
 
       // let responseData = await module.exports.limitBuyOrder(symbol,
       //   user_id,
@@ -2978,7 +2978,7 @@ class TradeController extends AppController {
         "url": "Trade Function",
         "type": "Success"
       }, i18n.__('Order Success').message)
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
 
       // let responseData = await module.exports.limitSellOrder(symbol,
       //   user_id,
