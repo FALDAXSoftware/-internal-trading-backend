@@ -242,7 +242,7 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
 
-                if (maxValue.bot_status == true && maxValue.bot_status == "true") {
+                if (maxValue.bot_status) {
 
                     var getCryptoValue = await CurrencyConversionModel
                         .query()
@@ -373,7 +373,7 @@ class DashboardController extends AppController {
                     .where("deleted_at", null)
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC')
-                if (maxValue.bot_status == true && maxValue.bot_status == "true") {
+                if (maxValue.bot_status) {
 
                     var getCryptoValue = await CurrencyConversionModel
                         .query()
@@ -522,22 +522,22 @@ class DashboardController extends AppController {
             AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`)
             var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
                                                                     FROM buy_book
-                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
             balanceTotalQuery = balanceTotalQuery.rows[0];
-            var activityUpdate = await ActivityModel.knex().raw(`DELETE FROM activity_table 
-                                                                    WHERE id IN ( SELECT activity_id FROM buy_book 
-                                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+            var activityUpdate = await ActivityModel.knex().raw(`DELETE FROM activity_table
+                                                                    WHERE id IN ( SELECT activity_id FROM buy_book
+                                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                                 AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
                                                                             )`);
             var buyBookUpdate = await BuyBookModel.knex().raw(`DELETE FROM buy_book
-                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                 AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
             var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
                                                                 FROM wallets
                                                                 LEFT JOIN coins
                                                                 ON coins.id = wallets.coin_id
-                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL 
+                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL
                                                                 AND coins.coin= '${currency}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
             walletBalance = walletBalance.rows[0];
             var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
@@ -557,25 +557,25 @@ class DashboardController extends AppController {
             let { crypto, currency } = await Currency.get_currencies(pair);
             var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
                                                                     FROM sell_book
-                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
             balanceTotalQuery = balanceTotalQuery.rows[0];
 
-            var activityUpdate = await ActivityModel.knex().raw(`DELETE FROM activity_table 
-                                                                    WHERE id IN ( SELECT activity_id FROM sell_book 
-                                                                        WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+            var activityUpdate = await ActivityModel.knex().raw(`DELETE FROM activity_table
+                                                                    WHERE id IN ( SELECT activity_id FROM sell_book
+                                                                        WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                         AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
                                                                         )`);
 
             var buyBookUpdate = await SellBookModel.knex().raw(`DELETE FROM sell_book
-                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%' 
+                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
 
             var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
                                                                 FROM wallets
                                                                 LEFT JOIN coins
                                                                 ON coins.id = wallets.coin_id
-                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL 
+                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL
                                                                 AND coins.coin= '${crypto}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
 
             walletBalance = walletBalance.rows[0];

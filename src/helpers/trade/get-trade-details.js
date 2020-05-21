@@ -7,6 +7,8 @@ var getTradeDetails = async (crypto, currency, limit = 500) => {
         .query()
         .select()
         .where('deleted_at', null)
+        .andWhere('quantity', '>', 0 )
+        .andWhere('fill_price', '>', 0 )
         .andWhere("created_at", ">=", now)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
