@@ -1140,6 +1140,7 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    console.log("sellBook", sellBook[0])
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     if (wallet == 1) {
       var userNotification = await UserNotifications.getSingleData({
@@ -1176,7 +1177,7 @@ class TradeController extends AppController {
           }
         }
       }
-    } else if (wallet.placed_balance < (sellBook[0].limit_price * sellBook[0].quantity)) {
+    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
       var userNotification = await UserNotifications.getSingleData({
         user_id: user_id,
         deleted_at: null,
@@ -2531,7 +2532,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Success"
         }, i18n.__('Order Success').message)
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
       } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
         await logger.info({
           "module": "Market Buy",
@@ -2684,7 +2685,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Success"
         }, i18n.__('Order Success').message)
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
       } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
         await logger.info({
           "module": "Market Buy",
@@ -2812,7 +2813,7 @@ class TradeController extends AppController {
         "url": "Trade Function",
         "type": "Success"
       }, i18n.__('Order Success').message)
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
 
       // let responseData = await module.exports.limitBuyOrder(symbol,
       //   user_id,
@@ -2978,7 +2979,7 @@ class TradeController extends AppController {
         "url": "Trade Function",
         "type": "Success"
       }, i18n.__('Order Success').message)
-      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Order In Process", []);
+      return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Success! Your order is in pending status. You will be get notified once the order is completed.", []);
 
       // let responseData = await module.exports.limitSellOrder(symbol,
       //   user_id,
