@@ -1,3 +1,4 @@
+var i18n = require("i18n");
 var SellWalletBalanceHelper = require("../wallet/get-sell-wallet-balance");
 var BuyBookHelper = require("../buy/get-buy-book-order");
 var MakerTakerFees = require("../wallet/get-maker-taker-fees");
@@ -27,6 +28,78 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         }
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+        let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
+        if (wallet == 1) {
+            var userNotification = await UserNotifications.getSingleData({
+                user_id: user_id,
+                deleted_at: null,
+                slug: 'trade_execute'
+            })
+            var user_data = await Users.getSingleData({
+                deleted_at: null,
+                id: sellLimitOrderData.user_id,
+                is_active: true
+            });
+            if (user_data != undefined) {
+                if (userNotification != undefined) {
+                    if (userNotification.email == true || userNotification.email == "true") {
+                        if (user_data.email != undefined) {
+                            var allData = {
+                                template: "emails/general_mail.ejs",
+                                templateSlug: "order_failed",
+                                email: user_data.email,
+                                user_detail: user_data,
+                                formatData: {
+                                    recipientName: user_data.first_name,
+                                    reason: i18n.__("Create Crypto Wallet").message
+                                }
+                            }
+                            await Helper.SendEmail(res, allData)
+                        }
+                    }
+                    if (userNotification.text == true || userNotification.text == "true") {
+                        if (user_data.phone_number != undefined) {
+                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                        }
+                    }
+                }
+            }
+        } else if (wallet.placed_balance < sellLimitOrderData.quantity) {
+            var userNotification = await UserNotifications.getSingleData({
+                user_id: user_id,
+                deleted_at: null,
+                slug: 'trade_execute'
+            })
+            var user_data = await Users.getSingleData({
+                deleted_at: null,
+                id: sellLimitOrderData.user_id,
+                is_active: true
+            });
+            if (user_data != undefined) {
+                if (userNotification != undefined) {
+                    if (userNotification.email == true || userNotification.email == "true") {
+                        if (user_data.email != undefined) {
+                            var allData = {
+                                template: "emails/general_mail.ejs",
+                                templateSlug: "order_failed",
+                                email: user_data.email,
+                                user_detail: user_data,
+                                formatData: {
+                                    recipientName: user_data.first_name,
+                                    reason: i18n.__("Insufficient balance to place order").message
+                                }
+                            }
+                            await Helper.SendEmail(res, allData)
+                        }
+                    }
+                    if (userNotification.text == true || userNotification.text == "true") {
+                        if (user_data.phone_number != undefined) {
+                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                        }
+                    }
+                }
+            }
+        }
         var tradeOrder;
         if (sellLimitOrderData.order_type == "StopLimit") {
             const checkUser = Helper.checkWhichUser(sellLimitOrderData.user_id);
@@ -113,7 +186,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                 email: user_data.email,
                                                 user_detail: user_data,
                                                 formatData: {
-                                                    recipientName: user_data.first_name
+                                                    recipientName: user_data.first_name,
+                                                    side: tradeOrder.side,
+                                                    pair: tradeOrder.symbol,
+                                                    order_type: tradeOrder.order_type,
+                                                    quantity: tradeOrder.quantity,
+                                                    price: tradeOrder.fill_price,
                                                 }
                                             }
                                             // console.log(res)
@@ -159,7 +237,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                 email: user_data.email,
                                                 user_detail: user_data,
                                                 formatData: {
-                                                    recipientName: user_data.first_name
+                                                    recipientName: user_data.first_name,
+                                                    side: tradeOrder.side,
+                                                    pair: tradeOrder.symbol,
+                                                    order_type: tradeOrder.order_type,
+                                                    quantity: tradeOrder.quantity,
+                                                    price: tradeOrder.fill_price,
                                                 }
                                             }
                                             await Helper.SendEmail(res, allData)
@@ -273,7 +356,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                             email: user_data.email,
                                             user_detail: user_data,
                                             formatData: {
-                                                recipientName: user_data.first_name
+                                                recipientName: user_data.first_name,
+                                                side: tradeOrder.side,
+                                                pair: tradeOrder.symbol,
+                                                order_type: tradeOrder.order_type,
+                                                quantity: tradeOrder.quantity,
+                                                price: tradeOrder.fill_price,
                                             }
                                         }
                                         await Helper.SendEmail(res, allData)
@@ -348,7 +436,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                         email: user_data.email,
                                         user_detail: user_data,
                                         formatData: {
-                                            recipientName: user_data.first_name
+                                            recipientName: user_data.first_name,
+                                            side: sellLimitOrderData.side,
+                                            pair: sellLimitOrderData.symbol,
+                                            order_type: sellLimitOrderData.order_type,
+                                            quantity: sellLimitOrderData.quantity,
+                                            price: sellLimitOrderData.limit_price,
                                         }
                                     }
                                     await Helper.SendEmail(res, allData)
@@ -413,7 +506,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                     email: user_data.email,
                                     user_detail: user_data,
                                     formatData: {
-                                        recipientName: user_data.first_name
+                                        recipientName: user_data.first_name,
+                                        side: sellLimitOrderData.side,
+                                        pair: sellLimitOrderData.symbol,
+                                        order_type: sellLimitOrderData.order_type,
+                                        quantity: sellLimitOrderData.quantity,
+                                        price: sellLimitOrderData.limit_price,
                                     }
                                 }
                                 await Helper.SendEmail(res, allData)

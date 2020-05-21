@@ -10,7 +10,7 @@ cron.schedule('*/2 * * * *', async (req, res, next) => {
     await cronData.executeStopLimit();
 });
 
-// Cron for LTC-BTC
+// Cron for LTC - BTC
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
