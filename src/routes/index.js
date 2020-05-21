@@ -10,6 +10,7 @@ var TradingViewController = require('../controllers/v1/TradingViewController');
 var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
+var QueueController = require("../controllers/v1/QueueController");
 
 router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
@@ -28,10 +29,18 @@ router.get("/soc", function (req, res) {
 //
 // });
 
-router.post('/orders/market-sell-create', TradeController.marketSell);
-router.post('/orders/market-buy-create', TradeController.marketBuy);
-router.post('/orders/limit-buy-order-create', TradeController.limitBuy);
-router.post('/orders/limit-sell-order-create', TradeController.limitSell);
+// router.post('/orders/market-sell-create', TradeController.marketSell);
+// router.post('/orders/market-buy-create', TradeController.marketBuy);
+// router.post('/orders/limit-buy-order-create', TradeController.limitBuy);
+// router.post('/orders/limit-sell-order-create', TradeController.limitSell);
+
+// QUEUE IMPLEMENTATION
+router.post('/orders/market-sell-create', TradeController.marketSellQueue);
+router.post('/orders/market-buy-create', TradeController.marketBuyQueue);
+router.post('/orders/limit-buy-order-create', TradeController.limitBuyOrderQueue);
+router.post('/orders/limit-sell-order-create', TradeController.limitSellOrderQueue);
+
+// Other  Routes
 router.post('/orders/pending-buy-order-create', TradeController.stopLimitBuyOrder);
 router.post('/orders/pending-sell-order-create', TradeController.stopLimitSellOrder);
 router.post('/trade/add-favourite-pair', UserFavouritesController.addFavouritesData)
@@ -55,5 +64,19 @@ router.get('/tradingview/config', TradingViewController.getConfig);
 router.get('/tradingview/time', TradingViewController.getCurrentTime);
 router.get('/tradingview/symbols', TradingViewController.getSymbolInfo);
 router.get('/tradingview/history', TradingViewController.getHistoryData);
+
+// router.post('/orders/market-buy-create-queue', TradeController.marketBuyQueue)
+// router.post('/orders/market-sell-create-queue', TradeController.marketSellQueue)
+// router.post("/orders/limit-buy-order-create-queue", TradeController.limitBuyOrderQueue);
+// router.post("/orders/limit-sell-order-create-queue", TradeController.limitSellOrderQueue);
+
+// Queue URL
+router.post('/msg', async (req, res, next) => {
+  let { queueName, payload } = req.body;
+  await QueueController.publishToQueue(req.body);
+  res.statusCode = 200;
+  res.data = { "message-sent": true };
+  next();
+})
 
 module.exports = router;
