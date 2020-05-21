@@ -52,8 +52,8 @@ cron.schedule('* * * * *', async (req, res, next) => {
     await dashBoardUpdate.deleteSellPendingOrder("XRP-BTC");
 })
 
-//  Cron for ETH-BTC
-cron.schedule('*/30 * * * * *', async (req, res, next) => {
+// //  Cron for ETH-BTC
+cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
     await dashBoardUpdate.updateBuyOrderBook("ETH-BTC");
 });
@@ -73,7 +73,7 @@ cron.schedule('* * * * *', async (req, res, next) => {
     await dashBoardUpdate.deleteSellPendingOrder("ETH-BTC");
 })
 
-//  Cron for BCH-BTC
+// //  Cron for BCH-BTC
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
     await dashBoardUpdate.updateBuyOrderBook("BCH-BTC");
