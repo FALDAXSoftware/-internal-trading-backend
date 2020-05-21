@@ -231,6 +231,7 @@ class DashboardController extends AppController {
                 json: true
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
+                console.log("bidValue", bidValue)
                 // var askValue = body.asks;
 
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
@@ -365,6 +366,7 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
 
                 var askValue = body.asks;
+                console.log("askValue", askValue)
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
