@@ -7,7 +7,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         // ch.chequeQueue(queueName);
         channel.prefetch(10)
         ch = channel;
-        ch.consume('orders-execution', (msg) => {
+        ch.consume(process.env.QUEUE_NAME, (msg) => {
             // console.log("mesages");
             console.log("Message", msg.content.toString())
             var tradeData = require("./TradeController");
@@ -76,8 +76,15 @@ var publishToQueue = async (queueName, data) => {
     try {
         console.log(JSON.stringify(queueName))
         console.log(JSON.stringify(data))
+        var priorityValue = 1;
+        if (data.order_type == "Limit" && data.flag == true) {
+            // if(data.flag == f)
+            priorityValue = null;
+        }
+        console.log("priorityValue", priorityValue)
         ch.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), {
-            persistent: true
+            persistent: true,
+            priority: priorityValue
         });
     } catch (error) {
         console.log(error)
