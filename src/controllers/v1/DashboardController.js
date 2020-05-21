@@ -324,7 +324,7 @@ class DashboardController extends AppController {
                         //     flag,
                         //     crypto_coin_id.id,
                         //     currency_coin_id.id);
-                        var queueName = "orders-execution"
+                        var queueName = process.env.QUEUE_NAME
                         var queueData = {
                             "symbol": pair_name,
                             user_id: 2105,
@@ -449,7 +449,7 @@ class DashboardController extends AppController {
                         sellLimitOrderData.added = true;
                         // console.log("sellLimitOrderData", sellLimitOrderData)
 
-                        var queueName = "orders-execution"
+                        var queueName = process.env.QUEUE_NAME
                         var queueData = {
                             "symbol": pair_name,
                             user_id: 2105,
