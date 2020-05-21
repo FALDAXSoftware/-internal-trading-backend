@@ -1,16 +1,14 @@
 var amqp = require('amqplib/callback_api');
-const CONN_URL = process.env.QUEUE_URL;
-console.log("CONN_URL", CONN_URL)
+let CONN_URL = process.env.QUEUE_URL;
+const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
 let ch = null;
-amqp.connect(CONN_URL, function (err, conn) {
-    console.log("err", err)
-    console.log("conn", conn)
+amqp.connect(CONN_URL, opt, (err, conn) => {
     conn.createChannel(function (err, channel) {
         // ch.chequeQueue(queueName);
         channel.prefetch(1)
         ch = channel;
         ch.consume('orders-execution', (msg) => {
-            console.log("mesages");
+            // console.log("mesages");
             console.log("Message", msg.content.toString())
             var tradeData = require("./TradeController");
             var dataValue = JSON.parse(msg.content.toString());
@@ -21,7 +19,7 @@ amqp.connect(CONN_URL, function (err, conn) {
                     if (dataValue.side == "Buy") {
                         tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
+                                // console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
                             })
                             .catch((err) => {
@@ -32,7 +30,7 @@ amqp.connect(CONN_URL, function (err, conn) {
                     } else if (dataValue.side == "Sell") {
                         tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
+                                // console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
                             })
                             .catch((err) => {
@@ -45,7 +43,7 @@ amqp.connect(CONN_URL, function (err, conn) {
                     if (dataValue.side == "Buy") {
                         tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
+                                // console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
                             })
                             .catch((err) => {
@@ -56,7 +54,7 @@ amqp.connect(CONN_URL, function (err, conn) {
                     } else if (dataValue.side == "Sell") {
                         tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
+                                // console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
                             })
                             .catch((err) => {
@@ -70,14 +68,14 @@ amqp.connect(CONN_URL, function (err, conn) {
                     break;
             }
         }, { noAck: false })
-        conn.close();
+        // conn.close();
     });
 });
 
 var publishToQueue = async (queueName, data) => {
     try {
-        console.log("queueName", queueName)
-        console.log("data", data)
+        console.log(JSON.stringify(queueName))
+        console.log(JSON.stringify(data))
         ch.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), {
             persistent: true
         });

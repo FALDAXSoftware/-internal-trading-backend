@@ -223,7 +223,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -231,7 +231,7 @@ class DashboardController extends AppController {
                 json: true
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
-                var askValue = body.asks;
+                // var askValue = body.asks;
 
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
@@ -279,6 +279,8 @@ class DashboardController extends AppController {
                             currency_coin_id = element
                         }
                     }
+
+                    bidValue = await module.exports.shuffle(bidValue)
 
                     for (var i = 0; i < bidValue.length; i++) {
                         // setTimeout(async () => {
@@ -354,7 +356,7 @@ class DashboardController extends AppController {
         try {
             let pair = pair_name.split("-").join("")
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=10`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -410,6 +412,8 @@ class DashboardController extends AppController {
                             currency_coin_id = element
                         }
                     }
+
+                    askValue = await module.exports.shuffle(askValue)
 
                     for (var i = 0; i < askValue.length; i++) {
                         // setTimeout(async () => {
