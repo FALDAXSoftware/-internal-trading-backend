@@ -139,9 +139,9 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         ...sellLimitOrderData
                     }
                     if (sellLimitOrderData.quantity >= buyBook[0].quantity) {
-                        trade_history_data.fix_quantity = buyBook[0].quantity
-                    } else {
                         trade_history_data.fix_quantity = sellLimitOrderData.quantity
+                    } else {
+                        trade_history_data.fix_quantity = buyBook[0].quantity
                     }
                     trade_history_data.maker_fee = 0.0;
                     trade_history_data.taker_fee = 0.0;
@@ -305,9 +305,9 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     }
 
                     if (sellLimitOrderData.quantity >= buyBook[0].quantity) {
-                        trade_history_data.fix_quantity = buyBook[0].quantity;
+                        trade_history_data.fix_quantity = sellLimitOrderData.quantity
                     } else {
-                        trade_history_data.fix_quantity = sellLimitOrderData.quantity;
+                        trade_history_data.fix_quantity = buyBook[0].quantity
                     }
 
                     trade_history_data.maker_fee = 0.0;
