@@ -49,11 +49,13 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var trade_history_data = {
                         ...sellLimitOrderData
                     }
-                    if (sellLimitOrderData.quantity >= buyBook[0].quantity) {
-                        trade_history_data.fix_quantity = buyBook[0].quantity
-                    } else {
-                        trade_history_data.fix_quantity = sellLimitOrderData.quantity
-                    }
+                    trade_history_data.fix_quantity = quantityValue;
+                    trade_history_data.quantity = sellLimitOrderData.quantity
+                    // if (sellLimitOrderData.quantity >= buyBook[0].quantity) {
+                    //     trade_history_data.fix_quantity = buyBook[0].quantity
+                    // } else {
+                    //     trade_history_data.fix_quantity = sellLimitOrderData.quantity
+                    // }
                     trade_history_data.maker_fee = 0.0;
                     trade_history_data.taker_fee = 0.0;
                     trade_history_data.requested_user_id = buyBook[0].user_id;
@@ -205,11 +207,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         ...sellLimitOrderData
                     }
 
-                    if (sellLimitOrderData.quantity >= buyBook[0].quantity) {
-                        trade_history_data.fix_quantity = buyBook[0].quantity;
-                    } else {
-                        trade_history_data.fix_quantity = sellLimitOrderData.quantity;
-                    }
+                    trade_history_data.fix_quantity = quantityValue;
+                    trade_history_data.quantity = sellLimitOrderData.quantity
 
                     trade_history_data.maker_fee = 0.0;
                     trade_history_data.taker_fee = 0.0;
