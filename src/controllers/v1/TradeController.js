@@ -1072,8 +1072,6 @@ class TradeController extends AppController {
 
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
-      console.log("priceValue", priceValue)
-      console.log("currentPrice", currentPrice)
       if (priceValue >= currentPrice) {
         var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
         await logger.info({
