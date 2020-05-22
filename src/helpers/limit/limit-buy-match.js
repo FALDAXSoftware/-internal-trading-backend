@@ -58,18 +58,16 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var trade_history_data = {
                             ...buyLimitOrderData
                         }
+                        trade_history_data.fix_quantity = quantityValue;
                         console.log(JSON.stringify(trade_history_data))
                         console.log("buyLimitOrderData.quantity >= sellBook[0].quantity", buyLimitOrderData.quantity >= sellBook[0].quantity)
-                        if (buyLimitOrderData.quantity >= sellBook[0].quantity) {
-                            trade_history_data.fix_quantity = sellBook[0].quantity
-                        } else {
-                            trade_history_data.fix_quantity = buyLimitOrderData.quantity
-                        }
+
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
                         trade_history_data.maker_fee = 0.0;
                         trade_history_data.taker_fee = 0.0;
                         trade_history_data.requested_user_id = sellBook[0].user_id;
                         trade_history_data.created_at = new Date();
+                        trade_history_data.quantity = buyLimitOrderData.quantity
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
                         let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
 
@@ -218,6 +216,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         sellBook[0].quantity = (sellBook[0].quantity).toFixed(3);
                         sellBook[0].price = (sellBook[0].price).toFixed(5);
 
+
                         buyLimitOrderData.quantity = sellBook[0].quantity;
                         buyLimitOrderData.order_status = "partially_filled";
                         buyLimitOrderData.fill_price = sellBook[0].price;
@@ -227,11 +226,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var trade_history_data = {
                             ...buyLimitOrderData
                         };
-                        if (buyLimitOrderData.quantity >= sellBook[0].quantity) {
-                            trade_history_data.fix_quantity = sellBook[0].quantity;
-                        } else {
-                            trade_history_data.fix_quantity = buyLimitOrderData.quantity;
-                        }
+                        trade_history_data.fix_quantity = quantityValue;
 
                         trade_history_data.maker_fee = 0.0;
                         trade_history_data.taker_fee = 0.0;
