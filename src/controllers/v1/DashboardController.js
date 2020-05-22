@@ -29,6 +29,7 @@ var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
+// var highLevelInfo = require("../../helpers/tradding/get-socket-value");
 // var ActivityModel
 
 class DashboardController extends AppController {
