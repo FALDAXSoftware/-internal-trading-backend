@@ -52,15 +52,15 @@ class DashboardController extends AppController {
             var user_data = await UserModel
                 .query()
                 .first()
-                .select()
+                .select("fiat", "diffrence_fiat", "total_value")
                 .where('id', user_id)
                 .andWhere('deleted_at', null)
                 .andWhere('is_active', true)
                 .orderBy('id', 'DESC');
 
             var currency = user_data.fiat;
-            var yesterday = moment().subtract(1, 'days');
-            var today = moment();
+            var yesterday = moment().utc().subtract(1, 'days').format("YYYY-MM-DD HH:mm:ss");
+            var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
             var portfolioData = [];
             var average_price;
 
@@ -78,15 +78,17 @@ class DashboardController extends AppController {
                 var percentChange = 0.0;
                 var currentPrice = 0.0;
                 var previousPrice = 0.0;
-
+                // console.log("coinBalance[i].coin", coinBalance[i].coin)
                 var currentPriceFiat = await TempCoinMArketCapModel
                     .query()
-                    .select()
+                    .select("price")
                     .where('deleted_at', null)
                     .andWhere('coin', coinBalance[i].coin)
                     .andWhere("created_at", "<=", today)
                     .andWhere("created_at", ">=", yesterday)
                     .orderBy('id', 'DESC');
+
+                // console.log("currentPriceFiat", currentPriceFiat)
 
                 if (currentPriceFiat.length == 0) {
                     currentPrice = 0;
@@ -135,7 +137,21 @@ class DashboardController extends AppController {
                 portfolioData.push(portfolio_data);
             }
             var changeValue = user_data.diffrence_fiat - diffrenceValue;
+            changeValue = changeValue.toFixed(8)
             var totalFiat = user_data.total_value - total;
+            totalFiat = totalFiat.toFixed(8)
+            var userData = await UserModel
+                .query()
+                .first()
+                .select()
+                .where('id', user_id)
+                .andWhere('deleted_at', null)
+                .andWhere('is_active', true)
+                .patch({
+                    "diffrence_fiat": changeValue,
+                    "total_value": totalFiat
+                })
+                .orderBy('id', 'DESC');
             // resolve(portfolioData)
             var response = {
                 'portfolioData': portfolioData,
@@ -179,17 +195,20 @@ class DashboardController extends AppController {
                 "url": "Trade Function",
                 "type": "Entry"
             }, "Entered the function")
+
             var data = await ActivityModel
                 .query()
-                .select()
+                .select("quantity", "side", "created_at", "symbol", "fix_quantity")
                 .where("user_id", user_id)
                 .andWhere('is_market', false)
+                .andWhere("is_cancel", false)
                 .andWhere('deleted_at', null)
                 .orderBy('id', 'DESC');
 
-            data.map((value1, i) => {
-                value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
-            });
+            // data.map((value1, i) => {
+            //     value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
+            //     delete value1.fix_quantity;
+            // });
 
             await logger.info({
                 "module": "Activity Data",
