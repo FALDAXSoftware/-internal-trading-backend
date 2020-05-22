@@ -29,6 +29,7 @@ var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
+// var fetSocketInfo = require("../../helpers/tradding/get-socket-value");
 var QueueValue = require("./QueueController");
 
 class DashboardController extends AppController {
@@ -48,6 +49,8 @@ class DashboardController extends AppController {
                 "type": "Entry"
             }, "Entered the function")
             var total = 0;
+            // var data = await fetSocketInfo.getSocketValueData("LTC-BTC");
+            // console.log(data);
             var diffrenceValue = 0;
             var user_data = await UserModel
                 .query()

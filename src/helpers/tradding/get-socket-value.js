@@ -38,9 +38,10 @@ var getSocketValueData = async (pair) => {
                                                                 ORDER BY trade_history.id ASC
                                                                 LIMIT 1`)
     lastPriceValue = lastPriceValue.rows[0]
-
+    console.log("firstPriceValue", firstPriceValue)
+    console.log("lastPriceValue", lastPriceValue)
     var diffrence = firstPriceValue.fill_price - lastPriceValue.fill_price
-    var percentChange = (diffrence / lastPriceValue) * 100;
+    var percentChange = (diffrence / lastPriceValue.fill_price) * 100;
 
     if (isNaN(percentChange)) {
         percentChange = 0;
