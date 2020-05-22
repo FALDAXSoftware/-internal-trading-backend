@@ -15,15 +15,15 @@ var getSocketValueData = async (pair) => {
 
     var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
-                                                            WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%' 
+                                                            WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%'
                                                             AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
     priceValue = priceValue.rows[0]
 
-    var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin, coins.coin_icon
+    var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon
                                                                 FROM trade_history
                                                                 LEFT JOIN coins
                                                                 ON coins.coin = trade_history.settle_currency
-                                                                WHERE trade_history.deleted_at IS NULL AND trade_history.symbol LIKE '%${pair}%' 
+                                                                WHERE trade_history.deleted_at IS NULL AND trade_history.symbol LIKE '%${pair}%'
                                                                 AND trade_history.created_at <= '${now}' AND trade_history.created_at >= '${yesterday}'
                                                                 ORDER BY trade_history.id DESC
                                                                 LIMIT 1`)
@@ -58,7 +58,8 @@ var getSocketValueData = async (pair) => {
         "volume": priceValue.volume,
         "name": pair,
         "icon": firstPriceValue.coin_icon,
-        "base_currency": lastPriceValue.coin
+        "base_currency": lastPriceValue.coin,
+        "coin_name": firstPriceValue.coin_name
     }
 
     return (data);
