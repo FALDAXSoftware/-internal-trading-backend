@@ -562,12 +562,13 @@ class TradeController extends AppController {
         // if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
         //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         // }
+        const txnGroupId = Helper.generateTxGroup(user_id);
         var responseData = await module.exports.makeMarketBuyOrder(symbol,
           side,
           order_type,
           orderQuantity,
           user_id,
-          res, walletData.crypto.coin_id, walletData.currency.coin_id);
+          res, walletData.crypto.coin_id, walletData.currency.coin_id,txnGroupId);
 
         if (responseData.status > 1) {
           await logger.info({
@@ -618,7 +619,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, txnGroupId) {
     const checkUser = Helper.checkWhichUser(user_id);
     console.log("checkUser", JSON.stringify(checkUser))
     console.log(JSON.stringify({
@@ -716,7 +717,7 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = tradingFees.maker_fee
           trade_history_data.taker_fee = tradingFees.taker_fee
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-
+          trade_history_data.txn_group_id = txnGroupId;
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = tradeHistory;
           let remainigQuantity = availableQuantity - quantityValue;
@@ -774,7 +775,7 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = tradingFees.maker_fee
           trade_history_data.taker_fee = tradingFees.taker_fee
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-
+          trade_history_data.txn_group_id = txnGroupId;
           let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = TradeHistory;
           await sellDelete.deleteSellOrder(currentSellBookDetails.id);
@@ -793,7 +794,7 @@ class TradeController extends AppController {
             "type": "Success"
           }, "Recusrion " + requestData);
           // Again call same api
-          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id)
+          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id, txnGroupId)
         } else {
           await logger.info({
             "module": "Market Buy Execution",
@@ -1069,11 +1070,11 @@ class TradeController extends AppController {
     resultData.taker_fee = 0.0;
     console.log(JSON.stringify(resultData));
     console.log("sellBook.length", JSON.stringify(sellBook))
-
+    const txnGroupId = Helper.generateTxGroup(user_id);
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
-        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
+        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, txnGroupId);
         await logger.info({
           "module": "Limit Buy",
           "user_id": "user_" + user_id,
@@ -1115,9 +1116,10 @@ class TradeController extends AppController {
               if (userNotification != undefined) {
                 if (userNotification.email == true || userNotification.email == "true") {
                   if (user_data.email != undefined) {
+                    console.log("======Order placed");
                     var allData = {
                       template: "emails/general_mail.ejs",
-                      templateSlug: "trade_execute",
+                      templateSlug: "trade_place",
                       email: user_data.email,
                       user_detail: user_data,
                       formatData: {
@@ -1188,9 +1190,10 @@ class TradeController extends AppController {
             if (userNotification != undefined) {
               if (userNotification.email == true || userNotification.email == "true") {
                 if (user_data.email != undefined) {
+                  console.log("========Order placed");
                   var allData = {
                     template: "emails/general_mail.ejs",
-                    templateSlug: "trade_execute",
+                    templateSlug: "trade_place",
                     email: user_data.email,
                     user_detail: user_data,
                     formatData: {

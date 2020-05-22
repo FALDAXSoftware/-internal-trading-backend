@@ -16,7 +16,7 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
-var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null) => {
+var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, txnGroupId) => {
     try {
         var quantityValue = buyLimitOrderData.quantity;
         var userIds = [];
@@ -96,6 +96,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
                         }
+                        tradeHistory.txn_group_id = txnGroupId;
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                         tradeOrder = tradeHistory;
                         var remainigQuantity = availableQuantity - quantityValue;
@@ -119,6 +120,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                     if (userNotification != undefined) {
                                         if (userNotification.email == true || userNotification.email == "true") {
                                             if (user_data.email != undefined) {
+                                                console.log("++++Order executed from sigle book and that book has more quantity");
                                                 var allData = {
                                                     template: "emails/general_mail.ejs",
                                                     templateSlug: "trade_execute",
@@ -144,7 +146,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
                             return {
                                 status: 1,
-                                message: 'Order Success'
+                                message: 'Order Success',
+                                data: {
+                                    userIds: userIds,
+                                    orderData: tradeOrder
+                                }
                             }
                         } else {
                             await sellDelete.deleteSellOrder(sellBook[0].id);
@@ -164,6 +170,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                     if (userNotification != undefined) {
                                         if (userNotification.email == true || userNotification.email == "true") {
                                             if (user_data.email != undefined) {
+                                                console.log("++++Order executed from sigle book and removed the book");
                                                 var allData = {
                                                     template: "emails/general_mail.ejs",
                                                     templateSlug: "trade_execute",
@@ -199,6 +206,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     }
                 } else {
+                    console.log("=>If Order can be filled from different book");
                     console.log("INSIDE ELSE")
                     var remainigQuantity = buyLimitOrderData.quantity - sellBook[0].quantity;
                     remainigQuantity = parseFloat(remainigQuantity).toFixed(8);
@@ -262,7 +270,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
 
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
-
+                        tradeHistory.txn_group_id = txnGroupId;
                         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                         tradeOrder = tradeHistory;
                         await sellDelete.deleteSellOrder(sellBook[0].id);
@@ -281,6 +289,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             if (user_data != undefined) {
                                 if (userNotification != undefined) {
                                     if (userNotification.email == true || userNotification.email == "true") {
+                                        console.log("+++Order is filled in different book");
                                         if (user_data.email != undefined) {
                                             var allData = {
                                                 template: "emails/general_mail.ejs",
@@ -316,6 +325,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         console.log("resendDataLimit, resendData.settle_currency, resendData.currency, activityResult", resendDataLimit, resendData.settle_currency, resendData.currency, activityResult)
 
                         if (remainigQuantity > 0) {
+                            console.log("++++Order executing with more books");
                             var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res, crypto_coin_id, currency_coin_id);
                             return responseData;
                         }
@@ -370,6 +380,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             if (userNotification != undefined) {
                                 if (userNotification.email == true || userNotification.email == "true") {
                                     if (user_data.email != undefined) {
+                                        console.log("++++Order executed partially..");
                                         var allData = {
                                             template: "emails/general_mail.ejs",
                                             templateSlug: "trade_execute",
@@ -445,9 +456,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (userNotification != undefined) {
                             if (userNotification.email == true || userNotification.email == "true") {
                                 if (user_data.email != undefined) {
+                                    console.log("++++Order placed");
                                     var allData = {
                                         template: "emails/general_mail.ejs",
-                                        templateSlug: "trade_execute",
+                                        templateSlug: "trade_place",
                                         email: user_data.email,
                                         user_detail: user_data,
                                         formatData: {
