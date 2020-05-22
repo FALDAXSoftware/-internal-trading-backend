@@ -15,23 +15,23 @@ var getSocketValueData = async (pair) => {
 
     var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
-                                                            WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%' 
+                                                            WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%'
                                                             AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
     priceValue = priceValue.rows[0]
 
     var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin, coins.coin_icon
-                                                                FROM trade_history
-                                                                LEFT JOIN coins
-                                                                ON coins.coin = trade_history.settle_currency
-                                                                WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%' 
-                                                                AND created_at <= '${now}' AND created_at >= '${yesterday}'
-                                                                ORDER BY id DESC
-                                                                LIMIT 1`)
+                                                            FROM trade_history
+                                                            LEFT JOIN coins
+                                                            ON coins.coin = trade_history.settle_currency
+                                                            WHERE trade_history.deleted_at IS NULL AND trade_history.symbol LIKE '%${pair}%'
+                                                            AND trade_history.created_at <= '${now}' AND trade_history.created_at >= '${yesterday}'
+                                                            ORDER BY trade_history.id DESC
+                                                            LIMIT 1`)
     firstPriceValue = firstPriceValue.rows[0]
 
     var lastPriceValue = await TradeHistoryModel.knex().raw(`SELECT fill_price
                                                                 FROM trade_history
-                                                                WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%' 
+                                                                WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%'
                                                                 AND created_at <= '${now}' AND created_at >= '${yesterday}'
                                                                 ORDER BY id ASC
                                                                 LIMIT 1`)
