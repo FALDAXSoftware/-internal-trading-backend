@@ -262,21 +262,21 @@ class DashboardController extends AppController {
 
                 if (maxValue.bot_status) {
 
-                    var getCryptoValue = await CurrencyConversionModel
-                        .query()
-                        .first()
-                        .select()
-                        .where("deleted_at", null)
-                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-                        .orderBy("id", "DESC");
+                    // var getCryptoValue = await CurrencyConversionModel
+                    //     .query()
+                    //     .first()
+                    //     .select()
+                    //     .where("deleted_at", null)
+                    //     .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    //     .orderBy("id", "DESC");
 
-                    var usdValue = getCryptoValue.quote.USD.price
-                    var min = (maxValue.crypto_minimum) / (usdValue);
-                    var max = (maxValue.crypto_maximum) / (usdValue);
-                    for (var i = 0; i < bidValue.length; i++) {
-                        var highlightedNumber = Math.random() * (max - min) + min;
-                        bidValue[i][1] = highlightedNumber
-                    }
+                    // var usdValue = getCryptoValue.quote.USD.price
+                    // var min = (maxValue.crypto_minimum) / (usdValue);
+                    // var max = (maxValue.crypto_maximum) / (usdValue);
+                    // for (var i = 0; i < bidValue.length; i++) {
+                    //     var highlightedNumber = Math.random() * (max - min) + min;
+                    //     bidValue[i][1] = highlightedNumber
+                    // }
                     var now = new Date();
                     let requestedWallets = await CoinsModel
                         .query()
@@ -393,22 +393,22 @@ class DashboardController extends AppController {
                     .orderBy("id", 'DESC')
                 if (maxValue.bot_status) {
 
-                    var getCryptoValue = await CurrencyConversionModel
-                        .query()
-                        .first()
-                        .select()
-                        .where("deleted_at", null)
-                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-                        .orderBy("id", "DESC");
+                    // var getCryptoValue = await CurrencyConversionModel
+                    //     .query()
+                    //     .first()
+                    //     .select()
+                    //     .where("deleted_at", null)
+                    //     .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    //     .orderBy("id", "DESC");
 
-                    var usdValue = getCryptoValue.quote.USD.price
-                    var min = (maxValue.crypto_minimum) / (usdValue);
-                    var max = (maxValue.crypto_maximum) / (usdValue);
+                    // var usdValue = getCryptoValue.quote.USD.price
+                    // var min = (maxValue.crypto_minimum) / (usdValue);
+                    // var max = (maxValue.crypto_maximum) / (usdValue);
 
-                    for (var i = 0; i < askValue.length; i++) {
-                        var highlightedNumber = Math.random() * (max - min) + min;
-                        askValue[i][1] = highlightedNumber
-                    }
+                    // for (var i = 0; i < askValue.length; i++) {
+                    //     var highlightedNumber = Math.random() * (max - min) + min;
+                    //     askValue[i][1] = highlightedNumber
+                    // }
 
                     var now = new Date();
                     let requestedWallets = await CoinsModel
