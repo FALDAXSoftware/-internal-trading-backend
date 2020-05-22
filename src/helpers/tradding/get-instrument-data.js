@@ -35,7 +35,7 @@ var getInstrumentData = async () => {
         coinList[element.id] = element;
     }
 
-    var volumeSql = `SELECT sum(quantity) as quantity, symbol
+    var volumeSql = `SELECT sum(quantity * fill_price) as quantity, symbol
                         FROM trade_history 
                         WHERE deleted_at IS NULL
                         AND created_at >= '${yesterday}' AND created_at <= '${now}'

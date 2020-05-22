@@ -29,8 +29,8 @@ var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
-// var highLevelInfo = require("../../helpers/tradding/get-socket-value");
-// var ActivityModel
+// var fetSocketInfo = require("../../helpers/tradding/get-socket-value");
+var QueueValue = require("./QueueController");
 
 class DashboardController extends AppController {
 
@@ -49,6 +49,8 @@ class DashboardController extends AppController {
                 "type": "Entry"
             }, "Entered the function")
             var total = 0;
+            // var data = await fetSocketInfo.getSocketValueData("LTC-BTC");
+            // console.log(data);
             var diffrenceValue = 0;
             var user_data = await UserModel
                 .query()
@@ -242,7 +244,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=10`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -263,21 +265,21 @@ class DashboardController extends AppController {
 
                 if (maxValue.bot_status) {
 
-                    var getCryptoValue = await CurrencyConversionModel
-                        .query()
-                        .first()
-                        .select()
-                        .where("deleted_at", null)
-                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-                        .orderBy("id", "DESC");
+                    // var getCryptoValue = await CurrencyConversionModel
+                    //     .query()
+                    //     .first()
+                    //     .select()
+                    //     .where("deleted_at", null)
+                    //     .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    //     .orderBy("id", "DESC");
 
-                    var usdValue = getCryptoValue.quote.USD.price
-                    var min = (maxValue.crypto_minimum) / (usdValue);
-                    var max = (maxValue.crypto_maximum) / (usdValue);
-                    for (var i = 0; i < bidValue.length; i++) {
-                        var highlightedNumber = Math.random() * (max - min) + min;
-                        bidValue[i][1] = highlightedNumber
-                    }
+                    // var usdValue = getCryptoValue.quote.USD.price
+                    // var min = (maxValue.crypto_minimum) / (usdValue);
+                    // var max = (maxValue.crypto_maximum) / (usdValue);
+                    // for (var i = 0; i < bidValue.length; i++) {
+                    //     var highlightedNumber = Math.random() * (max - min) + min;
+                    //     bidValue[i][1] = highlightedNumber
+                    // }
                     var now = new Date();
                     let requestedWallets = await CoinsModel
                         .query()
@@ -330,17 +332,33 @@ class DashboardController extends AppController {
                         buyLimitOrderData.added = true;
                         var flag = true;
                         // console.log("flag", flag)
-                        let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
-                            buyLimitOrderData.user_id,
-                            buyLimitOrderData.side,
-                            buyLimitOrderData.order_type,
-                            buyLimitOrderData.quantity,
-                            buyLimitOrderData.limit_price,
-                            null,
-                            flag,
-                            crypto_coin_id.id,
-                            currency_coin_id.id);
-                        await module.exports.sleep(1000);
+                        // let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
+                        //     buyLimitOrderData.user_id,
+                        //     buyLimitOrderData.side,
+                        //     buyLimitOrderData.order_type,
+                        //     buyLimitOrderData.quantity,
+                        //     buyLimitOrderData.limit_price,
+                        //     null,
+                        //     flag,
+                        //     crypto_coin_id.id,
+                        //     currency_coin_id.id);
+                        // await module.exports.sleep(1000);
+                        var queueName = process.env.QUEUE_NAME
+                        console.log("queueName", queueName)
+                        var queueData = {
+                            "symbol": pair_name,
+                            user_id: process.env.TRADEDESK_USER_ID,
+                            'side': 'Buy',
+                            'order_type': 'Limit',
+                            'orderQuantity': quantityValue,
+                            "limit_price": buyLimitOrderData.limit_price,
+                            res: null,
+                            flag: true,
+                            crypto: crypto_coin_id.id,
+                            currency: currency_coin_id.id
+                        }
+                        QueueValue.publishToQueue(queueName, queueData)
+
                         // }, i * 800)
                         // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                     }
@@ -359,7 +377,7 @@ class DashboardController extends AppController {
         try {
             let pair = pair_name.split("-").join("")
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=10`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -378,22 +396,22 @@ class DashboardController extends AppController {
                     .orderBy("id", 'DESC')
                 if (maxValue.bot_status) {
 
-                    var getCryptoValue = await CurrencyConversionModel
-                        .query()
-                        .first()
-                        .select()
-                        .where("deleted_at", null)
-                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-                        .orderBy("id", "DESC");
+                    // var getCryptoValue = await CurrencyConversionModel
+                    //     .query()
+                    //     .first()
+                    //     .select()
+                    //     .where("deleted_at", null)
+                    //     .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                    //     .orderBy("id", "DESC");
 
-                    var usdValue = getCryptoValue.quote.USD.price
-                    var min = (maxValue.crypto_minimum) / (usdValue);
-                    var max = (maxValue.crypto_maximum) / (usdValue);
+                    // var usdValue = getCryptoValue.quote.USD.price
+                    // var min = (maxValue.crypto_minimum) / (usdValue);
+                    // var max = (maxValue.crypto_maximum) / (usdValue);
 
-                    for (var i = 0; i < askValue.length; i++) {
-                        var highlightedNumber = Math.random() * (max - min) + min;
-                        askValue[i][1] = highlightedNumber
-                    }
+                    // for (var i = 0; i < askValue.length; i++) {
+                    //     var highlightedNumber = Math.random() * (max - min) + min;
+                    //     askValue[i][1] = highlightedNumber
+                    // }
 
                     var now = new Date();
                     let requestedWallets = await CoinsModel
@@ -447,18 +465,36 @@ class DashboardController extends AppController {
                         sellLimitOrderData.added = true;
                         // console.log("sellLimitOrderData", sellLimitOrderData)
 
-                        let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
-                            sellLimitOrderData.user_id,
-                            sellLimitOrderData.side,
-                            sellLimitOrderData.order_type,
-                            sellLimitOrderData.quantity,
-                            sellLimitOrderData.limit_price,
-                            null,
-                            true,
-                            crypto_coin_id.id,
-                            currency_coin_id.id);
+                        // let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
+                        //     sellLimitOrderData.user_id,
+                        //     sellLimitOrderData.side,
+                        //     sellLimitOrderData.order_type,
+                        //     sellLimitOrderData.quantity,
+                        //     sellLimitOrderData.limit_price,
+                        //     null,
+                        //     true,
+                        //     crypto_coin_id.id,
+                        //     currency_coin_id.id);
 
-                        await module.exports.sleep(1000);
+                        // await module.exports.sleep(1000);
+                        var queueName = process.env.QUEUE_NAME
+                        console.log("queueName", queueName)
+                        var queueData = {
+                            "symbol": pair_name,
+                            user_id: process.env.TRADEDESK_USER_ID,
+                            "crypto": crypto,
+                            currency: currency,
+                            'side': 'Sell',
+                            'order_type': 'Limit',
+                            'orderQuantity': quantityValue,
+                            "limit_price": sellLimitOrderData.limit_price,
+                            res: null,
+                            flag: true,
+                            crypto: crypto_coin_id.id,
+                            currency: currency_coin_id.id,
+                        }
+                        QueueValue.publishToQueue(queueName, queueData)
+
                         // }, i * 800)
                         // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                     }
@@ -497,7 +533,7 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
-            var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
+            var now = moment().utc().subtract(2, 'minutes').format("YYYY-MM-DD HH:mm:ss");
             var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
             let { crypto, currency } = await Currency.get_currencies(pair);
             var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
@@ -532,7 +568,7 @@ class DashboardController extends AppController {
 
     async deleteSellPendingOrder(pair) {
         try {
-            var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
+            var now = moment().utc().subtract(2, 'minutes').format("YYYY-MM-DD HH:mm:ss");
             var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
             let { crypto, currency } = await Currency.get_currencies(pair);
             var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
