@@ -530,7 +530,7 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
-            var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
+            var now = moment().utc().subtract(2, 'minutes').format("YYYY-MM-DD HH:mm:ss");
             var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
             let { crypto, currency } = await Currency.get_currencies(pair);
             var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
@@ -565,7 +565,7 @@ class DashboardController extends AppController {
 
     async deleteSellPendingOrder(pair) {
         try {
-            var now = moment().utc().subtract(30, 'seconds').format("YYYY-MM-DD HH:mm:ss");
+            var now = moment().utc().subtract(2, 'minutes').format("YYYY-MM-DD HH:mm:ss");
             var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
             let { crypto, currency } = await Currency.get_currencies(pair);
             var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
