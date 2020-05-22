@@ -341,6 +341,7 @@ class DashboardController extends AppController {
                         //     currency_coin_id.id);
                         // await module.exports.sleep(1000);
                         var queueName = process.env.QUEUE_NAME
+                        console.log("queueName", queueName)
                         var queueData = {
                             "symbol": pair_name,
                             user_id: process.env.TRADEDESK_USER_ID,
@@ -474,6 +475,7 @@ class DashboardController extends AppController {
 
                         // await module.exports.sleep(1000);
                         var queueName = process.env.QUEUE_NAME
+                        console.log("queueName", queueName)
                         var queueData = {
                             "symbol": pair_name,
                             user_id: process.env.TRADEDESK_USER_ID,
