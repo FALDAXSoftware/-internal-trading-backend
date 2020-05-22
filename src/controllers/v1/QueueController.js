@@ -3,12 +3,16 @@ let CONN_URL = process.env.QUEUE_URL;
 const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
 let ch = null;
 amqp.connect(CONN_URL, opt, (err, conn) => {
+    // console.log("conn", conn)
+    console.log("err", err)
     conn.createChannel(function (err, channel) {
         // ch.chequeQueue(queueName);
         channel.prefetch(10)
         ch = channel;
-        ch.consume(process.env.QUEUE_NAME, (msg) => {
+        console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
+        ch.consume(process.env.QUEUE_NAME, (msg, err) => {
             // console.log("mesages");
+            console.log(err)
             console.log("Message", msg.content.toString())
             var tradeData = require("./TradeController");
             var dataValue = JSON.parse(msg.content.toString());
@@ -74,17 +78,14 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
 
 var publishToQueue = async (queueName, data) => {
     try {
-        console.log(JSON.stringify(queueName))
-        console.log(JSON.stringify(data))
         var priorityValue = 1;
         if (data.order_type == "Limit" && data.flag == true) {
             // if(data.flag == f)
             priorityValue = null;
         }
-        console.log("priorityValue", priorityValue)
         ch.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), {
-            persistent: true,
-            priority: priorityValue
+            persistent: true
+            // priority: priorityValue
         });
     } catch (error) {
         console.log(error)
