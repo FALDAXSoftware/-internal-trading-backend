@@ -26,6 +26,7 @@ module.exports = {
 	"TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG": "users-completed-flag",
 	"TRADE_GET_USERS_ALL_TRADE_DATA": "users-all-trade-data",
 	"TRADE_USER_WALLET_BALANCE": "user-wallet-balance",
+	"TRADE_HIGH_LEVEL_INFO": 'symbol-high-level-info',
 	"TRADE_ALL_PENDING_ORDERS_EVENT": "all-pending-orders-data",
 	"USER_LOGOUT": "user-logout",
 

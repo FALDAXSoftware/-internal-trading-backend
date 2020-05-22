@@ -123,6 +123,12 @@ var getActivityData = async (user_id) => {
     return data;
 }
 
+var getHighInfo = async (pair) => {
+    let helper = require("../tradding/get-socket-value");
+    let data = await helper.getSocketValueData(pair);
+    return data;
+}
+
 module.exports = {
     getBuyBookData,
     getSellBookData,
@@ -140,5 +146,6 @@ module.exports = {
     getMarketValue,
     getUserFavouritesData,
     getPortfolioData,
-    getActivityData
+    getActivityData,
+    getHighInfo
 }

@@ -1,8 +1,6 @@
 /*
 Emit Socket
 */
-var BuyBookOrderHelper = require("../../helpers/buy/get-buy-book-order");
-var SellBookOrderHelper = require("../../helpers/sell/get-sell-book-order");
 var BuyBookOrderHelperSummary = require("../../helpers/buy/get-buy-book-order-summary");
 var SellBookOrderHelperSummary = require("../../helpers/sell/get-sell-book-order-summary");
 var TradeDetailsHelper = require("../../helpers/trade/get-trade-details");
@@ -11,6 +9,7 @@ var ChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 var InstrumentHelper = require("../../helpers/tradding/get-instrument-data");
 var UserWalletBalanceHelper = require("../../helpers/tradding/get-user-wallet-balance");
 var AllPendingOrders = require("../../helpers/tradding/get-all-pending-orders");
+var highLevelInfoData = require("../../helpers/tradding/get-socket-value");
 var constants = require("../../config/constants");
 var emitTrades = async (crypto, currency, userIds) => {
     let buyBookDetails = await BuyBookOrderHelperSummary.getBuyBookOrderSummary(crypto, currency);
@@ -44,6 +43,9 @@ var emitTrades = async (crypto, currency, userIds) => {
     // sails
     //   .sockets
     //   .broadcast(inputs.currency, "instrumentUpdate", cryptoInstrumentUpdate);
+    let symbol = crypto + "-" + currency
+    let socketInfoData = await highLevelInfoData.getSocketValueData(symbol);
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_HIGH_LEVEL_INFO, socketInfoData)
 
     // Get only unique user ids
     var filteredUsers = userIds.filter(function (item, pos) {

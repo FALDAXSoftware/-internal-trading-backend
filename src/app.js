@@ -114,13 +114,13 @@ io.on('connection', async function (socket) {
     constants = require("./config/constants");
   socket.to("join").emit("test", { name: "le bhai" });
   var socket_headers = socket.request.headers;
-  console.log("socket_headers",socket_headers);
+  console.log("socket_headers", socket_headers);
   // if ((!socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == "") || (!socket_headers["x-api-key"] || socket_headers["x-api-key"] == undefined || socket_headers["x-api-key"] == "") ) {
   //   console.log("No auth");
   //   return Error("Not authorized")
   // }
   var authentication = await require("./config/authorization")(socket_headers);
-  console.log("authentication",authentication);
+  console.log("authentication", authentication);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
   if (authentication.status > constants.SUCCESS_CODE) {
     socket.emit(constants.USER_LOGOUT, true);
@@ -152,6 +152,7 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
+    socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol));
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
