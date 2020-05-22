@@ -20,24 +20,26 @@ var getSocketValueData = async (pair) => {
     priceValue = priceValue.rows[0]
 
     var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon
-                                                            FROM trade_history
-                                                            LEFT JOIN coins
-                                                            ON coins.coin = trade_history.settle_currency
-                                                            WHERE trade_history.deleted_at IS NULL AND trade_history.symbol LIKE '%${pair}%'
-                                                            AND trade_history.created_at <= '${now}' AND trade_history.created_at >= '${yesterday}'
-                                                            ORDER BY trade_history.id DESC
-                                                            LIMIT 1`)
+                                                                FROM trade_history
+                                                                LEFT JOIN coins
+                                                                ON coins.coin = trade_history.settle_currency
+                                                                WHERE trade_history.deleted_at IS NULL AND trade_history.symbol LIKE '%${pair}%'
+                                                                AND trade_history.created_at <= '${now}' AND trade_history.created_at >= '${yesterday}'
+                                                                ORDER BY trade_history.id DESC
+                                                                LIMIT 1`)
     firstPriceValue = firstPriceValue.rows[0]
 
-    var lastPriceValue = await TradeHistoryModel.knex().raw(`SELECT fill_price
+    var lastPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin, coins.coin_icon
                                                                 FROM trade_history
-                                                                WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%'
-                                                                AND created_at <= '${now}' AND created_at >= '${yesterday}'
-                                                                ORDER BY id ASC
+                                                                LEFT JOIN coins
+                                                                ON coins.coin = trade_history.currency
+                                                                WHERE trade_history.deleted_at IS NULL AND trade_history.symbol LIKE '%${pair}%' 
+                                                                AND trade_history.created_at <= '${now}' AND trade_history.created_at >= '${yesterday}'
+                                                                ORDER BY trade_history.id ASC
                                                                 LIMIT 1`)
     lastPriceValue = lastPriceValue.rows[0]
 
-    var diffrence = firstPriceValue - lastPriceValue
+    var diffrence = firstPriceValue.fill_price - lastPriceValue.fill_price
     var percentChange = (diffrence / lastPriceValue) * 100;
 
     if (isNaN(percentChange)) {
@@ -56,6 +58,7 @@ var getSocketValueData = async (pair) => {
         "volume": priceValue.volume,
         "name": pair,
         "icon": firstPriceValue.coin_icon,
+        "base_currency": lastPriceValue.coin,
         "coin_name": firstPriceValue.coin_name
     }
 
