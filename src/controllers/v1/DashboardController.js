@@ -29,8 +29,7 @@ var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
-// var highLevelInfo = require("../../helpers/tradding/get-socket-value");
-// var ActivityModel
+var QueueValue = require("./QueueController");
 
 class DashboardController extends AppController {
 
@@ -242,7 +241,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=10`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -330,17 +329,32 @@ class DashboardController extends AppController {
                         buyLimitOrderData.added = true;
                         var flag = true;
                         // console.log("flag", flag)
-                        let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
-                            buyLimitOrderData.user_id,
-                            buyLimitOrderData.side,
-                            buyLimitOrderData.order_type,
-                            buyLimitOrderData.quantity,
-                            buyLimitOrderData.limit_price,
-                            null,
-                            flag,
-                            crypto_coin_id.id,
-                            currency_coin_id.id);
-                        await module.exports.sleep(1000);
+                        // let responseData = await TradeController.limitBuyOrder(buyLimitOrderData.symbol,
+                        //     buyLimitOrderData.user_id,
+                        //     buyLimitOrderData.side,
+                        //     buyLimitOrderData.order_type,
+                        //     buyLimitOrderData.quantity,
+                        //     buyLimitOrderData.limit_price,
+                        //     null,
+                        //     flag,
+                        //     crypto_coin_id.id,
+                        //     currency_coin_id.id);
+                        // await module.exports.sleep(1000);
+                        var queueName = process.env.QUEUE_NAME
+                        var queueData = {
+                            "symbol": pair_name,
+                            user_id: process.env.TRADEDESK_USER_ID,
+                            'side': 'Buy',
+                            'order_type': 'Limit',
+                            'orderQuantity': quantityValue,
+                            "limit_price": buyLimitOrderData.limit_price,
+                            res: null,
+                            flag: true,
+                            crypto: crypto_coin_id.id,
+                            currency: currency_coin_id.id
+                        }
+                        QueueValue.publishToQueue(queueName, queueData)
+
                         // }, i * 800)
                         // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                     }
@@ -359,7 +373,7 @@ class DashboardController extends AppController {
         try {
             let pair = pair_name.split("-").join("")
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=10`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -447,18 +461,35 @@ class DashboardController extends AppController {
                         sellLimitOrderData.added = true;
                         // console.log("sellLimitOrderData", sellLimitOrderData)
 
-                        let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
-                            sellLimitOrderData.user_id,
-                            sellLimitOrderData.side,
-                            sellLimitOrderData.order_type,
-                            sellLimitOrderData.quantity,
-                            sellLimitOrderData.limit_price,
-                            null,
-                            true,
-                            crypto_coin_id.id,
-                            currency_coin_id.id);
+                        // let responseData = await TradeController.limitSellOrder(sellLimitOrderData.symbol,
+                        //     sellLimitOrderData.user_id,
+                        //     sellLimitOrderData.side,
+                        //     sellLimitOrderData.order_type,
+                        //     sellLimitOrderData.quantity,
+                        //     sellLimitOrderData.limit_price,
+                        //     null,
+                        //     true,
+                        //     crypto_coin_id.id,
+                        //     currency_coin_id.id);
 
-                        await module.exports.sleep(1000);
+                        // await module.exports.sleep(1000);
+                        var queueName = process.env.QUEUE_NAME
+                        var queueData = {
+                            "symbol": pair_name,
+                            user_id: process.env.TRADEDESK_USER_ID,
+                            "crypto": crypto,
+                            currency: currency,
+                            'side': 'Sell',
+                            'order_type': 'Limit',
+                            'orderQuantity': quantityValue,
+                            "limit_price": sellLimitOrderData.limit_price,
+                            res: null,
+                            flag: true,
+                            crypto: crypto_coin_id.id,
+                            currency: currency_coin_id.id,
+                        }
+                        QueueValue.publishToQueue(queueName, queueData)
+
                         // }, i * 800)
                         // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                     }
