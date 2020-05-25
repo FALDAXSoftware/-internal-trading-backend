@@ -4,7 +4,8 @@ var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var Currency = require("../../helpers/currency");
 
 var getSocketValueData = async (pair) => {
-    var pairData = [];
+    // var pairData = [];
+    console.log("pair", pair)
     var now = moment
         .utc()
         .format();
@@ -14,11 +15,23 @@ var getSocketValueData = async (pair) => {
         .format();
 
     let { crypto, currency } = await Currency.get_currencies(pair);
-
-    var fiatValueSql = await CurrencyConversionModel.knex().raw(`SELECT json(quote->'USD'->'price') as fiat_value FROM currency_conversion
-                            WHERE deleted_at IS NULL AND symbol LIKE '%${currency}%';`);
-    fiatValueSql = fiatValueSql.rows[0];
-    // console.log("fiatValueSql", fiatValueSql)
+    var fiatValueSqlData = await CurrencyConversionModel.knex().raw(`SELECT json(quote->'USD'->'price') as fiat_value, coins.coin_name, coins.coin_icon, coins.coin
+                                                                        FROM currency_conversion
+                                                                        LEFT JOIN coins
+                                                                        ON coins.coin = currency_conversion.symbol
+                                                                        WHERE currency_conversion.deleted_at IS NULL AND (currency_conversion.symbol = '${currency}' OR currency_conversion.symbol = '${crypto}');`);
+    fiatValueSqlData = fiatValueSqlData.rows;
+    var fiatValue = 0.0;
+    var coin_name = ''
+    var coin_icon = ''
+    for (var i = 0; i < fiatValueSqlData.length; i++) {
+        if (fiatValueSqlData[i].coin == currency) {
+            fiatValue = fiatValueSqlData[i].fiat_value;
+        } else if (fiatValueSqlData[i].coin == crypto) {
+            coin_name = fiatValueSqlData[i].coin_name;
+            coin_icon = fiatValueSqlData[i].coin_icon;
+        }
+    }
 
     var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
@@ -45,8 +58,11 @@ var getSocketValueData = async (pair) => {
                                                                 ORDER BY trade_history.id ASC
                                                                 LIMIT 1`)
     lastPriceValue = lastPriceValue.rows[0]
-    var diffrence = firstPriceValue.fill_price - lastPriceValue.fill_price
-    var percentChange = (diffrence / lastPriceValue.fill_price) * 100;
+
+    var current_price = (firstPriceValue == undefined) ? 0.0 : (firstPriceValue.fill_price)
+    var previous_price = (lastPriceValue == undefined) ? 0.0 : (lastPriceValue.fill_price)
+    var diffrence = (current_price) - previous_price
+    var percentChange = (diffrence / previous_price) * 100;
 
     if (isNaN(percentChange)) {
         percentChange = 0;
@@ -57,17 +73,17 @@ var getSocketValueData = async (pair) => {
     }
 
     var data = {
-        "last_price": firstPriceValue.fill_price,
+        "last_price": current_price,
         "change": percentChange,
-        "high": priceValue.high,
-        "low": priceValue.low,
-        "volume": priceValue.volume,
+        "high": (priceValue.high == null) ? (0.0) : (priceValue.high),
+        "low": (priceValue.low == null) ? (0.0) : (priceValue.low),
+        "volume": (priceValue.volume == null) ? (0.0) : (priceValue.volume),
         "name": pair,
-        "icon": firstPriceValue.coin_icon,
-        "base_currency": lastPriceValue.coin,
-        "coin_name": firstPriceValue.coin_name,
-        "side": firstPriceValue.side,
-        "fiatValue": parseFloat(fiatValueSql.fiat_value * firstPriceValue.fill_price)
+        "icon": coin_icon,
+        "base_currency": previous_price,
+        "coin_name": coin_name,
+        "side": (firstPriceValue == undefined) ? ("Buy") : (firstPriceValue.side),
+        "fiatValue": parseFloat(fiatValue * current_price)
     }
 
     return (data);
