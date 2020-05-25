@@ -1,7 +1,7 @@
 var moment = require('moment');
-var PairsModel = require("../../models/Pairs");
-var CoinsModel = require("../../models/Coins");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var CurrencyConversionModel = require("../../models/CurrencyConversion");
+var Currency = require("../../helpers/currency");
 
 var getSocketValueData = async (pair) => {
     var pairData = [];
@@ -13,13 +13,20 @@ var getSocketValueData = async (pair) => {
         .subtract(1, 'days')
         .format();
 
+    let { crypto, currency } = await Currency.get_currencies(pair);
+
+    var fiatValueSql = await CurrencyConversionModel.knex().raw(`SELECT json(quote->'USD'->'price') as fiat_value FROM currency_conversion
+                            WHERE deleted_at IS NULL AND symbol LIKE '%${currency}%';`);
+    fiatValueSql = fiatValueSql.rows[0];
+    // console.log("fiatValueSql", fiatValueSql)
+
     var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
                                                             WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%'
                                                             AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
     priceValue = priceValue.rows[0]
 
-    var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon
+    var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon, trade_history.side
                                                                 FROM trade_history
                                                                 LEFT JOIN coins
                                                                 ON coins.coin = trade_history.settle_currency
@@ -38,8 +45,6 @@ var getSocketValueData = async (pair) => {
                                                                 ORDER BY trade_history.id ASC
                                                                 LIMIT 1`)
     lastPriceValue = lastPriceValue.rows[0]
-    console.log("firstPriceValue", firstPriceValue)
-    console.log("lastPriceValue", lastPriceValue)
     var diffrence = firstPriceValue.fill_price - lastPriceValue.fill_price
     var percentChange = (diffrence / lastPriceValue.fill_price) * 100;
 
@@ -60,7 +65,9 @@ var getSocketValueData = async (pair) => {
         "name": pair,
         "icon": firstPriceValue.coin_icon,
         "base_currency": lastPriceValue.coin,
-        "coin_name": firstPriceValue.coin_name
+        "coin_name": firstPriceValue.coin_name,
+        "side": firstPriceValue.side,
+        "fiatValue": parseFloat(fiatValueSql.fiat_value * firstPriceValue.fill_price)
     }
 
     return (data);
