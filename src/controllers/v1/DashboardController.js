@@ -390,6 +390,7 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
 
                 var askValue = body.asks;
+                console.log("askValue", askValue.length);
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -411,6 +412,10 @@ class DashboardController extends AppController {
                     var usdValue = getCryptoValue.quote.USD.price
                     var min = (maxValue.crypto_minimum) / (usdValue);
                     var max = (maxValue.crypto_maximum) / (usdValue);
+                    console.log("min", min);
+                    console.log("max", max);
+                    console.log("askValue.length", askValue.length)
+                    console.log("pair", pair)
 
                     for (var i = 0; i < askValue.length; i++) {
                         if (askValue[i][1] > max) {
@@ -443,6 +448,7 @@ class DashboardController extends AppController {
                     }
 
                     for (var i = 0; i < askValue.length; i++) {
+                        console.log("askValue", askValue[i])
                         // setTimeout(async () => {
                         var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                         var priceValue = parseFloat(askValue[i][0]).toFixed(8);
