@@ -44,7 +44,7 @@ var SendEmail = async (res, requestedData) => {
   var format_data = requestedData.formatData;
 
   let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
-
+  user_language = 'ja';
   let template = await EmailTemplate.getSingleData({
     slug: requestedData.templateSlug
   });
@@ -129,12 +129,25 @@ var checkWhichUser = function (user_id) {
   return check;
 }
 
+// Generate Trasnsaction group
+var generateTxGroup = function(user_id){
+  var result = '';
+  let length = 48;
+  let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+  var current_date = new Date();
+  current_date = current_date.getTime();
+  return values = ("txg_"+user_id+current_date+result).toLocaleLowerCase();
+
+}
+
 module.exports = {
   jsonFormat,
   randomString,
   SendEmail,
   formatEmail,
   getUserId,
-  checkWhichUser
+  checkWhichUser,
+  generateTxGroup,
 }
 
