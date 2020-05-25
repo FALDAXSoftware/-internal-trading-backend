@@ -448,6 +448,7 @@ class DashboardController extends AppController {
                     }
 
                     for (var i = 0; i < askValue.length; i++) {
+                        console.log("askValue", askValue[i])
                         // setTimeout(async () => {
                         var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                         var priceValue = parseFloat(askValue[i][0]).toFixed(8);
