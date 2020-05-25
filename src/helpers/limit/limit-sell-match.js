@@ -15,7 +15,7 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
-var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, txnGroupId = null) => {
+var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null) => {
     try {
         var quantityValue = sellLimitOrderData.quantity;
         var userIds = [];
@@ -78,7 +78,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     trade_history_data.maker_fee = tradingFees.maker_fee;
                     trade_history_data.taker_fee = tradingFees.taker_fee;
                     trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-                    trade_history_data.txn_group_id = txnGroupId;
+                    // trade_history_data.txn_group_id = txnGroupId;
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
@@ -245,7 +245,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     trade_history_data.maker_fee = tradingFees.maker_fee;
                     trade_history_data.taker_fee = tradingFees.taker_fee;
                     trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-                    trade_history_data.txn_group_id = txnGroupId;
+                    // trade_history_data.txn_group_id = txnGroupId;
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
                     console.log(JSON.stringify(trade_history_data))
