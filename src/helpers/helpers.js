@@ -44,7 +44,6 @@ var SendEmail = async (res, requestedData) => {
   var format_data = requestedData.formatData;
 
   let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
-  user_language = 'ja';
   let template = await EmailTemplate.getSingleData({
     slug: requestedData.templateSlug
   });
