@@ -135,23 +135,23 @@ cron.schedule('* * * * *', async (req, res, next) => {
     await dashBoardUpdate.deleteSellPendingOrder("XRP-ETH");
 })
 
-//  Cron for BCH-ETH
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("BCH-ETH");
-});
+// //  Cron for BCH-ETH
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("BCH-ETH");
+// });
 
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("BCH-ETH");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("BCH-ETH");
+// });
 
-cron.schedule('* * * * *', async (req, res, next) => {
-    console.log("INISDER FGJ");
-    await dashBoardUpdate.deletePendingOrder("BCH-ETH");
-})
+// cron.schedule('* * * * *', async (req, res, next) => {
+//     console.log("INISDER FGJ");
+//     await dashBoardUpdate.deletePendingOrder("BCH-ETH");
+// })
 
-cron.schedule('* * * * *', async (req, res, next) => {
-    console.log("INISDER FGJ");
-    await dashBoardUpdate.deleteSellPendingOrder("BCH-ETH");
-})
+// cron.schedule('* * * * *', async (req, res, next) => {
+//     console.log("INISDER FGJ");
+//     await dashBoardUpdate.deleteSellPendingOrder("BCH-ETH");
+// })
