@@ -1,0 +1,282 @@
+{
+	"server error": {
+		"page": "Internal server error",
+		"context": "Error occured",
+		"message_type": "error",
+		"message_english": "An unexpected error occurred. Please try again or contact support if the problem persists.",
+		"message": "An unexpected error occurred. Please try again or contact support if the problem persists."
+	},
+	"Order Success": {
+		"page": "Trade success",
+		"context": "Order has been fulfilled successfully",
+		"message_type": "success",
+		"message_english": "Order has been fulfilled successfully.",
+		"message": "Order has been fulfilled successfully."
+	},
+	"Create Currency Wallet": {
+		"page": "JST order create, Internal tradding - Market sell order, Internal tradding - Market buy order, Internal tradding - Limit sell order, Internal tradding - Limit buy order, Internal tradding - Stop limit sell order, Internal tradding - Stop limit buy order",
+		"context": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message_type": "error",
+		"message_english": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again."
+	},
+	"Coin not found": {
+		"page": "Asset not found",
+		"context": "Asset Not Found",
+		"message_type": "error",
+		"message_english": "Asset could not be found.",
+		"message": "Asset could not be found."
+	},
+	"Insufficient balance to place order": {
+		"page": "Insufficent balance",
+		"context": "Insufficient balance to place order",
+		"message_type": "error",
+		"message_english": "Insufficient balance to place order.",
+		"message": "Insufficient balance to place order."
+	},
+	"Order Book Empty": {
+		"page": "Internal tradding",
+		"context": "When Buy\/Sell any asset, if no books available",
+		"message_type": "error",
+		"message_english": "Order book is empty. Please try after some time.",
+		"message": "Order book is empty. Please try again after some time."
+	},
+	"Create Crypto Wallet": {
+		"page": "JST order create, Internal tradding - Market sell order, Internal tradding - Market buy order, Internal tradding - Limit sell order, Internal tradding - Limit buy order, Internal tradding - Stop limit sell order, Internal tradding - Stop limit buy order",
+		"context": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message_type": "error",
+		"message_english": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again.",
+		"message": "The transaction was not completed because a wallet address needs to be generated first. Please navigate to your wallet to generate an address and try again."
+	},
+	"Order Palce Success": {
+		"page": "Trade place",
+		"context": "Order has been placed successfully",
+		"message_type": "success",
+		"message_english": "Order has been placed successfully.",
+		"message": "Order has been placed successfully."
+	},
+	"Invalid Quantity": {
+		"page": "Invalid quantity",
+		"context": "Invalid Order Quantity",
+		"message_type": "error",
+		"message_english": "Order Quantity should be greated than 0.",
+		"message": "Order Quantity should be greater than 0."
+	},
+	"Order Partially Fulfilled and Added to Buy Book": {
+		"page": "Order Partially fulfilled and added to buy book",
+		"context": "Order Partially fulfilled and added to buy book",
+		"message_type": "success",
+		"message_english": "Order Partially fulfilled and added to buy book",
+		"message": "Order Partially fulfilled and added to buy book"
+	},
+	"Order Partially Fulfilled and Added to Sell Book": {
+		"page": "Order Partially fulfilled and added to Sell book",
+		"context": "Order Partially fulfilled and added to Sell book",
+		"message_type": "success",
+		"message_english": "Order Partially fulfilled and added to Sell book",
+		"message": "Order Partially fulfilled and added to Sell book"
+	},
+	"panic button enabled": {
+		"page": "JST order create, Simplex payment, Withdraw assets",
+		"context": "As Panic button in enable you are not allowed to trade for 24 hours.",
+		"message_type": "error",
+		"message_english": "As Panic button in enable you are not allowed to trade for 24 hours.",
+		"message": "As Panic button in enable you are not allowed to trade for 24 hours."
+	},
+	"You are not allowed to trade in this regoin as your state is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as your state is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as your state is illegal",
+		"message": "You are not allowed to trade in this region as your state is illegal"
+	},
+	"You are not allowed to trade in this regoin as country is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as country is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as country is illegal",
+		"message": "You are not allowed to trade in this region as country is illegal"
+	},
+	"You are not allowed to trade in this regoin": {
+		"page": "KYC needed",
+		"context": "You are not allowed to trade in this regoin",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this region.",
+		"message": "You are not allowed to trade in this region."
+	},
+	"You need to complete your KYC to trade in FALDAX": {
+		"page": "KYC needed",
+		"context": "You need to complete your KYC to trade in FALDAX",
+		"message_type": "error",
+		"message_english": "You need to complete your ID verification to trade in FALDAX.",
+		"message": "You need to complete your ID verification to trade in FALDAX."
+	},
+	"TOKEN_EXPIRED": {
+		"page": "Internal Tradding",
+		"context": "When token is expired",
+		"message_type": "error",
+		"message_english": "Token is expired",
+		"message": "Token is expired"
+	},
+	"UNAUTHORIZED_ACCESS": {
+		"page": "Internal Tradding",
+		"context": "When no authroized",
+		"message_type": "error",
+		"message_english": "Authentication failed",
+		"message": "Authentication failed"
+	},
+	"pair already exist": {
+		"page": "Internal Tradding",
+		"context": "When Pair already exist",
+		"message_type": "error",
+		"message_english": "Favourites Pair already exist",
+		"message": "Favorites Pair already exist"
+	},
+	"pair added success": {
+		"page": "Internal Tradding",
+		"context": "When Pair added Success",
+		"message_type": "error",
+		"message_english": "Favourites pair added successfully.",
+		"message": "Favorites pair added successfully."
+	},
+	"No Buy Data Found": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "No Buy Order has been found.",
+		"message": "No Buy Order has been found."
+	},
+	"No Sell Data Found": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "No Sell Order has been found.",
+		"message": "No Sell Order has been found."
+	},
+	"No Pending Data Found": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "No Stop Order has been found.",
+		"message": "No Stop Order has been found."
+	},
+	"Order Cancelled": {
+		"page": "Internal Tradding",
+		"context": "During time of order cancellation",
+		"message_type": "error",
+		"message_english": "Order has been cancelled successfully.",
+		"message": "Order has been cancelled successfully."
+	},
+	"activity data": {
+		"page": "Internal Tradding",
+		"context": "During time of activity fetch",
+		"message_type": "error",
+		"message_english": "Activity data has been fetched successfully.",
+		"message": "Activity data has been fetched successfully."
+	},
+	"portfolio data": {
+		"page": "Internal Tradding",
+		"context": "During time of portfolio fetch",
+		"message_type": "error",
+		"message_english": "Portfolio data has been fetched successfully.",
+		"message": "Portfolio data has been fetched successfully."
+	},
+	"Currency and Crypto should not be same": {
+		"page": "Internal Tradding",
+		"context": "During time of instrument data fech",
+		"message_type": "error",
+		"message_english": "Crypto and Currency should not be same.",
+		"message": "Crypto and Currency should not be same."
+	},
+	"pair details value": {
+		"page": "Trade Desk",
+		"context": "During time of pairs getting",
+		"message_type": "error",
+		"message_english": "Pairs value has been retrieved successfully",
+		"message": "Pairs value has been retrieved successfully"
+	},
+	"no pair details value": {
+		"page": "Trade Desk",
+		"context": "During time of pairs updation and not found",
+		"message_type": "error",
+		"message_english": "No Pairs has been found",
+		"message": "No Pairs has been found"
+	},
+	"pair value update success": {
+		"page": "Trade Desk",
+		"context": "During time of pairs updation",
+		"message_type": "error",
+		"message_english": "Pair Value has been updated successfully.",
+		"message": "Pair Value has been updated successfully."
+	},
+	"spread retrieve success": {
+		"page": "Trade Desk",
+		"context": "Spread Value success",
+		"message_type": "error",
+		"message_english": "Spread Value has been retrieved successfully.",
+		"message": "Spread Value has been retrieved successfully."
+	},
+	"trade desk user wallet success": {
+		"page": "Trade Desk",
+		"context": "Trade Desk Wallet Success",
+		"message_type": "error",
+		"message_english": "Trade Desk Wallet has been retrieved successfully.",
+		"message": "Trade Desk Wallet has been retrieved successfully."
+	},
+	"Api key is missing": {
+		"page": "On each Authernicated routes",
+		"context": "When api key is not sent",
+		"message_type": "error",
+		"message_english": "Missing API key.",
+		"message": "Missing API key."
+	},
+	"Api key is invalid": {
+		"page": "On each Authernicated routes",
+		"context": "When api key is invalid",
+		"message_type": "error",
+		"message_english": "API key is invalid.",
+		"message": "API key is invalid."
+	},
+	"Your KYC is under process. Please wait until KYC is approved": {
+		"page": "When user submit kyc",
+		"context": "Your KYC is under process. Please wait until KYC is approved",
+		"message_type": "success",
+		"message_english": "Your KYC is under process. Please wait until KYC is approved",
+		"message": "Your KYC is under process. Please wait until KYC is approved"
+	},
+	"You are allowed to trade": {
+		"page": "When trade is allowed in user's region",
+		"context": "You are allowed to trade",
+		"message_type": "success",
+		"message_english": "You are allowed to trade",
+		"message": "You are allowed to trade"
+	},
+	"You are not allowed to trade in this regoin as your country is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as your country is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as your country is illegal",
+		"message": "You are not allowed to trade in this region as your country is illegal"
+	},
+	"instrument data": {
+		"page": "Trade Page",
+		"context": "intrument data fetch",
+		"message_type": "error",
+		"message_english": "Instrument Data has been retrieved successfully.",
+		"message": "Instrument Data has been retrieved successfully."
+	},
+	"depth data": {
+		"page": "Trade Page",
+		"context": "Depth Chart data fetch",
+		"message_type": "error",
+		"message_english": "Depth Chart Data has been retrieved successfully.",
+		"message": "Depth Chart Data has been retrieved successfully."
+	},
+	"Trade retrieve success": {
+		"page": "Trade data",
+		"context": "Trade data has been retrieved successfully.",
+		"message_type": "success",
+		"message_english": "Trade data has been retrieved successfully.",
+		"message": "Trade data has been retrieved successfully."
+	}
+}
