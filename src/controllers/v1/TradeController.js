@@ -603,7 +603,7 @@ class TradeController extends AppController {
         // if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
         //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         // }
-        const txnGroupId = Helper.generateTxGroup(user_id);
+        var txnGroupId = Helper.generateTxGroup(user_id);
         var responseData = await module.exports.makeMarketBuyOrder(symbol,
           side,
           order_type,
@@ -1072,7 +1072,7 @@ class TradeController extends AppController {
         }, i18n.__("Create Crypto Wallet").message)
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
-      const txnGroupId = Helper.generateTxGroup(user_id);
+      var txnGroupId = Helper.generateTxGroup(user_id);
       let responseData = await module.exports.limitBuyOrder(symbol,
         user_id,
         side,
@@ -1267,7 +1267,7 @@ class TradeController extends AppController {
     resultData.taker_fee = 0.0;
     console.log(JSON.stringify(resultData));
     console.log("sellBook.length", JSON.stringify(sellBook))
-    const txnGroupId = Helper.generateTxGroup(user_id);
+    var txnGroupId = Helper.generateTxGroup(user_id);
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
@@ -1534,7 +1534,7 @@ class TradeController extends AppController {
         }, i18n.__("Insufficient balance to place order").message)
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
-      const txnGroupId = Helper.generateTxGroup(user_id);
+      var txnGroupId = Helper.generateTxGroup(user_id);
       let responseData = await module.exports.limitSellOrder(symbol,
         user_id,
         side,
