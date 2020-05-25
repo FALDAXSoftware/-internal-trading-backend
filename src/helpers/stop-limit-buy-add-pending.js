@@ -73,11 +73,17 @@ var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_
                         if (user_data.email != undefined) {
                             var allData = {
                                 template: "emails/general_mail.ejs",
-                                templateSlug: "trade_execute",
+                                templateSlug: "trade_stoplimit_pending",
                                 email: user_data.email,
                                 user_detail: user_data,
                                 formatData: {
-                                    recipientName: user_data.first_name
+                                    recipientName: user_data.first_name,
+                                    side: side,
+                                    pair: symbol,
+                                    order_type: order_type,
+                                    quantity: orderQuantity,
+                                    price: limit_price,
+                                    stop_price: stop_price,
                                 }
                             }
                             await Helper.SendEmail(res, allData)
