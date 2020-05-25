@@ -26,7 +26,8 @@ var stopLimitBuy = async (now, pending_order_book) => {
         }
     }
     console.log("lastPrice", lastPrice);
-    console.log("order.stop_price", order.stop_price)
+    console.log("order.stop_price", order.stop_price);
+    console.log("lastPrice >= order.stop_price", lastPrice >= order.stop_price)
     if (lastPrice >= order.stop_price) {
         var buyMatchResponse = await LimitBuyMatch.limitData(order, order.settle_currency, order.currency, getActivityDetails, null, crypto_coin_id, currency_coin_id);
         if (buyMatchResponse) {
