@@ -1,14 +1,13 @@
 /* Used to store CronJobs  */
 var cron = require('node-cron');
-// var simplexController = require('../controllers/v1/SimplexController');
 var cronData = require("../controllers/v1/TradeController");
 var dashBoardUpdate = require("../controllers/v1/DashboardController");
 
-// On Every Minute
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await cronData.executeStopLimit();
-});
+// // On Every Minute
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await cronData.executeStopLimit();
+// });
 
 // Cron for LTC-BTC
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
