@@ -41,7 +41,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             }
         }
         if (sellBook && sellBook.length > 0) {
-            if ((sellBook[0].price <= buyLimitOrderData.limit_price) || (sellBook[0].price <= buyLimitOrderData.stop_price)) {
+            if ((buyLimitOrderData.order_type == "Limit") ? (sellBook[0].price <= buyLimitOrderData.limit_price) : (sellBook[0].price <= buyLimitOrderData.stop_price && sellBook[0].price <= buyLimitOrderData.limit_price)) {
                 console.log("INSIDE IF")
                 if (sellBook[0].quantity >= buyLimitOrderData.quantity) {
                     console.log("INSIDE SECOND IF")
