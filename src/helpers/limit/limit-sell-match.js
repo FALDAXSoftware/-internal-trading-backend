@@ -37,7 +37,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         }
         if (buyBook && buyBook.length > 0) {
-            if ((buyBook[0].price >= sellLimitOrderData.limit_price) || (buyBook[0].price <= sellLimitOrderData.stop_price)) {
+            if ((buyBook[0].order_type == "Limit") ? (buyBook[0].price >= sellLimitOrderData.limit_price) : (buyBook[0].price <= sellLimitOrderData.stop_price && buyBook[0].price >= sellLimitOrderData.limit_price)) {
                 if (buyBook[0].quantity >= sellLimitOrderData.quantity) {
                     var availableQuantity = buyBook[0].quantity;
                     sellLimitOrderData.fill_price = buyBook[0].price;
@@ -51,11 +51,6 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     }
                     trade_history_data.fix_quantity = quantityValue;
                     trade_history_data.quantity = sellLimitOrderData.quantity
-                    // if (sellLimitOrderData.quantity >= buyBook[0].quantity) {
-                    //     trade_history_data.fix_quantity = buyBook[0].quantity
-                    // } else {
-                    //     trade_history_data.fix_quantity = sellLimitOrderData.quantity
-                    // }
                     trade_history_data.maker_fee = 0.0;
                     trade_history_data.taker_fee = 0.0;
                     trade_history_data.requested_user_id = buyBook[0].user_id;
@@ -115,7 +110,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                 email: user_data.email,
                                                 user_detail: user_data,
                                                 formatData: {
-                                                    recipientName: user_data.first_name
+                                                    recipientName: user_data.first_name,
+                                                    side: tradeOrder.side,
+                                                    pair: tradeOrder.symbol,
+                                                    order_type: tradeOrder.order_type,
+                                                    quantity: tradeOrder.quantity,
+                                                    price: tradeOrder.limit_price,
                                                 }
                                             }
                                             // console.log(res)
@@ -161,7 +161,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                 email: user_data.email,
                                                 user_detail: user_data,
                                                 formatData: {
-                                                    recipientName: user_data.first_name
+                                                    recipientName: user_data.first_name,
+                                                    side: tradeOrder.side,
+                                                    pair: tradeOrder.symbol,
+                                                    order_type: tradeOrder.order_type,
+                                                    quantity: tradeOrder.quantity,
+                                                    price: tradeOrder.limit_price,
                                                 }
                                             }
                                             await Helper.SendEmail(res, allData)
@@ -272,7 +277,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                             email: user_data.email,
                                             user_detail: user_data,
                                             formatData: {
-                                                recipientName: user_data.first_name
+                                                recipientName: user_data.first_name,
+                                                side: tradeOrder.side,
+                                                pair: tradeOrder.symbol,
+                                                order_type: tradeOrder.order_type,
+                                                quantity: tradeOrder.quantity,
+                                                price: tradeOrder.limit_price,
                                             }
                                         }
                                         await Helper.SendEmail(res, allData)
@@ -343,11 +353,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                 if (user_data.email != undefined) {
                                     var allData = {
                                         template: "emails/general_mail.ejs",
-                                        templateSlug: "trade_execute",
+                                        templateSlug: "trade_partially_filled",
                                         email: user_data.email,
                                         user_detail: user_data,
                                         formatData: {
-                                            recipientName: user_data.first_name
+                                            recipientName: user_data.first_name,
+                                            pair: sellLimitOrderData.symbol
                                         }
                                     }
                                     await Helper.SendEmail(res, allData)
@@ -408,11 +419,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                             if (user_data.email != undefined) {
                                 var allData = {
                                     template: "emails/general_mail.ejs",
-                                    templateSlug: "trade_execute",
+                                    templateSlug: "trade_partially_filled",
                                     email: user_data.email,
                                     user_detail: user_data,
                                     formatData: {
-                                        recipientName: user_data.first_name
+                                        recipientName: user_data.first_name,
+                                        pair: sellLimitOrderData.symbol
                                     }
                                 }
                                 await Helper.SendEmail(res, allData)
