@@ -451,6 +451,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 if (buyAddedData.order_type == "StopLimit") {
                     buyAddedData.order_type = "Limit";
                     buyAddedData.price = buyLimitOrderData.limit_price;
+                    // buyAddedData.side = "Buy";
                 }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);
                 buyAddedData.is_partially_fulfilled = true;
