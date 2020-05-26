@@ -330,6 +330,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 sellLimitOrderData.is_filled = false;
                 sellAddedData.activity_id = activity.id;
                 sellLimitOrderData.added = true;
+                sellAddedData.side = "Sell"
                 if (sellAddedData.order_type == "StopLimit") {
                     sellAddedData.order_type = "Limit";
                     sellAddedData.price = sellLimitOrderData.limit_price
@@ -396,9 +397,10 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             sellLimitOrderData.is_filled = false;
             sellAddedData.activity_id = activity.id;
             sellLimitOrderData.added = true;
+            sellAddedData.side = "Sell"
             if (sellAddedData.order_type == "StopLimit") {
                 sellAddedData.order_type = "Limit";
-                sellAddedData.price = sellLimitOrderData.limit_price
+                sellAddedData.price = sellLimitOrderData.limit_price;
             }
             var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
             for (var i = 0; i < userIds.length; i++) {
