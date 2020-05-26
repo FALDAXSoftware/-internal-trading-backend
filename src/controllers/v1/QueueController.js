@@ -24,22 +24,22 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                         tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                             .catch((err) => {
                                 console.log(err)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                         break;
                     } else if (dataValue.side == "Sell") {
                         tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                             .catch((err) => {
                                 console.log(err)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                         break;
                     }
@@ -48,22 +48,22 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                         tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                             .catch((err) => {
                                 console.log(err)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                         break;
                     } else if (dataValue.side == "Sell") {
                         tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                             .catch((err) => {
                                 console.log(err)
-                                ch.ack(msg, true)
+                                ch.ack(msg)
                             })
                         break;
                     }
