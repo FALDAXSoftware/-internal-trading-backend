@@ -84,11 +84,13 @@ var publishToQueue = async (queueName, data) => {
             priorityValue = null;
         }
         ch.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), {
-            persistent: true
-            // priority: priorityValue
+            persistent: true,
+            priority: priorityValue
         });
+        return 0;
     } catch (error) {
         console.log(error)
+        return 1;
     }
 }
 
