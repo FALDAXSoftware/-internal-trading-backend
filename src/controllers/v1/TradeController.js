@@ -619,13 +619,13 @@ class TradeController extends AppController {
         // if (parseFloat(crypto_wallet_data.placed_balance) <= orderQuantity) {
         //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         // }
-        var txnGroupId = Helper.generateTxGroup(user_id);
+        // var txnGroupId = Helper.generateTxGroup(user_id);
         var responseData = await module.exports.makeMarketBuyOrder(symbol,
           side,
           order_type,
           orderQuantity,
           user_id,
-          res, walletData.crypto.coin_id, walletData.currency.coin_id, txnGroupId);
+          res, walletData.crypto.coin_id, walletData.currency.coin_id);
 
         if (responseData.status > 1) {
           await logger.info({
@@ -676,7 +676,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, txnGroupId) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id) {
     const checkUser = Helper.checkWhichUser(user_id);
     console.log("checkUser", JSON.stringify(checkUser))
     console.log(JSON.stringify({
@@ -848,7 +848,7 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = tradingFees.maker_fee
           trade_history_data.taker_fee = tradingFees.taker_fee
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-          trade_history_data.txn_group_id = txnGroupId;
+          // trade_history_data.txn_group_id = txnGroupId;
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = tradeHistory;
           let remainigQuantity = availableQuantity - quantityValue;
@@ -906,7 +906,7 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = tradingFees.maker_fee
           trade_history_data.taker_fee = tradingFees.taker_fee
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-          trade_history_data.txn_group_id = txnGroupId;
+          // trade_history_data.txn_group_id = txnGroupId;
           let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           tradeOrder = TradeHistory;
           await sellDelete.deleteSellOrder(currentSellBookDetails.id);
@@ -925,7 +925,7 @@ class TradeController extends AppController {
             "type": "Success"
           }, "Recusrion " + requestData);
           // Again call same api
-          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id, txnGroupId)
+          let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id)
         } else {
           await logger.info({
             "module": "Market Buy Execution",
@@ -1094,7 +1094,7 @@ class TradeController extends AppController {
         }, i18n.__("Create Crypto Wallet").message)
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
-      var txnGroupId = Helper.generateTxGroup(user_id);
+      // var txnGroupId = Helper.generateTxGroup(user_id);
       let responseData = await module.exports.limitBuyOrder(symbol,
         user_id,
         side,
@@ -1105,7 +1105,7 @@ class TradeController extends AppController {
         false,
         walletData.crypto.coin_id,
         walletData.currency.coin_id,
-        txnGroupId
+        // txnGroupId
       );
       console.log("responseData", responseData);
       if (responseData.status > 2) {
@@ -1155,7 +1155,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, txnGroupId = null) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1289,11 +1289,11 @@ class TradeController extends AppController {
     resultData.taker_fee = 0.0;
     console.log(JSON.stringify(resultData));
     console.log("sellBook.length", JSON.stringify(sellBook))
-    var txnGroupId = Helper.generateTxGroup(user_id);
+    // var txnGroupId = Helper.generateTxGroup(user_id);
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
-        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, txnGroupId);
+        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
         await logger.info({
           "module": "Limit Buy",
           "user_id": "user_" + user_id,
@@ -1563,7 +1563,7 @@ class TradeController extends AppController {
         }, i18n.__("Insufficient balance to place order").message)
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
-      var txnGroupId = Helper.generateTxGroup(user_id);
+      // var txnGroupId = Helper.generateTxGroup(user_id);
       let responseData = await module.exports.limitSellOrder(symbol,
         user_id,
         side,
@@ -1573,8 +1573,8 @@ class TradeController extends AppController {
         res,
         false,
         walletData.crypto.coin_id,
-        walletData.currency.coin_id,
-        txnGroupId
+        walletData.currency.coin_id
+        // txnGroupId
       );
 
       if (responseData.status > 2) {
@@ -1623,7 +1623,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Sell Order
-  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id, txnGroupId = null) {
+  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1763,7 +1763,7 @@ class TradeController extends AppController {
       var currentPrice = buyBook[0].price;
       if (priceValue <= currentPrice) {
         console.log("INSIDE IF")
-        var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, txnGroupId);
+        var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
         await logger.info({
           "module": "Limit Sell Execution",
           "user_id": "user_" + user_id,
