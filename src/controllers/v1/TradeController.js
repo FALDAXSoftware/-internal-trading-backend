@@ -54,6 +54,8 @@ var TradeStatusChecking = require("../../helpers/user-trade-checking");
 var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
 var RefferalHelper = require("../../helpers/get-refffered-amount");
 var fiatValueHelper = require("../../helpers/get-fiat-value");
+var sellOrderBookSummary = require("../../helpers/sell/get-sell-book-order-summary");
+var buyOrderBookSummary = require("../../helpers/buy/get-buy-book-order-summary");
 /**
  * Trade Controller : Used for live tradding
  */
@@ -83,6 +85,14 @@ class TradeController extends AppController {
       let userIds = [];
       userIds.push(user_id);
 
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
+
+      if (quantityTotal.total_quantity < orderQuantity) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+
       var userData = await Users
         .query()
         .select()
@@ -111,7 +121,6 @@ class TradeController extends AppController {
         }
 
         // Get Currency/Crypto each asset
-        let { crypto, currency } = await Currency.get_currencies(symbol);
 
         if (crypto == currency) {
           await logger.info({
@@ -538,6 +547,14 @@ class TradeController extends AppController {
       } = req.body;
       // var user_id = await Helper.getUserId(req.headers, res);
 
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
+
+      if (quantityTotal.total < orderQuantity) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+
       var userIds = [];
       userIds.push(user_id);
 
@@ -567,7 +584,6 @@ class TradeController extends AppController {
         }
 
         // Get Currency/Crypto each asset
-        let { crypto, currency } = await Currency.get_currencies(symbol);
 
         if (crypto == currency) {
           await logger.info({
@@ -1015,6 +1031,13 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
+    let { crypto, currency } = await Currency.get_currencies(symbol);
+    var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
+
+    if (quantityTotal.total < orderQuantity) {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    }
+
     var userData = await Users
       .query()
       .select()
@@ -1040,7 +1063,6 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
       }
 
-      let { crypto, currency } = await Currency.get_currencies(symbol);
 
       if (crypto == currency) {
         await logger.info({
@@ -1084,8 +1106,8 @@ class TradeController extends AppController {
         walletData.crypto.coin_id,
         walletData.currency.coin_id,
         // txnGroupId
-        );
-      console.log("responseData",responseData);
+      );
+      console.log("responseData", responseData);
       if (responseData.status > 2) {
         await logger.info({
           "module": "Limit Buy",
@@ -1133,7 +1155,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null ) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1466,6 +1488,14 @@ class TradeController extends AppController {
       limit_price
     } = req.body;
 
+    let { crypto, currency } = await Currency.get_currencies(symbol);
+
+    var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
+
+    if (quantityTotal.total_quantity < orderQuantity) {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    }
+
     var userData = await Users
       .query()
       .select()
@@ -1490,7 +1520,6 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
       }
 
-      let { crypto, currency } = await Currency.get_currencies(symbol);
 
       if (crypto == currency) {
         await logger.info({
