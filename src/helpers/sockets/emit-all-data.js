@@ -20,6 +20,7 @@ var getSellBookData = async (crypto, currency) => {
 var getBuyBookDataSummary = async (crypto, currency) => {
     let helper = require("../../helpers/buy/get-buy-book-order-summary");
     let data = await helper.getBuyBookOrderSummary(crypto, currency);
+    console.log("data", data);
     return data;
 
 }

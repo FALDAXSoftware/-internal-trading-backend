@@ -8,12 +8,13 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 100) => 
 
     if (month == 0) {
         var pendingSql = `SELECT pending_orders.* FROM (
-                                    SELECT id, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}'
+                                    SELECT id,is_stop_limit, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}'
                                     UNION ALL
-                                    SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM buy_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true'
+                                    SELECT id, is_stop_limit, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM buy_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true'
                                     UNION ALL
-                                    SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true'
+                                    SELECT id, is_stop_limit ,user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true'
                             ) as pending_orders ORDER BY created_at DESC LIMIT ${limit}`
+        console.log("pendingSql", pendingSql)
         tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
         tradePendingDetails = tradePendingDetails.rows;
     } else {
@@ -22,13 +23,13 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 100) => 
             .subtract(month, 'months')
             .format();
         var pendingSql = `SELECT pending_orders.* FROM (
-                                    SELECT id, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}' AND created_at >= '${yesterday}'
+                                    SELECT id,is_stop_limit, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}' AND created_at >= '${yesterday}'
                                     UNION ALL
-                                    SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM buy_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${yesterday}'
+                                    SELECT id, is_stop_limit,user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM buy_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${yesterday}'
                                     UNION ALL
-                                    SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${yesterday}'
+                                    SELECT id, is_stop_limit,user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${yesterday}'
                             ) as pending_orders WHERE created_at >= '${yesterday}' ORDER BY created_at DESC LIMIT ${limit}`
-
+        console.log("pendingSql", pendingSql)
         tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
         tradePendingDetails = tradePendingDetails.rows;
     }
