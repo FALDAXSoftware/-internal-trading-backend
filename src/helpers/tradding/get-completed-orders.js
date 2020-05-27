@@ -29,7 +29,8 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 100) =
             'currency',
             'user_id',
             "requested_user_id",
-            "placed_by"
+            "placed_by",
+            "is_stop_limit"
         )
         .where('deleted_at', null)
         .andWhere('settle_currency', crypto)
