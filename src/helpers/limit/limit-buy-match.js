@@ -368,6 +368,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     if (buyAddedData.order_type == "StopLimit") {
                         buyAddedData.order_type = "Limit";
                         buyAddedData.price = buyLimitOrderData.limit_price;
+                        buyAddedData.is_stop_limit = true;
                     }
                     delete buyAddedData.id;
                     delete buyAddedData.side;
@@ -451,6 +452,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 if (buyAddedData.order_type == "StopLimit") {
                     buyAddedData.order_type = "Limit";
                     buyAddedData.price = buyLimitOrderData.limit_price;
+                    buyAddedData.is_stop_limit = true;
                     // buyAddedData.side = "Buy";
                 }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);
