@@ -345,6 +345,9 @@ class TradeController extends AppController {
         trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
         trade_history_data.created_at = now;
         trade_history_data.fix_quantity = quantityValue;
+        if (currentBuyBookDetails.is_stop_limit == true) {
+          trade_history_data.is_stop_limit = true;
+        }
         // Update activity
         await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
         userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -408,6 +411,10 @@ class TradeController extends AppController {
 
         trade_history_data.fix_quantity = quantityValue;
         console.log("trade_history_data", JSON.stringify(trade_history_data))
+
+        if (currentBuyBookDetails.is_stop_limit == true) {
+          trade_history_data.is_stop_limit = true;
+        }
 
         let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
         userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -825,6 +832,9 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
+          if (currentSellBookDetails.is_stop_limit == true) {
+            trade_history_data.is_stop_limit = true
+          }
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -885,7 +895,10 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          console.log(JSON.stringify(trade_history_data))
+          console.log(JSON.stringify(trade_history_data));
+          if (currentSellBookDetails.is_stop_limit == true) {
+            trade_history_data.is_stop_limit = true
+          }
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
