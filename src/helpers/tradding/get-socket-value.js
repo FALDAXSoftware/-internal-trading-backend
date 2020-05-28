@@ -15,21 +15,28 @@ var getSocketValueData = async (pair) => {
         .format();
 
     let { crypto, currency } = await Currency.get_currencies(pair);
-    var fiatValueSqlData = await CurrencyConversionModel.knex().raw(`SELECT json(quote->'USD'->'price') as fiat_value, coins.coin_name, coins.coin_icon, coins.coin
+    var fiatValueSqlData = await CurrencyConversionModel.knex().raw(`SELECT json(quote->'USD'->'price') as fiat_value, coins.coin_name, 
+                                                                        coins.coin_icon, coins.coin, coins.coin_code
                                                                         FROM currency_conversion
                                                                         LEFT JOIN coins
                                                                         ON coins.coin = currency_conversion.symbol
                                                                         WHERE currency_conversion.deleted_at IS NULL AND (currency_conversion.symbol = '${currency}' OR currency_conversion.symbol = '${crypto}');`);
     fiatValueSqlData = fiatValueSqlData.rows;
     var fiatValue = 0.0;
-    var coin_name = ''
-    var coin_icon = ''
+    var coin_name = '';
+    var coin_icon = '';
+    var currency_coin_name = '';
+    var crypto_coin_code = '';
+    var currency_coin_code = '';
     for (var i = 0; i < fiatValueSqlData.length; i++) {
         if (fiatValueSqlData[i].coin == currency) {
             fiatValue = fiatValueSqlData[i].fiat_value;
+            currency_coin_name = fiatValueSqlData[i].coin_name;
+            currency_coin_code = fiatValueSqlData[i].coin_code;
         } else if (fiatValueSqlData[i].coin == crypto) {
             coin_name = fiatValueSqlData[i].coin_name;
             coin_icon = fiatValueSqlData[i].coin_icon;
+            crypto_coin_code = fiatValueSqlData[i].coin_code;
         }
     }
 
@@ -83,7 +90,10 @@ var getSocketValueData = async (pair) => {
         "base_currency": previous_price,
         "coin_name": coin_name,
         "side": (firstPriceValue == undefined) ? ("Buy") : (firstPriceValue.side),
-        "fiatValue": parseFloat(fiatValue * current_price)
+        "fiatValue": parseFloat(fiatValue * current_price),
+        "crypto_coin_code": crypto_coin_code,
+        "currency_coin_name": currency_coin_name,
+        "currency_coin_code": currency_coin_code
     }
 
     return (data);
