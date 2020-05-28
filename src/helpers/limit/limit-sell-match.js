@@ -73,7 +73,16 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         currency_coin_id
                     };
 
-                    var tradingFees = await TradingFees.getTraddingFees(request);
+                    if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT && buyBook[0].placed_by == process.env.TRADEDESK_BOT) {
+                        var tradingFees = {
+                            userFee: 0.0,
+                            requestedFee: 0.0,
+                            maker_fee: 0.0,
+                            taker_fee: 0.0
+                        }
+                    } else {
+                        var tradingFees = await TradingFees.getTraddingFees(request);
+                    }
                     trade_history_data.user_fee = tradingFees.userFee;
                     trade_history_data.requested_fee = tradingFees.requestedFee;
                     trade_history_data.user_coin = sellLimitOrderData.settle_currency;
@@ -243,7 +252,16 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         currency_coin_id
                     }
 
-                    var tradingFees = await TradingFees.getTraddingFees(request);
+                    if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT && buyBook[0].placed_by == process.env.TRADEDESK_BOT) {
+                        var tradingFees = {
+                            userFee: 0.0,
+                            requestedFee: 0.0,
+                            maker_fee: 0.0,
+                            taker_fee: 0.0
+                        }
+                    } else {
+                        var tradingFees = await TradingFees.getTraddingFees(request);
+                    }
 
                     trade_history_data.user_fee = (tradingFees.userFee)
                     trade_history_data.requested_fee = (tradingFees.requestedFee);

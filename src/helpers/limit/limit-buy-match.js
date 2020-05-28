@@ -86,7 +86,17 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             crypto_coin_id,
                             currency_coin_id
                         }
-                        var tradingFees = await TradingFees.getTraddingFees(request);
+
+                        if (sellBook[0].placed_by == process.env.TRADEDESK_BOT && buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
+                            var tradingFees = {
+                                userFee: 0.0,
+                                requestedFee: 0.0,
+                                maker_fee: 0.0,
+                                taker_fee: 0.0
+                            }
+                        } else {
+                            var tradingFees = await TradingFees.getTraddingFees(request);
+                        }
 
                         trade_history_data.user_fee = tradingFees.userFee;
                         trade_history_data.requested_fee = tradingFees.requestedFee;
@@ -277,7 +287,18 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             currency_coin_id
                         }
 
-                        var tradingFees = await TradingFees.getTraddingFees(request);
+
+                        if (sellBook[0].placed_by == process.env.TRADEDESK_BOT && buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
+                            var tradingFees = {
+                                userFee: 0.0,
+                                requestedFee: 0.0,
+                                maker_fee: 0.0,
+                                taker_fee: 0.0
+                            }
+                        } else {
+                            var tradingFees = await TradingFees.getTraddingFees(request);
+                        }
+
                         trade_history_data.user_fee = (tradingFees.userFee);
                         trade_history_data.requested_fee = (tradingFees.requestedFee);
                         trade_history_data.user_coin = crypto;

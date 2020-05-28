@@ -81,6 +81,7 @@ class TradeController extends AppController {
         side,
         order_type,
         orderQuantity,
+        manual_flag
         // user_id
       } = req.body;
       // get user id from header
@@ -181,7 +182,7 @@ class TradeController extends AppController {
         console.log(JSON.stringify(walletData))
 
         console.log("walletData.crypto.coin_id", JSON.stringify(walletData.crypto.coin_id))
-        let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id);
+        let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id, manual_flag);
         console.log("market_sell_order", JSON.stringify(market_sell_order))
 
         // await logger.info({
@@ -239,7 +240,7 @@ class TradeController extends AppController {
   }
 
   // Helper : Market Sell Order
-  async makeMarketSellOrder(res, alldata, crypto_coin_id, currency_coin_id) {
+  async makeMarketSellOrder(res, alldata, crypto_coin_id, currency_coin_id, manual_flag = false) {
     await logger.info({
       "module": "Market Sell Execution",
       "user_id": "user_" + alldata.user_id,
@@ -360,7 +361,8 @@ class TradeController extends AppController {
           quantity: quantityValue,
           fill_price: priceValue,
           crypto_coin_id,
-          currency_coin_id
+          currency_coin_id,
+          manual_flag: manual_flag
         }
 
         var tradingFees = await TradingFees.getTraddingFees(request)
@@ -428,7 +430,8 @@ class TradeController extends AppController {
           quantity: quantityValue,
           fill_price: priceValue,
           crypto_coin_id,
-          currency_coin_id
+          currency_coin_id,
+          manual_flag: manual_flag
         }
 
         console.log("request", JSON.stringify(request))
@@ -553,6 +556,7 @@ class TradeController extends AppController {
         side,
         order_type,
         orderQuantity,
+        manual_flag
       } = req.body;
       // var user_id = await Helper.getUserId(req.headers, res);
 
@@ -634,7 +638,9 @@ class TradeController extends AppController {
           order_type,
           orderQuantity,
           user_id,
-          res, walletData.crypto.coin_id, walletData.currency.coin_id);
+          res, walletData.crypto.coin_id,
+          walletData.currency.coin_id,
+          manual_flag);
 
         if (responseData.status > 1) {
           await logger.info({
@@ -685,7 +691,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, manual_flag = false) {
     const checkUser = Helper.checkWhichUser(user_id);
     console.log("checkUser", JSON.stringify(checkUser))
     console.log(JSON.stringify({
@@ -848,7 +854,8 @@ class TradeController extends AppController {
             quantity: quantityValue,
             fill_price: fillPriceValue,
             crypto_coin_id,
-            currency_coin_id
+            currency_coin_id,
+            manual_flag: manual_flag
           }
 
           var tradingFees = await TradingFees.getTraddingFees(request);
@@ -911,7 +918,8 @@ class TradeController extends AppController {
             quantity: availableQuantity,
             fill_price: fillPriceValue,
             crypto_coin_id,
-            currency_coin_id
+            currency_coin_id,
+            manual_flag: manual_flag
           }
           var tradingFees = await TradingFees.getTraddingFees(request);
           trade_history_data.user_fee = (tradingFees.userFee);
