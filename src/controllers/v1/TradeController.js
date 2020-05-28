@@ -264,9 +264,13 @@ class TradeController extends AppController {
 
     // Make Market Sell order
     var buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
-    if (buy_book_data.is_checkbox_selected == true) {
-      if (buy_book_data.user_id == user_id && user_id == process.env.TRADESK_USER_ID) {
-        buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency, process.env.TRADESK_USER_ID);
+    console.log("buy_book_data", buy_book_data)
+    if (buy_book_data[0].is_checkbox_selected == true && buy_book_data[0].placed_by == process.env.TRADEDESK_MANUAL) {
+      console.log("INSIDE FIRTS IF", user_id)
+      if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+        console.log("INSIDE SECOND IF")
+        buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency, process.env.TRADEDESK_USER_ID);
+        console.log("buy_book_data inside", buy_book_data)
       }
     }
 
@@ -375,8 +379,16 @@ class TradeController extends AppController {
         }
 
 
-
-        var tradingFees = await TradingFees.getTraddingFees(request)
+        if (currentBuyBookDetails.user_id == orderData.user_id && orderData.user_id == process.env.TRADESK_USER_ID) {
+          var tradingFees = {
+            userFee: 0.0,
+            requestedFee: 0.0,
+            maker_fee: 0.0,
+            taker_fee: 0.0
+          }
+        } else {
+          var tradingFees = await TradingFees.getTraddingFees(request)
+        }
 
         trade_history_data.user_fee = (tradingFees.userFee);
         trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -448,7 +460,17 @@ class TradeController extends AppController {
 
         console.log("request", JSON.stringify(request))
 
-        var tradingFees = await TradingFees.getTraddingFees(request)
+        if (currentBuyBookDetails.user_id == orderData.user_id && orderData.user_id == process.env.TRADESK_USER_ID) {
+          var tradingFees = {
+            userFee: 0.0,
+            requestedFee: 0.0,
+            maker_fee: 0.0,
+            taker_fee: 0.0
+          }
+        } else {
+          var tradingFees = await TradingFees.getTraddingFees(request)
+        }
+
         console.log("tradingFees", JSON.stringify(tradingFees))
         trade_history_data.user_fee = (tradingFees.userFee);
         trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -724,11 +746,28 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     console.log("crypto, currency", JSON.stringify({ crypto, currency }))
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-    let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
-
-    if (sellBook) {
-
+    var sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    console.log("sellBook", sellBook)
+    if (sellBook[0].is_checkbox_selected == true && sellBook[0].placed_by == process.env.TRADEDESK_MANUAL) {
+      if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+        sellBook = await SellBookHelper.sellOrderBook(crypto, currency, process.env.TRADEDESK_USER_ID);
+        console.log("sellBook INSIDE", sellBook)
+      }
     }
+
+    if (sellBook.length == 0) {
+      await logger.info({
+        "module": "Market Buy Execution",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Success"
+      }, "Order Book Empty");
+      return {
+        status: 2,
+        message: 'Order Book Empty'
+      }
+    }
+
 
     if (wallet == 1) {
       var userNotification = await UserNotifications.getSingleData({
@@ -765,7 +804,7 @@ class TradeController extends AppController {
           }
         }
       }
-    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
+    } else if (wallet.placed_balance < (sellBook[0].price * sellBook[0].quantity)) {
       var userNotification = await UserNotifications.getSingleData({
         user_id: user_id,
         deleted_at: null,
@@ -875,7 +914,16 @@ class TradeController extends AppController {
             is_checkbox_selected: sellBook[0].is_checkbox_selected
           }
 
-          var tradingFees = await TradingFees.getTraddingFees(request);
+          if (currentSellBookDetails.user_id == user_id && user_id == process.env.TRADESK_USER_ID) {
+            var tradingFees = {
+              userFee: 0.0,
+              requestedFee: 0.0,
+              maker_fee: 0.0,
+              taker_fee: 0.0
+            }
+          } else {
+            var tradingFees = await TradingFees.getTraddingFees(request);
+          }
           var usd_value = resultData * (request.fill_price * request.quantity);
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -939,7 +987,18 @@ class TradeController extends AppController {
             manual_flag: manual_flag,
             is_checkbox_selected: sellBook[0].is_checkbox_selected
           }
-          var tradingFees = await TradingFees.getTraddingFees(request);
+
+          if (currentSellBookDetails.user_id == user_id && user_id == process.env.TRADESK_USER_ID) {
+            var tradingFees = {
+              userFee: 0.0,
+              requestedFee: 0.0,
+              maker_fee: 0.0,
+              taker_fee: 0.0
+            }
+          } else {
+            var tradingFees = await TradingFees.getTraddingFees(request);
+          }
+
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
           trade_history_data.user_coin = crypto;
@@ -1212,7 +1271,13 @@ class TradeController extends AppController {
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-    let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    var sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+
+    if (sellBook[0].is_checkbox_selected == true && sellBook[0].placed_by == process.env.TRADEDESK_MANUAL) {
+      if (sellBook[0].user_id == user_id && user_id == process.env.TRADESK_USER_ID) {
+        sellBook = await SellBookHelper.sellOrderBook(crypto, currency, process.env.TRADESK_USER_ID);
+      }
+    }
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);
@@ -1685,7 +1750,13 @@ class TradeController extends AppController {
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
-    let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+    var buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+
+    if (buyBook[0].is_checkbox_selected == true && buyBook[0].placed_by == process.env.TRADEDESK_MANUAL) {
+      if (buyBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+        buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency, process.env.TRADEDESK_USER_ID);
+      }
+    }
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var now = new Date();
     var quantityValue = parseFloat(orderQuantity).toFixed(8);

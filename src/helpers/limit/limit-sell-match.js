@@ -26,7 +26,13 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 message: 'Invalid Quantity'
             }
         }
-        let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+        var buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+
+        if (buyBook[0].is_checkbox_selected == true && buyBook[0].placed_by == process.env.TRADEDESK_MANUAL) {
+            if (buyBook[0].user_id == sellLimitOrderData.user_id && sellLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
+                buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency, process.env.TRADEDESK_USER_ID);
+            }
+        }
         var tradeOrder;
         if (sellLimitOrderData.order_type == "StopLimit") {
             const checkUser = Helper.checkWhichUser(sellLimitOrderData.user_id);
@@ -74,7 +80,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         is_checkbox_selected: buyBook[0].is_checkbox_selected
                     };
 
-                    if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT && buyBook[0].placed_by == process.env.TRADEDESK_BOT) {
+                    if (sellLimitOrderData.user_id == buyBook[0].user_id && sellLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
                         var tradingFees = {
                             userFee: 0.0,
                             requestedFee: 0.0,
@@ -94,6 +100,9 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     // trade_history_data.txn_group_id = txnGroupId;
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
+                    delete trade_history_data.is_checkbox_selected;
+                    if (trade_history_data.manual_flag != undefined)
+                        delete trade_history_data.manual_flag;
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                     tradeOrder = tradeHistory;
                     var remainningQuantity = availableQuantity - quantityValue;
@@ -254,7 +263,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         is_checkbox_selected: buyBook[0].is_checkbox_selected
                     }
 
-                    if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT && buyBook[0].placed_by == process.env.TRADEDESK_BOT) {
+                    if (sellLimitOrderData.user_id == buyBook[0].user_id && sellLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
                         var tradingFees = {
                             userFee: 0.0,
                             requestedFee: 0.0,
@@ -275,6 +284,9 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     // trade_history_data.txn_group_id = txnGroupId;
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
+                    delete trade_history_data.is_checkbox_selected;
+                    if (trade_history_data.manual_flag != undefined)
+                        delete trade_history_data.manual_flag;
                     console.log(JSON.stringify(trade_history_data))
 
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);

@@ -28,7 +28,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             }
         }
         let wallet = await WalletBalanceHelper.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);
-        let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+        var sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+
+        if (sellBook[0].is_checkbox_selected == true && sellBook[0].placed_by == process.env.TRADEDESK_MANUAL) {
+            if (sellBook[0].user_id == buyLimitOrderData.user_id && buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
+                sellBook = await SellBookHelper.sellOrderBook(crypto, currency, process.env.TRADEDESK_USER_ID)
+            }
+        }
         // console.log("sellBook", sellBook)
         // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
         var tradeOrder;
@@ -88,7 +94,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             is_checkbox_selected: sellBook[0].is_checkbox_selected
                         }
 
-                        if (sellBook[0].placed_by == process.env.TRADEDESK_BOT && buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
+                        if (sellBook[0].user_id == buyLimitOrderData.user_id && buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
                             var tradingFees = {
                                 userFee: 0.0,
                                 requestedFee: 0.0,
@@ -110,6 +116,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
                         }
+                        delete trade_history_data.is_checkbox_selected;
+                        if (trade_history_data.manual_flag != undefined)
+                            delete trade_history_data.manual_flag;
                         console.log("BELOW DELETED")
                         // tradeHistory.txn_group_id = txnGroupId;
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
@@ -290,7 +299,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
 
 
-                        if (sellBook[0].placed_by == process.env.TRADEDESK_BOT && buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
+                        if (sellBook[0].user_id == buyLimitOrderData.user_id && buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
                             var tradingFees = {
                                 userFee: 0.0,
                                 requestedFee: 0.0,
@@ -312,6 +321,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
                         }
+
+                        delete trade_history_data.is_checkbox_selected;
+                        if (trade_history_data.manual_flag != undefined)
+                            delete trade_history_data.manual_flag;
 
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
                         // tradeHistory.txn_group_id = txnGroupId;
