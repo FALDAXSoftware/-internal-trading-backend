@@ -10,6 +10,8 @@ var addBuyBookData = async (buyLimitOrderData) => {
         var total_price = buyLimitOrderData.limit_price * buyLimitOrderData.quantity;
         delete buyLimitOrderData.added;
         delete buyLimitOrderData.is_filled;
+        if (buyLimitOrderData.manual_flag != undefined)
+            delete buyLimitOrderData.manual_flag;
         buyLimitOrderData.working_indicator = false;
 
         var buyAdd = await BuyBookModel
@@ -20,7 +22,7 @@ var addBuyBookData = async (buyLimitOrderData) => {
 
         console.log("buyAdd", JSON.stringify(buyAdd));
 
-        if (buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
+        if (buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID && buyLimitOrderData.is_checkbox_selected == false) {
             return (buyAdd)
         }
         var walletBalance = await walletBalanceValue.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);

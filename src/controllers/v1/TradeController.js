@@ -240,13 +240,14 @@ class TradeController extends AppController {
   }
 
   // Helper : Market Sell Order
-  async makeMarketSellOrder(res, alldata, crypto_coin_id, currency_coin_id, manual_flag = false) {
+  async makeMarketSellOrder(res = null, alldata, crypto_coin_id, currency_coin_id, manual_flag = false, is_checkbox_selected = false) {
     await logger.info({
       "module": "Market Sell Execution",
       "user_id": "user_" + alldata.user_id,
       "url": "Trade Function",
       "type": "Entry"
     }, "Enter the function with " + allData)
+    console.log("alldata", alldata)
     let {
       crypto,
       currency,
@@ -260,8 +261,15 @@ class TradeController extends AppController {
       userIds
     } = alldata;
     const checkUser = Helper.checkWhichUser(user_id);
+
     // Make Market Sell order
-    let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+    var buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+    if (buy_book_data.is_checkbox_selected == true) {
+      if (buy_book_data.user_id == user_id && user_id == process.env.TRADESK_USER_ID) {
+        buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency, process.env.TRADESK_USER_ID);
+      }
+    }
+
     if (crypto_wallet_data.placed_balance < orderQuantity) {
       var userNotification = await UserNotifications.getSingleData({
         user_id: user_id,
@@ -362,8 +370,11 @@ class TradeController extends AppController {
           fill_price: priceValue,
           crypto_coin_id,
           currency_coin_id,
-          manual_flag: manual_flag
+          manual_flag: manual_flag,
+          is_checkbox_selected: currentBuyBookDetails.is_checkbox_selected
         }
+
+
 
         var tradingFees = await TradingFees.getTraddingFees(request)
 
@@ -431,7 +442,8 @@ class TradeController extends AppController {
           fill_price: priceValue,
           crypto_coin_id,
           currency_coin_id,
-          manual_flag: manual_flag
+          manual_flag: manual_flag,
+          is_checkbox_selected: currentBuyBookDetails.is_checkbox_selected
         }
 
         console.log("request", JSON.stringify(request))
@@ -691,7 +703,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, manual_flag = false) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, manual_flag = false, is_checkbox_selected = false) {
     const checkUser = Helper.checkWhichUser(user_id);
     console.log("checkUser", JSON.stringify(checkUser))
     console.log(JSON.stringify({
@@ -713,6 +725,10 @@ class TradeController extends AppController {
     console.log("crypto, currency", JSON.stringify({ crypto, currency }))
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+
+    if (sellBook) {
+
+    }
 
     if (wallet == 1) {
       var userNotification = await UserNotifications.getSingleData({
@@ -855,7 +871,8 @@ class TradeController extends AppController {
             fill_price: fillPriceValue,
             crypto_coin_id,
             currency_coin_id,
-            manual_flag: manual_flag
+            manual_flag: manual_flag,
+            is_checkbox_selected: sellBook[0].is_checkbox_selected
           }
 
           var tradingFees = await TradingFees.getTraddingFees(request);
@@ -919,7 +936,8 @@ class TradeController extends AppController {
             fill_price: fillPriceValue,
             crypto_coin_id,
             currency_coin_id,
-            manual_flag: manual_flag
+            manual_flag: manual_flag,
+            is_checkbox_selected: sellBook[0].is_checkbox_selected
           }
           var tradingFees = await TradingFees.getTraddingFees(request);
           trade_history_data.user_fee = (tradingFees.userFee);
@@ -1051,7 +1069,9 @@ class TradeController extends AppController {
       side,
       order_type,
       orderQuantity,
-      limit_price
+      limit_price,
+      manual_flag,
+      is_checkbox_selected
     } = req.body;
 
     let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -1128,6 +1148,8 @@ class TradeController extends AppController {
         false,
         walletData.crypto.coin_id,
         walletData.currency.coin_id,
+        manual_flag,
+        is_checkbox_selected
         // txnGroupId
       );
       console.log("responseData", responseData);
@@ -1178,7 +1200,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, manual_flag = false, is_checkbox_selected = false) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1316,6 +1338,7 @@ class TradeController extends AppController {
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
+        buyLimitOrderData.is_checkbox_selected = is_checkbox_selected;
         var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
         await logger.info({
           "module": "Limit Buy",
@@ -1338,8 +1361,10 @@ class TradeController extends AppController {
           buyLimitOrderData.is_partially_fulfilled = true;
           buyLimitOrderData.is_filled = false;
           buyLimitOrderData.added = true;
+          buyLimitOrderData.manual_flag = manual_flag;
+          buyLimitOrderData.is_checkbox_selected = is_checkbox_selected
           var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
-          addBuyBook.added = true;
+          // addBuyBook.added = true;
 
           // Send Notification to users
           for (var i = 0; i < userIds.length; i++) {
@@ -1418,6 +1443,8 @@ class TradeController extends AppController {
         buyLimitOrderData.is_partially_fulfilled = true;
         buyLimitOrderData.is_filled = false;
         buyLimitOrderData.added = true;
+        buyLimitOrderData.manual_flag = manual_flag;
+        buyLimitOrderData.is_checkbox_selected = is_checkbox_selected
         var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
         addBuyBook.added = true;
 
@@ -1646,7 +1673,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Sell Order
-  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id) {
+  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id, manual_flag = false, is_checkbox_selected = false) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1785,7 +1812,8 @@ class TradeController extends AppController {
     if (buyBook && buyBook.length > 0) {
       var currentPrice = buyBook[0].price;
       if (priceValue <= currentPrice) {
-        console.log("INSIDE IF")
+        console.log("INSIDE IF");
+        sellLimitOrderData.is_checkbox_selected = is_checkbox_selected
         var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id);
         await logger.info({
           "module": "Limit Sell Execution",
@@ -1803,8 +1831,10 @@ class TradeController extends AppController {
         sellLimitOrderData.is_partially_fulfilled = true;
         sellLimitOrderData.is_filled = false;
         sellLimitOrderData.added = true;
+        sellLimitOrderData.manual_flag = manual_flag;
+        sellLimitOrderData.is_checkbox_selected = is_checkbox_selected;
         var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData, crypto_coin_id);
-        addSellBook.added = true;
+        // addSellBook.added = true;
 
         // Send Notification to users
         for (var i = 0; i < userIds.length; i++) {
@@ -1868,8 +1898,10 @@ class TradeController extends AppController {
       sellLimitOrderData.is_partially_fulfilled = true;
       sellLimitOrderData.is_filled = false;
       sellLimitOrderData.added = true;
+      sellLimitOrderData.manual_flag = manual_flag;
+      sellLimitOrderData.is_checkbox_selected = is_checkbox_selected;
       var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData, crypto_coin_id);
-      addSellBook.added = true;
+      // addSellBook.added = true;
 
       // Send Notification to users
       for (var i = 0; i < userIds.length; i++) {
@@ -2730,13 +2762,14 @@ class TradeController extends AppController {
 
         var queueName = process.env.QUEUE_NAME
         var queueData = {
-          object,
+          object: object,
           order_type: order_type,
           side: side,
           res: null,
           crypto: walletData.crypto.coin_id,
           currency: walletData.currency.coin_id
         }
+        console.log("queueData", queueData)
         var responseValue = await QueueValue.publishToQueue(queueName, queueData)
 
         if (responseValue == 0) {
@@ -2802,8 +2835,10 @@ class TradeController extends AppController {
       side,
       order_type,
       orderQuantity,
-      limit_price
+      limit_price,
+      is_checkbox_selected
     } = req.body;
+    console.log("is_checkbox_selected", is_checkbox_selected)
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
     var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
@@ -2880,7 +2915,8 @@ class TradeController extends AppController {
         res: null,
         flag: false,
         crypto: walletData.crypto.coin_id,
-        currency: walletData.currency.coin_id
+        currency: walletData.currency.coin_id,
+        is_checkbox_selected: (is_checkbox_selected == undefined) ? (false) : (is_checkbox_selected)
       }
       var responseValue = await QueueValue.publishToQueue(queueName, queueData)
 
@@ -2935,7 +2971,8 @@ class TradeController extends AppController {
       side,
       order_type,
       orderQuantity,
-      limit_price
+      limit_price,
+      is_checkbox_selected
     } = req.body;
 
     let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -3025,7 +3062,8 @@ class TradeController extends AppController {
         res: null,
         flag: false,
         crypto: walletData.crypto.coin_id,
-        currency: walletData.currency.coin_id
+        currency: walletData.currency.coin_id,
+        is_checkbox_selected: (is_checkbox_selected == undefined) ? (false) : (is_checkbox_selected)
       }
       var responseValue = await QueueValue.publishToQueue(queueName, queueData)
 

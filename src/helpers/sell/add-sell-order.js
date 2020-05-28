@@ -6,6 +6,8 @@ var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
     var total_price = sellLimitOrderData.quantity;
     delete sellLimitOrderData.added;
     delete sellLimitOrderData.is_filled;
+    if (sellLimitOrderData.manual_flag != undefined)
+        delete sellLimitOrderData.manual_flag;
     sellLimitOrderData.working_indicator = false;
 
     var sellAdd = await SellBookModel
@@ -14,8 +16,8 @@ var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
 
     console.log("buyAdd", JSON.stringify(sellAdd));
 
-    if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
-        return (sellAdd);
+    if (sellLimitOrderData.user_id == process.env.TRADEDESK_USER_ID && sellLimitOrderData.is_checkbox_selected == false) {
+        return (sellAdd)
     }
 
     var walletBalance = await WalletModel
@@ -29,7 +31,7 @@ var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
 
     var balance = walletBalance.placed_balance;
     var updatedBalance = balance - total_price;
-    console.log(updatedBalance)
+    // console.log(updatedBalance)
     var updatedBalance = parseFloat((updatedBalance).toFixed(6));
 
     var walletUpdate = await WalletModel

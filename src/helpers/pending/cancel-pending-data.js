@@ -15,15 +15,15 @@ var cancelPendingOrder = async (side, type, id) => {
         var currency;
         var userIds = [];
 
-        console.log(side, type, id)
-
         if (type == "Limit" && side == "Buy") {
             var pendingBookDetailsBuy = await BuyBookModel
                 .query()
                 .select()
                 .first()
                 .where('deleted_at', null)
+                .andWhere("is_checkbox_selected", true)
                 .andWhere('id', id)
+                .orderBy("id", "DESC");
 
             if (pendingBookDetailsBuy == undefined) {
                 return (0);
@@ -77,6 +77,7 @@ var cancelPendingOrder = async (side, type, id) => {
             var updateSql = `UPDATE buy_book
                             SET deleted_at = '${now}'
                             WHERE id = ${pendingBookDetailsBuy.id} AND deleted_at IS NULL
+                            AND is_checkbox_selected = true
                             RETURNING *`
 
             var deletePending = await BuyBookModel.knex().raw(updateSql);
@@ -91,6 +92,7 @@ var cancelPendingOrder = async (side, type, id) => {
                 .select()
                 .where('deleted_at', null)
                 .andWhere('id', id)
+                .andWhere("is_checkbox_selected", true)
                 .orderBy('id', 'DESC')
             if (pendingBookDetailsSell == undefined) {
                 return (1);
@@ -140,9 +142,10 @@ var cancelPendingOrder = async (side, type, id) => {
                 })
 
             var updateSql = `UPDATE sell_book
-            SET deleted_at = '${now}'
-            WHERE id = ${pendingBookDetailsSell.id} AND deleted_at IS NULL
-            RETURNING *`
+                                SET deleted_at = '${now}'
+                                WHERE id = ${pendingBookDetailsSell.id} AND deleted_at IS NULL
+                                AND is_checkbox_selected = true
+                                RETURNING *`
 
             var deletePending = await SellBookModel.knex().raw(updateSql);
             deletePending = deletePending.rows;
@@ -181,9 +184,9 @@ var cancelPendingOrder = async (side, type, id) => {
                 })
 
             var updateSql = `UPDATE pending_book
-            SET deleted_at = '${now}'
-            WHERE id = ${pendingDetails.id} AND deleted_at IS NULL
-            RETURNING *`
+                                SET deleted_at = '${now}'
+                                WHERE id = ${pendingDetails.id} AND deleted_at IS NULL
+                                RETURNING *`
 
             var deletePending = await PendingBookModel.knex().raw(updateSql);
             deletePending = deletePending.rows;

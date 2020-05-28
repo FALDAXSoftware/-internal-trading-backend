@@ -70,7 +70,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         quantity: sellLimitOrderData.quantity,
                         fill_price: sellLimitOrderData.fill_price,
                         crypto_coin_id,
-                        currency_coin_id
+                        currency_coin_id,
+                        is_checkbox_selected: buyBook[0].is_checkbox_selected
                     };
 
                     if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT && buyBook[0].placed_by == process.env.TRADEDESK_BOT) {
@@ -249,7 +250,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         quantity: buyBook[0].quantity,
                         fill_price: sellLimitOrderData.fill_price,
                         crypto_coin_id,
-                        currency_coin_id
+                        currency_coin_id,
+                        is_checkbox_selected: buyBook[0].is_checkbox_selected
                     }
 
                     if (sellLimitOrderData.placed_by == process.env.TRADEDESK_BOT && buyBook[0].placed_by == process.env.TRADEDESK_BOT) {
@@ -361,6 +363,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 sellLimitOrderData.is_filled = false;
                 sellAddedData.activity_id = activity.id;
                 sellLimitOrderData.added = true;
+                sellLimitOrderData.is_checkbox_selected = sellLimitOrderData.is_checkbox_selected;
                 var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
                 for (var i = 0; i < userIds.length; i++) {
                     // Notification Sending for users
@@ -429,6 +432,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             sellLimitOrderData.is_filled = false;
             sellAddedData.activity_id = activity.id;
             sellLimitOrderData.added = true;
+            sellLimitOrderData.is_checkbox_selected = sellLimitOrderData.is_checkbox_selected
             var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
             for (var i = 0; i < userIds.length; i++) {
                 // Notification Sending for users

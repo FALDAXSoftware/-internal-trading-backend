@@ -211,7 +211,7 @@ var getTraddingFees = async (inputs) => {
             var cryptorequestedplacedbalance;
             var a;
             if (user_id == requested_user_id) {
-                if (user_id == process.env.TRADEDESK_USER_ID && requested_user_id == process.env.TRADEDESK_USER_ID) {
+                if (inputs.is_checkbox_selected == false && requested_user_id == process.env.TRADEDESK_USER_ID) {
                     cryptorequestedbalance = a.balance - ((inputs.quantity));
                     cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
                     cryptorequestedplacedbalance = a.placed_balance - ((inputs.quantity));
@@ -234,7 +234,8 @@ var getTraddingFees = async (inputs) => {
                         });
                 }
             } else {
-                if (inputs.manual_flag == true && requested_user_id == process.env.TRADEDESK_USER_ID) {
+                // if(inputs.is_checkbox_selected == )
+                if (inputs.is_checkbox_selected == false && requested_user_id == process.env.TRADEDESK_USER_ID) {
                     cryptorequestedbalance = cryptoWalletRequested.balance - ((inputs.quantity));
                     cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
                     cryptorequestedplacedbalance = cryptoWalletRequested.placed_balance - ((inputs.quantity));
@@ -393,10 +394,10 @@ var getTraddingFees = async (inputs) => {
             var currencyrequestedplacedbalance;
             var b;
             if (user_id == requested_user_id) {
-                if (inputs.manual_flag == true && requested_user_id == process.env.TRADEDESK_USER_ID) {
+                if (inputs.inputs.is_checkbox_selected == false && requested_user_id == process.env.TRADEDESK_USER_ID) {
                     currencyrequestedbalance = b.balance - ((((inputs.quantity) * (inputs.fill_price))));
                     currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8);
-                    currencyrequestedplacedbalance = b.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedplacedbalance = b.placed_balance - ((((inputs.quantity) * (inputs.fill_price))));
                     currencyrequestedplacedbalance = parseFloat(currencyrequestedplacedbalance).toFixed(8)
                     b = await Wallet
                         .query()
@@ -416,7 +417,7 @@ var getTraddingFees = async (inputs) => {
                         });
                 }
             } else {
-                if (inputs.manual_flag == true && requested_user_id == process.env.TRADEDESK_USER_ID) {
+                if (inputs.is_checkbox_selected == false && requested_user_id == process.env.TRADEDESK_USER_ID) {
                     currencyrequestedbalance = currencyWalletRequested.balance - ((((inputs.quantity) * (inputs.fill_price))));
                     currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
                     currencyrequestedplacedbalance = currencyWalletRequested.placed_balance - ((((inputs.quantity) * (inputs.fill_price))));

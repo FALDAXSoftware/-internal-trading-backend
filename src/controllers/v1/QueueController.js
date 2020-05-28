@@ -45,7 +45,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                     }
                 case "Limit":
                     if (dataValue.side == "Buy") {
-                        tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
+                        tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, false, dataValue.is_checkbox_selected)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
@@ -56,7 +56,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                             })
                         break;
                     } else if (dataValue.side == "Sell") {
-                        tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
+                        tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, false, dataValue.is_checkbox_selected)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)

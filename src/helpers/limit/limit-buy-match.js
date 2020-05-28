@@ -84,7 +84,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             quantity: buyLimitOrderData.quantity,
                             fill_price: buyLimitOrderData.fill_price,
                             crypto_coin_id,
-                            currency_coin_id
+                            currency_coin_id,
+                            is_checkbox_selected: sellBook[0].is_checkbox_selected
                         }
 
                         if (sellBook[0].placed_by == process.env.TRADEDESK_BOT && buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT) {
@@ -284,7 +285,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             quantity: sellBook[0].quantity,
                             fill_price: buyLimitOrderData.fill_price,
                             crypto_coin_id,
-                            currency_coin_id
+                            currency_coin_id,
+                            is_checkbox_selected: sellBook[0].is_checkbox_selected
                         }
 
 
@@ -410,6 +412,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     buyLimitOrderData.is_filled = false;
                     buyAddedData.activity_id = activity.id;
                     buyLimitOrderData.added = true;
+                    buyLimitOrderData.is_checkbox_selected = buyLimitOrderData.is_checkbox_selected
                     var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
                     console.log(JSON.stringify(addBuyBook))
                     for (var i = 0; i < userIds.length; i++) {
@@ -489,6 +492,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 buyLimitOrderData.is_filled = false;
                 buyAddedData.activity_id = activity.id;
                 buyLimitOrderData.added = true;
+                buyLimitOrderData.is_checkbox_selected = buyLimitOrderData.is_checkbox_selected
                 var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
 
                 for (var i = 0; i < userIds.length; i++) {
