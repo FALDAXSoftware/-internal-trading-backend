@@ -55,7 +55,7 @@ router.get('/tradingview/history', TradingViewController.getHistoryData);
 
 // SQS routes
 // router.post('/send-data',)
-router.get("/list-queues", sqsController.getSQSData);
+// router.get("/list-queues", sqsController.getSQSData);
 router.get("/send--to-queue", sqsController.sendToSQS);
 
 module.exports = router;

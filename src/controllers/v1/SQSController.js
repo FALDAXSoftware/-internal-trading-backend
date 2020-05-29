@@ -9,18 +9,20 @@ aws.config.loadFromPath(__dirname + '/aws_config.json');
 var sqs = new aws.SQS({ apiVersion: '2012-11-05', region: 'us-east-2' });
 
 var sendToSQS = async (data) => {
-    var data = {
-        "symbol": "ETH-BTC",
-        "side": "Sell",
-        "order_type": "Market",
-        "orderQuantity": "1"
-    }
-    var params = {
-        // DelaySeconds: 1,
-        MessageBody: "Information about current NY Times fiction bestseller for week of 12/11/2016.",
-        MessageDeduplicationId: "TheWhistler",  // Required for FIFO queues
-        MessageGroupId: "Group1",  // Required for FIFO queues
-        QueueUrl: queue_url
+
+    const accountId = 496403030999;
+    const queueName = "faldax-sqs-test-ohio.fifo";
+    const queueRegion = "us-east-2";
+    const params = {
+        MessageBody: JSON.stringify({
+            "symbol": "ETH-BTC",
+            "side": "Sell",
+            "order_type": "Market",
+            "orderQuantity": "1"
+        }),
+        QueueUrl: `https://sqs.${queueRegion}.amazonaws.com/${accountId}/${queueName}`,
+        DelaySeconds: 0,
+        MessageGroupId: "MessageGroup1"
     };
     sqs.sendMessage(params, function (err, data) {
         if (err) {
@@ -31,31 +33,37 @@ var sendToSQS = async (data) => {
     });
 }
 
-var getSQSData = async () => {
-
-    var params = {
-        MaxNumberOfMessages: 10,
-        MessageAttributeNames: [
-            "All"
-        ],
-        QueueUrl: queue_url,
-        VisibilityTimeout: 20,
-        WaitTimeSeconds: 0
-    };
-    console.log("INSIDE LIST QUEUE")
-    sqs.receiveMessage(params, function (err, data) {
-        if (err) {
-            console.log("err", err)
-            // res.send(err);
-        }
-        else {
-            console.log("data", data)
-            // res.send(data);
-        }
-    });
-}
+var params = {
+    MaxNumberOfMessages: 1,
+    MessageAttributeNames: [
+        "All"
+    ],
+    QueueUrl: queue_url,
+    VisibilityTimeout: 20,
+    WaitTimeSeconds: 0
+};
+console.log("INSIDE LIST QUEUE")
+sqs.receiveMessage(params, function (err, data) {
+    if (err) {
+        console.log("err", err)
+        // res.send(err);
+    } else if (data.Messages) {
+        console.log("data", data)
+        var deleteParams = {
+            QueueUrl: queue_url,
+            ReceiptHandle: data.Messages[0].ReceiptHandle
+        };
+        sqs.deleteMessage(deleteParams, function (err, data) {
+            if (err) {
+                console.log("Delete Error", err);
+            } else {
+                console.log("Message Deleted", data);
+            }
+        });
+    }
+});
 
 module.exports = {
     sendToSQS,
-    getSQSData
+    // getSQSData
 }
