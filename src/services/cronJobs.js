@@ -31,14 +31,21 @@ cron.schedule('* * * * *', async (req, res, next) => {
 })
 
 // Cron For XRP-BTC
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("XRP-BTC");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("XRP-BTC");
+// });
 
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("XRP-BTC");
+// });
+cron.schedule('* * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("XRP-BTC");
+    await Promise.all([
+        dashBoardUpdate.updateBuyOrderBookValue("XRP-BTC"),
+        // dashBoardUpdate.updateSellOrderBook("XRP-BTC")
+    ])
 });
 
 cron.schedule('* * * * *', async (req, res, next) => {
