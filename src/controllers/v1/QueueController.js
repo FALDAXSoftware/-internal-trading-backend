@@ -6,10 +6,10 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
     // console.log("conn", conn)
     console.log("err", err)
     conn.createChannel(function (err, channel) {
-        // ch.chequeQueue(queueName);
+        console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
+        // let checkQeue = channel.assertQueue(process.env.QUEUE_NAME)
         channel.prefetch(3)
         ch = channel;
-        console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
         ch.consume(process.env.QUEUE_NAME, (msg, err) => {
             // console.log("mesages");
             console.log(err)

@@ -15,7 +15,7 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
-var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null) => {
+var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData) => {
     try {
         var quantityValue = sellLimitOrderData.quantity;
         var userIds = [];
@@ -83,109 +83,38 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         delete trade_history_data.activity_id;
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                     tradeOrder = tradeHistory;
+                    allOrderData.push(tradeHistory);
                     var remainningQuantity = availableQuantity - quantityValue;
                     if (remainningQuantity > 0) {
                         let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
                             quantity: remainningQuantity
                         });
-                        for (var i = 0; i < userIds.length; i++) {
-                            // Notification Sending for users
-                            var userNotification = await UserNotifications.getSingleData({
-                                user_id: userIds[i],
-                                deleted_at: null,
-                                slug: 'trade_execute'
-                            })
-                            var user_data = await Users.getSingleData({
-                                deleted_at: null,
-                                id: userIds[i],
-                                is_active: true
-                            });
-                            if (user_data != undefined) {
-                                if (userNotification != undefined) {
-                                    if (userNotification.email == true || userNotification.email == "true") {
-                                        if (user_data.email != undefined) {
-                                            var allData = {
-                                                template: "emails/general_mail.ejs",
-                                                templateSlug: "trade_execute",
-                                                email: user_data.email,
-                                                user_detail: user_data,
-                                                formatData: {
-                                                    recipientName: user_data.first_name,
-                                                    side: tradeOrder.side,
-                                                    pair: tradeOrder.symbol,
-                                                    order_type: tradeOrder.order_type,
-                                                    quantity: tradeOrder.quantity,
-                                                    price: tradeOrder.limit_price,
-                                                }
-                                            }
-                                            // console.log(res)
-                                            await Helper.SendEmail(res, allData)
-                                        }
-                                    }
-                                    if (userNotification.text == true || userNotification.text == "true") {
-                                        if (user_data.phone_number != undefined) {
-                                            // await sails.helpers.notification.send.text("trade_execute", user_data)
-                                        }
-                                    }
-                                }
-                            }
-                        }
 
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                        // Email Data
+                        let emailData = {
+                            userIds: userIds,
+                            orderData: allOrderData
+                        }
                         return {
                             status: 1,
-                            message: 'Order Success'
+                            message: '',
+                            tradeData: emailData
                         }
                     } else {
                         await buyDelete.deleteOrder(buyBook[0].id)
-                        for (var i = 0; i < userIds.length; i++) {
-                            // Notification Sending for users
-                            var userNotification = await UserNotifications.getSingleData({
-                                user_id: userIds[i],
-                                deleted_at: null,
-                                slug: 'trade_execute'
-                            })
-                            var user_data = await Users.getSingleData({
-                                deleted_at: null,
-                                id: userIds[i],
-                                is_active: true
-                            });
-                            if (user_data != undefined) {
-                                if (userNotification != undefined) {
-                                    if (userNotification.email == true || userNotification.email == "true") {
-                                        if (user_data.email != undefined) {
-                                            var allData = {
-                                                template: "emails/general_mail.ejs",
-                                                templateSlug: "trade_execute",
-                                                email: user_data.email,
-                                                user_detail: user_data,
-                                                formatData: {
-                                                    recipientName: user_data.first_name,
-                                                    side: tradeOrder.side,
-                                                    pair: tradeOrder.symbol,
-                                                    order_type: tradeOrder.order_type,
-                                                    quantity: tradeOrder.quantity,
-                                                    price: tradeOrder.limit_price,
-                                                }
-                                            }
-                                            await Helper.SendEmail(res, allData)
-                                        }
-                                    }
-                                    if (userNotification.text == true || userNotification.text == "true") {
-                                        if (user_data.phone_number != undefined) {
-                                            // await sails.helpers.notification.send.text("trade_execute", user_data)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                        // Email Data
+                        let emailData = {
+                            userIds: userIds,
+                            orderData: allOrderData
+                        }
                         return {
                             status: 1,
-                            message: 'Order Success'
+                            message: '',
+                            tradeData: emailData
                         }
                     }
                 } else {
@@ -252,50 +181,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                     tradeOrder = tradeHistory;
-
+                    allOrderData.push(tradeHistory);
                     await buyDelete.deleteOrder(buyBook[0].id);
-
-                    for (var i = 0; i < userIds.length; i++) {
-                        // Notification Sending for users
-                        var userNotification = await UserNotifications.getSingleData({
-                            user_id: userIds[i],
-                            deleted_at: null,
-                            slug: 'trade_execute'
-                        })
-                        var user_data = await Users.getSingleData({
-                            deleted_at: null,
-                            id: userIds[i],
-                            is_active: true
-                        });
-                        if (user_data != undefined) {
-                            if (userNotification != undefined) {
-                                if (userNotification.email == true || userNotification.email == "true") {
-                                    if (user_data.email != undefined) {
-                                        var allData = {
-                                            template: "emails/general_mail.ejs",
-                                            templateSlug: "trade_execute",
-                                            email: user_data.email,
-                                            user_detail: user_data,
-                                            formatData: {
-                                                recipientName: user_data.first_name,
-                                                side: tradeOrder.side,
-                                                pair: tradeOrder.symbol,
-                                                order_type: tradeOrder.order_type,
-                                                quantity: tradeOrder.quantity,
-                                                price: tradeOrder.limit_price,
-                                            }
-                                        }
-                                        await Helper.SendEmail(res, allData)
-                                    }
-                                }
-                                if (userNotification.text == true || userNotification.text == "true") {
-                                    if (user_data.phone_number != undefined) {
-                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
-                                    }
-                                }
-                            }
-                        }
-                    }
 
                     //Emit data in rooms
                     let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
@@ -308,7 +195,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     resendDataLimit.activity_id = activityResult.id;
 
                     if (remainningQuantity > 0) {
-                        var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res, crypto_coin_id, currency_coin_id);
+                        var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData);
                         return responseData
                     }
                 }
@@ -336,49 +223,18 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     sellAddedData.price = sellLimitOrderData.limit_price
                 }
                 var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
-                for (var i = 0; i < userIds.length; i++) {
-                    // Notification Sending for users
-                    var userNotification = await UserNotifications.getSingleData({
-                        user_id: userIds[i],
-                        deleted_at: null,
-                        slug: 'trade_execute'
-                    })
-                    var user_data = await Users.getSingleData({
-                        deleted_at: null,
-                        id: userIds[i],
-                        is_active: true
-                    });
-                    if (user_data != undefined) {
-                        if (userNotification != undefined) {
-                            if (userNotification.email == true || userNotification.email == "true") {
-                                if (user_data.email != undefined) {
-                                    var allData = {
-                                        template: "emails/general_mail.ejs",
-                                        templateSlug: "trade_partially_filled",
-                                        email: user_data.email,
-                                        user_detail: user_data,
-                                        formatData: {
-                                            recipientName: user_data.first_name,
-                                            pair: sellLimitOrderData.symbol
-                                        }
-                                    }
-                                    await Helper.SendEmail(res, allData)
-                                }
-                            }
-                            if (userNotification.text == true || userNotification.text == "true") {
-                                if (user_data.phone_number != undefined) {
-                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
-                                }
-                            }
-                        }
-                    }
-                }
 
                 // Emit Socket Event
                 let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                // Email Data
+                let emailData = {
+                    userIds: userIds,
+                    orderData: allOrderData
+                }
                 return {
                     status: 2,
-                    message: 'Order Partially Fulfilled and Added to Sell Book'
+                    message: 'Order Partially Fulfilled and Added to Sell Book',
+                    tradeData: emailData
                 }
             }
         } else {
@@ -403,49 +259,17 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 sellAddedData.price = sellLimitOrderData.limit_price;
             }
             var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
-            for (var i = 0; i < userIds.length; i++) {
-                // Notification Sending for users
-                var userNotification = await UserNotifications.getSingleData({
-                    user_id: userIds[i],
-                    deleted_at: null,
-                    slug: 'trade_execute'
-                })
-                var user_data = await Users.getSingleData({
-                    deleted_at: null,
-                    id: userIds[i],
-                    is_active: true
-                });
-                if (user_data != undefined) {
-                    if (userNotification != undefined) {
-                        if (userNotification.email == true || userNotification.email == "true") {
-                            if (user_data.email != undefined) {
-                                var allData = {
-                                    template: "emails/general_mail.ejs",
-                                    templateSlug: "trade_partially_filled",
-                                    email: user_data.email,
-                                    user_detail: user_data,
-                                    formatData: {
-                                        recipientName: user_data.first_name,
-                                        pair: sellLimitOrderData.symbol
-                                    }
-                                }
-                                await Helper.SendEmail(res, allData)
-                            }
-                        }
-                        if (userNotification.text == true || userNotification.text == "true") {
-                            if (user_data.phone_number != undefined) {
-                                // await sails.helpers.notification.send.text("trade_execute", user_data)
-                            }
-                        }
-                    }
-                }
-            }
-
             // Emit Socket Event
             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+            // Email Data
+            let emailData = {
+                userIds: userIds,
+                orderData: allOrderData
+            }
             return {
                 status: 2,
-                message: 'Order Partially Fulfilled and Added to Sell Book'
+                message: 'Order Partially Fulfilled and Added to Sell Book',
+                tradeData: emailData
             }
         }
     } catch (error) {
