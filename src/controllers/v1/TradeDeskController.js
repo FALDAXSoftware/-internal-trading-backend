@@ -169,7 +169,7 @@ class TradeDeskController extends AppController {
                 "type": "Entry"
             }, "Entered the function")
             var walletSql = `SELECT coins.coin, wallets.balance, wallets.placed_balance, wallets.receive_address,
-                                json(currency_conversion.quote->'USD'->'price') as fiat_value
+                                json(currency_conversion.quote->'USD'->'price') as fiat_value, coins.coin_code
                                 FROM coins
                                 LEFT JOIN wallets
                                 ON wallets.coin_id = coins.id

@@ -14,23 +14,23 @@ if (process.env.ENVIROMENT == "preprod") {
   })
 }
 
-var amqp = require('amqplib/callback_api');
-let CONN_URL = process.env.QUEUE_URL;
-const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
-let ch = null;
-amqp.connect(CONN_URL, opt, (err, conn) => {
-  // console.log("err", err)
-  // console.log("conn", conn)
-  conn.createChannel(function (err, ch) {
-    // ch.consume('user-messages', function (msg) {
-    //   console.log('.....');
-    //   setTimeout(function () {
-    //     console.log("Message:", msg.content.toString());
-    //   }, 4000);
-    // }, { noAck: true }
-    // );
-  });
-});
+// var amqp = require('amqplib/callback_api');
+// let CONN_URL = process.env.QUEUE_URL;
+// const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
+// let ch = null;
+// amqp.connect(CONN_URL, opt, (err, conn) => {
+//   // console.log("err", err)
+//   // console.log("conn", conn)
+//   conn.createChannel(function (err, ch) {
+//     // ch.consume('user-messages', function (msg) {
+//     //   console.log('.....');
+//     //   setTimeout(function () {
+//     //     console.log("Message:", msg.content.toString());
+//     //   }, 4000);
+//     // }, { noAck: true }
+//     // );
+//   });
+// });
 
 
 var express = require('express');
