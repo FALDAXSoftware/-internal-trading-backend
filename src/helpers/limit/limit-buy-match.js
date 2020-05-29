@@ -68,6 +68,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.requested_user_id = sellBook[0].user_id;
                         trade_history_data.created_at = new Date();
                         trade_history_data.quantity = buyLimitOrderData.quantity
+                        if (sellBook[0].is_stop_limit == true) {
+                            trade_history_data.is_stop_limit = true;
+                        }
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
                         let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
 
@@ -161,6 +164,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         sellBook[0].quantity = (sellBook[0].quantity).toFixed(3);
                         sellBook[0].price = (sellBook[0].price).toFixed(5);
 
+                        var flag = false;
+                        if (sellBook[0].is_stop_limit == true) {
+                            flag = true;
+                        }
 
                         buyLimitOrderData.quantity = sellBook[0].quantity;
                         buyLimitOrderData.order_status = "partially_filled";
@@ -178,6 +185,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.quantity = sellBook[0].quantity;
                         trade_history_data.requested_user_id = sellBook[0].user_id;
                         trade_history_data.created_at = new Date();
+                        trade_history_data.flag = true;
 
                         var activityResult = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
                         console.log("activityResult", JSON.stringify(activityResult))
@@ -250,6 +258,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     if (buyAddedData.order_type == "StopLimit") {
                         buyAddedData.order_type = "Limit";
                         buyAddedData.price = buyLimitOrderData.limit_price;
+                        buyAddedData.is_stop_limit = true;
                     }
                     delete buyAddedData.id;
                     delete buyAddedData.side;
@@ -300,6 +309,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 if (buyAddedData.order_type == "StopLimit") {
                     buyAddedData.order_type = "Limit";
                     buyAddedData.price = buyLimitOrderData.limit_price;
+                    buyAddedData.is_stop_limit = true;
                     // buyAddedData.side = "Buy";
                 }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);

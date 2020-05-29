@@ -35,6 +35,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 100) =
         })
         .orderBy('id', 'DESC')
         .limit(limit);
+    console.log("cancelDetails", cancelDetails)
 
     return (cancelDetails);
 

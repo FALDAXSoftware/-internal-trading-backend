@@ -16,10 +16,18 @@ router.get("/soc", function (req, res) {
   return res.json({ status: 1 })
 });
 
-router.post('/orders/market-sell-create', TradeController.marketSell);
-router.post('/orders/market-buy-create', TradeController.marketBuy);
-router.post('/orders/limit-buy-order-create', TradeController.limitBuy);
-router.post('/orders/limit-sell-order-create', TradeController.limitSell);
+// router.post('/orders/market-sell-create', TradeController.marketSell);
+// router.post('/orders/market-buy-create', TradeController.marketBuy);
+// router.post('/orders/limit-buy-order-create', TradeController.limitBuy);
+// router.post('/orders/limit-sell-order-create', TradeController.limitSell);
+
+// Queue Implementation
+router.post('/orders/market-sell-create', TradeController.marketSellQueue);
+router.post('/orders/market-buy-create', TradeController.marketBuyQueue);
+router.post('/orders/limit-buy-order-create', TradeController.limitBuyOrderQueue);
+router.post('/orders/limit-sell-order-create', TradeController.limitSellOrderQueue);
+
+
 router.post('/orders/pending-buy-order-create', TradeController.stopLimitBuyOrder);
 router.post('/orders/pending-sell-order-create', TradeController.stopLimitSellOrder);
 router.post('/trade/add-favourite-pair', UserFavouritesController.addFavouritesData)

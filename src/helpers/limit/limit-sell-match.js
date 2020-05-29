@@ -55,6 +55,9 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     trade_history_data.taker_fee = 0.0;
                     trade_history_data.requested_user_id = buyBook[0].user_id;
                     trade_history_data.created_at = new Date();
+                    if (buyBook[0].is_stop_limit == true) {
+                        trade_history_data.is_stop_limit = true
+                    }
                     let updatedActivity = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, trade_history_data);
                     userIds.push(parseInt(trade_history_data.requested_user_id));
 
@@ -131,6 +134,10 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     buyBook[0].quantity = (buyBook[0].quantity).toFixed(3);
                     buyBook[0].price = (buyBook[0].price).toFixed(5);
 
+                    var flag = false;
+                    if (buyBook[0].is_stop_limit == true) {
+                        flag = true
+                    }
                     sellLimitOrderData.quantity = buyBook[0].quantity;
                     sellLimitOrderData.order_status = "partially_filled";
                     sellLimitOrderData.fill_price = buyBook[0].price;
@@ -149,7 +156,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     trade_history_data.quantity = buyBook[0].quantity;
                     trade_history_data.requested_user_id = buyBook[0].user_id;
                     trade_history_data.created_at = new Date();
-
+                    trade_history_data.is_stop_limit = flag;
                     var activityResult = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, trade_history_data);
                     console.log("activityResult", JSON.stringify(activityResult))
 
@@ -212,16 +219,17 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 delete sellAddedData.id;
                 delete sellAddedData.side;
                 delete sellAddedData.activity_id;
+                sellAddedData.side = "Sell"
+                if (sellAddedData.order_type == "StopLimit") {
+                    sellAddedData.order_type = "Limit";
+                    sellAddedData.price = sellLimitOrderData.limit_price;
+                    sellAddedData.is_stop_limit = true;
+                }
                 var activity = await ActivityHelper.addActivityData(sellAddedData);
                 sellAddedData.is_partially_fulfilled = true;
                 sellLimitOrderData.is_filled = false;
                 sellAddedData.activity_id = activity.id;
                 sellLimitOrderData.added = true;
-                sellAddedData.side = "Sell"
-                if (sellAddedData.order_type == "StopLimit") {
-                    sellAddedData.order_type = "Limit";
-                    sellAddedData.price = sellLimitOrderData.limit_price
-                }
                 var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
 
                 // Emit Socket Event
@@ -248,16 +256,17 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             delete sellAddedData.id;
             delete sellAddedData.side;
             delete sellAddedData.activity_id;
+            sellAddedData.side = "Sell"
+            if (sellAddedData.order_type == "StopLimit") {
+                sellAddedData.order_type = "Limit";
+                sellAddedData.price = sellLimitOrderData.limit_price;
+                sellAddedData.is_stop_limit = true;
+            }
             var activity = ActivityHelper.addActivityData(sellAddedData);
             sellAddedData.is_partially_fulfilled = true;
             sellLimitOrderData.is_filled = false;
             sellAddedData.activity_id = activity.id;
             sellLimitOrderData.added = true;
-            sellAddedData.side = "Sell"
-            if (sellAddedData.order_type == "StopLimit") {
-                sellAddedData.order_type = "Limit";
-                sellAddedData.price = sellLimitOrderData.limit_price;
-            }
             var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
             // Emit Socket Event
             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)

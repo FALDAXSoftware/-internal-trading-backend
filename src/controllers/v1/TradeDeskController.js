@@ -34,7 +34,7 @@ class TradeDeskController extends AppController {
 
             var getPairDetails = await PairsModel
                 .query()
-                .select("name", "crypto_minimum", "crypto_maximum", "id")
+                .select("name", "crypto_minimum", "crypto_maximum", "id", "bot_status")
                 .where("deleted_at", null)
                 .andWhere("is_active", true)
                 .orderBy("id", "DESC");
@@ -78,7 +78,7 @@ class TradeDeskController extends AppController {
 
             if (getPairDetails.length > 0) {
                 var updateSql = `UPDATE pairs 
-                                    SET crypto_minimum = '${req.body.min_crypto}', crypto_maximum = '${req.body.max_crypto}' 
+                                    SET crypto_minimum = '${req.body.min_crypto}', crypto_maximum = '${req.body.max_crypto}', bot_status = ${Boolean(req.body.flag)} 
                                     WHERE id = ${id} AND deleted_at IS NULL AND is_active = 'true'
                                     RETURNING *`
 
@@ -168,12 +168,14 @@ class TradeDeskController extends AppController {
                 "url": "Trade Function",
                 "type": "Entry"
             }, "Entered the function")
-            var walletSql = `SELECT coins.coin, wallets.balance, wallets.placed_balance, wallets.receive_address
-                                    FROM coins
-                                    LEFT JOIN wallets
-                                    ON wallets.coin_id = coins.id
-                                    WHERE coins.is_active = 'true' AND coins.deleted_at IS NULL 
-                                    AND wallets.deleted_at IS NULL AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`
+            var walletSql = `SELECT coins.coin, wallets.balance, wallets.placed_balance, wallets.receive_address,
+                                json(currency_conversion.quote->'USD'->'price') as fiat_value, coins.coin_code
+                                FROM coins
+                                LEFT JOIN wallets
+                                ON wallets.coin_id = coins.id
+                                LEFT JOIN currency_conversion
+                                ON currency_conversion.coin_id = coins.id
+                                WHERE wallets.deleted_at IS NULL AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`
             var getWalletData = await CoinModel.knex().raw(walletSql)
             getWalletData = getWalletData.rows;
             await logger.info({
@@ -194,6 +196,21 @@ class TradeDeskController extends AppController {
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
     }
+
+    // async changeBotStatus(req, res) {
+    //     try {
+    //         var id = PairsModel.decript_id(req.body.id)
+    //     } catch (error) {
+    //         console.log("error", JSON.stringify(error));
+    //         await logger.info({
+    //             "module": "Trade Desk Monitoring",
+    //             "user_id": "user_tradedesk",
+    //             "url": "Trade Function",
+    //             "type": "Error"
+    //         }, error);
+    //         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+    //     }
+    // }
 }
 
 module.exports = new TradeDeskController();

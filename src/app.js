@@ -121,10 +121,10 @@ app.all('/*', function (req, res, next) {
   }
 });
 
-app.set("pairData", {
-  crypto: "XRP",
-  currency: "BTC"
-});
+// app.set("pairData", {
+//   crypto: process.env.CRYPTO,
+//   currency: process.env.CURRENCY
+// });
 
 // Socket Implementation //Socket config
 
@@ -153,6 +153,8 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
+    console.log("room", room)
+
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     if (room.previous_room) {
       socket.leave(room.previous_room);
@@ -167,12 +169,12 @@ io.on('connection', async function (socket) {
     socket.join(room.room + user_id); // Join to new Room with Userid
     socket.join(pair[1]); // Join to new Currency Room
 
+    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
+    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
+    socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
-    socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
-    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol));
-    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })

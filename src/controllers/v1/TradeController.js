@@ -56,6 +56,8 @@ var RefferalHelper = require("../../helpers/get-refffered-amount");
 var fiatValueHelper = require("../../helpers/get-fiat-value");
 var sellOrderBookSummary = require("../../helpers/sell/get-sell-book-order-summary");
 var buyOrderBookSummary = require("../../helpers/buy/get-buy-book-order-summary");
+var QueueValue = require("./QueueController");
+
 /**
  * Trade Controller : Used for live tradding
  */
@@ -392,6 +394,9 @@ class TradeController extends AppController {
         trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
         trade_history_data.created_at = now;
         trade_history_data.fix_quantity = quantityValue;
+        if (currentBuyBookDetails.is_stop_limit == true) {
+          trade_history_data.is_stop_limit = true;
+        }
         // Update activity
         await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
         userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -456,6 +461,10 @@ class TradeController extends AppController {
 
         trade_history_data.fix_quantity = quantityValue;
         console.log("trade_history_data", JSON.stringify(trade_history_data))
+
+        if (currentBuyBookDetails.is_stop_limit == true) {
+          trade_history_data.is_stop_limit = true;
+        }
 
         let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
         userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -929,6 +938,9 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
+          if (currentSellBookDetails.is_stop_limit == true) {
+            trade_history_data.is_stop_limit = true
+          }
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -990,7 +1002,10 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          console.log(JSON.stringify(trade_history_data))
+          console.log(JSON.stringify(trade_history_data));
+          if (currentSellBookDetails.is_stop_limit == true) {
+            trade_history_data.is_stop_limit = true
+          }
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -2753,6 +2768,604 @@ class TradeController extends AppController {
     return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Trade retrieve success").message, allData);
   }
 
+  // Queue Market Buy Order
+  async marketBuyQueue(req, res) {
+
+    try {
+      var user_id = await Helper.getUserId(req.headers, res);
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, "Entered the function")
+      let {
+        symbol,
+        side,
+        order_type,
+        orderQuantity,
+      } = req.body;
+      // var user_id = await Helper.getUserId(req.headers, res);
+
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
+
+      if (quantityTotal.total < orderQuantity) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+
+      var userIds = [];
+      userIds.push(user_id);
+
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+        orderQuantity = parseFloat(orderQuantity);
+
+        if (orderQuantity <= 0) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Invalid Quantity").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
+
+        // Get Currency/Crypto each asset
+
+        if (crypto == currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Currency and Crypto should not be same").message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
+        // Get and check Crypto Wallet details
+        let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+        if (!walletData.currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Create Currency Wallet").message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
+        if (!walletData.crypto) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Create Crypto Wallet").message)
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+
+        var queueName = process.env.QUEUE_NAME
+        var queueData = {
+          symbol,
+          side,
+          order_type,
+          orderQuantity,
+          user_id,
+          res: null,
+          crypto: walletData.crypto.coin_id,
+          currency: walletData.currency.coin_id
+        }
+        var responseValue = await QueueValue.publishToQueue(queueName, queueData)
+        if (responseValue == 0) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__('Order Success').message)
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+        } else {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Error"
+          })
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('panic button enabled').message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__(tradeDataChecking.msg).message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+      }
+
+      // console.log(responseData)
+    } catch (err) {
+      console.log("err", JSON.stringify(err));
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Error"
+      }, err)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+    }
+  }
+
+  // Queue Market Sell Order
+  async marketSellQueue(req, res) {
+    try {
+      var user_id = await Helper.getUserId(req.headers, res);
+      await logger.info({
+        "module": "Market Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, "Entered the function")
+      let {
+        symbol,
+        side,
+        order_type,
+        orderQuantity,
+        // user_id
+      } = req.body;
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
+
+      if (quantityTotal.total_quantity < orderQuantity) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+      // get user id from header
+      let userIds = [];
+      userIds.push(user_id);
+
+      var userData = await Users
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("is_active", true)
+        .andWhere("id", user_id)
+        .orderBy("id", "DESC");
+
+      // Check user user is allowed to trade or not
+      var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+      if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+        // console.log("INSIDE IF")
+        orderQuantity = parseFloat(orderQuantity);
+
+        // Order Quantity Validation
+        if (orderQuantity <= 0) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Invalid Quantity").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        }
+
+        // Get Currency/Crypto each asset
+
+        if (crypto == currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Currency and Crypto should not be same").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+        }
+
+        // Get and check Crypto Wallet details
+        let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+        if (!walletData.currency) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Create Currency Wallet").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+        }
+        if (!walletData.crypto) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Create Crypto Wallet").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+        const checkUser = Helper.checkWhichUser(user_id);
+
+        // Check balance sufficient or not
+        console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
+        if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Insufficient balance to place order").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        }
+        let object = {
+          crypto: crypto,
+          currency: currency,
+          symbol: symbol,
+          side: side,
+          order_type: order_type,
+          orderQuantity: orderQuantity,
+          user_id: user_id,
+          crypto_wallet_data: walletData.crypto,
+          userIds: userIds
+        };
+
+        var queueName = process.env.QUEUE_NAME
+        var queueData = {
+          object,
+          order_type: order_type,
+          side: side,
+          res: null,
+          crypto: walletData.crypto.coin_id,
+          currency: walletData.currency.coin_id
+        }
+        var responseValue = await QueueValue.publishToQueue(queueName, queueData)
+
+        if (responseValue == 0) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__('Order Success').message)
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+        } else {
+          await logger.error({
+            "module": "Market Sell",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Error"
+          })
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+      } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('panic button enabled').message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+      } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__(tradeDataChecking.msg).message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+      }
+
+
+    } catch (err) {
+      console.log("err", JSON.stringify(err));
+      await logger.error({
+        "module": "Market Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Error"
+      }, err)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+    }
+  }
+
+  // Queue limit Buy Order
+  async limitBuyOrderQueue(req, res) {
+    // var user_id = await Helper.getUserId(req.headers);
+    var user_id = await Helper.getUserId(req.headers, res);
+    await logger.info({
+      "module": "Limit Buy",
+      "user_id": "user_" + user_id,
+      "url": "Trade Function",
+      "type": "Entry"
+    }, "Entered the function")
+    let {
+      symbol,
+      side,
+      order_type,
+      orderQuantity,
+      limit_price
+    } = req.body;
+    let { crypto, currency } = await Currency.get_currencies(symbol);
+
+    var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
+
+    if (quantityTotal.total < orderQuantity) {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    }
+
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
+
+    var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+      orderQuantity = parseFloat(orderQuantity);
+
+      if (orderQuantity <= 0) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Invalid Quantity").message)
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      }
+
+
+      if (crypto == currency) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Currency and Crypto should not be same").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+      }
+
+      // Get and check Crypto Wallet details
+      let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+      if (!walletData.currency) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Currency Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      }
+      if (!walletData.crypto) {
+        await logger.info({
+          "module": "Limit Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Crypto Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+
+      var queueName = process.env.QUEUE_NAME
+      var queueData = {
+        symbol,
+        user_id,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        res: null,
+        flag: false,
+        crypto: walletData.crypto.coin_id,
+        currency: walletData.currency.coin_id
+      }
+      var responseValue = await QueueValue.publishToQueue(queueName, queueData)
+
+      if (responseValue == 0) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('Order Success').message)
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+      } else {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Error"
+        })
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+      }
+    } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+      await logger.info({
+        "module": "Limit Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__('panic button enabled').message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+    } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+      await logger.info({
+        "module": "Limit Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__(tradeDataChecking.msg).message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+    }
+
+  }
+
+  // Used to create Sell Limit Order
+  async limitSellOrderQueue(req, res) {
+    var user_id = await Helper.getUserId(req.headers, res);
+    await logger.info({
+      "module": "Limit Sell",
+      "user_id": "user_" + user_id,
+      "url": "Trade Function",
+      "type": "Entry"
+    }, "Entered the function")
+    let {
+      symbol,
+      side,
+      order_type,
+      orderQuantity,
+      limit_price
+    } = req.body;
+
+    let { crypto, currency } = await Currency.get_currencies(symbol);
+
+    var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
+
+    if (quantityTotal.total_quantity < orderQuantity) {
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    }
+
+    var userData = await Users
+      .query()
+      .select()
+      .first()
+      .where("deleted_at", null)
+      .andWhere("is_active", true)
+      .andWhere("id", user_id)
+      .orderBy("id", "DESC");
+    var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+
+    if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
+
+      orderQuantity = parseFloat(orderQuantity);
+
+      if (orderQuantity <= 0) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Invalid Quantity").message)
+        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      }
+
+
+      if (crypto == currency) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Currency and Crypto should not be same").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Currency and Crypto should not be same").message, []);
+      }
+      // Get and check Crypto Wallet details
+      // Get and check Crypto Wallet details
+      let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+      if (!walletData.currency) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Currency Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Currency Wallet").message, []);
+      }
+      if (!walletData.crypto) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Create Crypto Wallet").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+
+      const checkUser = Helper.checkWhichUser(user_id);
+
+      if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
+        await logger.info({
+          "module": "Limit Sell",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Succes"
+        }, i18n.__("Insufficient balance to place order").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      }
+
+      var queueName = process.env.QUEUE_NAME
+      var queueData = {
+        symbol,
+        user_id,
+        side,
+        order_type,
+        orderQuantity,
+        limit_price,
+        res: null,
+        flag: false,
+        crypto: walletData.crypto.coin_id,
+        currency: walletData.currency.coin_id
+      }
+      var responseValue = await QueueValue.publishToQueue(queueName, queueData)
+
+      if (responseValue == 0) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__('Order Success').message)
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+      } else {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Error"
+        })
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+      }
+
+
+    } else if (tradeDataChecking.status == true || tradeDataChecking.status == "true") {
+      await logger.info({
+        "module": "Limit Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__('panic button enabled').message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__('panic button enabled').message, []);
+    } else if (tradeDataChecking.response == false || tradeDataChecking.response == "false") {
+      await logger.info({
+        "module": "Limit Sell",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Succes"
+      }, i18n.__(tradeDataChecking.msg).message)
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+    }
+  }
 }
 
 module.exports = new TradeController();
