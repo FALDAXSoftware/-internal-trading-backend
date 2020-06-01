@@ -8,7 +8,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
     conn.createChannel(function (err, channel) {
         console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
         // let checkQeue = channel.assertQueue(process.env.QUEUE_NAME)
-        channel.prefetch(3)
+        channel.prefetch(1)
         ch = channel;
         ch.consume(process.env.QUEUE_NAME + '-XRP-BTC', (msg, err) => {
             // console.log("mesages");
