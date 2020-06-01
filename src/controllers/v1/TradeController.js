@@ -1131,6 +1131,7 @@ class TradeController extends AppController {
                 }
               }
             }
+            let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
             return {
               status: 1,
               message: '',
@@ -1184,6 +1185,7 @@ class TradeController extends AppController {
                 }
               }
             }
+            let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
             return {
               status: 1,
               message: '',
