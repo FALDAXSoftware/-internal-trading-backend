@@ -29,7 +29,58 @@ var stopLimitBuy = async (now, pending_order_book) => {
     console.log("order.stop_price", order.stop_price);
     console.log("lastPrice >= order.stop_price", lastPrice >= order.stop_price)
     if (lastPrice >= order.stop_price) {
-        var buyMatchResponse = await LimitBuyMatch.limitData(order, order.settle_currency, order.currency, getActivityDetails, null, crypto_coin_id, currency_coin_id);
+        var allOrderData=[];
+        var buyMatchResponse = await LimitBuyMatch.limitData(order, order.settle_currency, order.currency, getActivityDetails, null, crypto_coin_id, currency_coin_id,allOrderData);
+        console.log('buyMatchResponse', buyMatchResponse);
+        if( buyMatchResponse.status == 1 ){
+            // Send Email notification in single
+            var userData = buyMatchResponse.tradeData.userIds;
+            var tradeData = buyMatchResponse.tradeData.orderData;
+            // var tradeQuantity = tradeData.reduce( (current, next)=>current+next.quantity, 0 );
+            console.log("tradeData", JSON.stringify(tradeData));
+            for (var i = 0; i < userData.length; i++) {
+                // Notification Sending for users
+                var userNotification = await UserNotifications.getSingleData({
+                    user_id: userData[i],
+                    deleted_at: null,
+                    slug: 'trade_execute'
+                })
+                var user_data = await Users.getSingleData({
+                    deleted_at: null,
+                    id: userData[i],
+                    is_active: true
+                });
+                if (user_data != undefined) {
+                    if (userNotification != undefined) {
+                    if (userNotification.email == true || userNotification.email == "true") {
+                        if (user_data.email != undefined) {
+                        var allData = {
+                            template: "emails/general_mail.ejs",
+                            templateSlug: "trade_execute",
+                            email: user_data.email,
+                            user_detail: user_data,
+                            formatData: {
+                            recipientName: user_data.first_name,
+                            side: order.side,
+                            pair: order.symbol,
+                            order_type: order.order_type,
+                            quantity: order.orderQuantity,
+                            allTradeData: tradeData
+                            }
+
+                        }
+                        await Helper.SendEmail(res, allData)
+                        }
+                    }
+                    if (userNotification.text == true || userNotification.text == "true") {
+                        if (user_data.phone_number != undefined) {
+                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                        }
+                    }
+                    }
+                }
+            }
+        }
         if (buyMatchResponse) {
             var pendingOrder = await pendingOrderDelet.deletePendingOrder(order_id)
         }

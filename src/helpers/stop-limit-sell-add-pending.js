@@ -5,6 +5,7 @@ var WalletBalanceChecking = require("./wallet-status");
 var ActivityAdd = require("../helpers/activity/add");
 var PendingAdd = require("./pending/add-pending-order");
 var UserNotifications = require("../models/UserNotifications");
+var PairsModel = require("../models/Pairs");
 var Helper = require("../helpers/helpers");
 var Users = require("../models/UsersModel");
 var socketHelper = require("../helpers/sockets/emit-trades");
@@ -14,6 +15,14 @@ var moment = require('moment');
 var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res) => {
     var userIds = [];
     userIds.push(user_id);
+    var pairDetails = await PairsModel
+        .query()
+        .first()
+        .select("name", "quantity_precision", "price_precision")
+        .where("deleted_at", null)
+        .andWhere("name", symbol)
+        .orderBy("id", "DESC")
+
     let { crypto, currency } = await Currency.get_currencies(symbol);
     const checkUser = Helper.checkWhichUser(user_id);
     var now = new Date();
@@ -26,10 +35,10 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
             .add(1, 'years')
             .format(),
         'fill_price': 0.0,
-        'limit_price': limit_price,
-        'stop_price': stop_price,
+        'limit_price': (limit_price).toFixed(pairDetails.price_precision),
+        'stop_price': (stop_price).toFixed(pairDetails.price_precision),
         'price': 0.0,
-        'quantity': orderQuantity,
+        'quantity': (orderQuantity).toFixed(pairDetails.quantity_precision),
         'settle_currency': crypto,
         'order_status': "open",
         'currency': currency,
@@ -44,7 +53,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         ...limitSellOrder
     }
     resultData.is_market = false;
-    resultData.fix_quantity = orderQuantity;
+    resultData.fix_quantity = (orderQuantity).toFixed(pairDetails.quantity_precision);
     resultData.maker_fee = fees.makerFee;
     resultData.taker_fee = fees.takerFee;
 
