@@ -3,21 +3,28 @@ var cron = require('node-cron');
 var cronData = require("../controllers/v1/TradeController");
 var dashBoardUpdate = require("../controllers/v1/DashboardController");
 
-// // // On Every Minute
+// On Every Minute
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
     await cronData.executeStopLimit();
 });
 
 // Cron for LTC-BTC
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
+// });
+
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
+// });
 
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("LTC-BTC");
+    await Promise.all([
+        dashBoardUpdate.updateBuyOrderBookValue("LTC-BTC")
+    ])
 });
 
 cron.schedule('* * * * *', async (req, res, next) => {
@@ -43,8 +50,7 @@ cron.schedule('* * * * *', async (req, res, next) => {
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
     await Promise.all([
-        dashBoardUpdate.updateBuyOrderBookValue("XRP-BTC"),
-        // dashBoardUpdate.updateSellOrderBook("XRP-BTC")
+        dashBoardUpdate.updateBuyOrderBookValue("XRP-BTC")
     ])
 });
 
@@ -59,14 +65,21 @@ cron.schedule('* * * * *', async (req, res, next) => {
 })
 
 // //  Cron for ETH-BTC
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("ETH-BTC");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("ETH-BTC");
+// });
+
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("ETH-BTC");
+// });
 
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("ETH-BTC");
+    await Promise.all([
+        dashBoardUpdate.updateBuyOrderBookValue("ETH-BTC")
+    ])
 });
 
 cron.schedule('* * * * *', async (req, res, next) => {
@@ -80,14 +93,21 @@ cron.schedule('* * * * *', async (req, res, next) => {
 })
 
 // //  Cron for BCH-BTC
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("BCH-BTC");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("BCH-BTC");
+// });
+
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("BCH-BTC");
+// });
 
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("BCH-BTC");
+    await Promise.all([
+        dashBoardUpdate.updateBuyOrderBookValue("BCH-BTC")
+    ])
 });
 
 cron.schedule('* * * * *', async (req, res, next) => {
@@ -101,14 +121,21 @@ cron.schedule('* * * * *', async (req, res, next) => {
 })
 
 //  Cron for LTC-ETH
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("LTC-ETH");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("LTC-ETH");
+// });
+
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("LTC-ETH");
+// });
 
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("LTC-ETH");
+    await Promise.all([
+        dashBoardUpdate.updateBuyOrderBookValue("LTC-ETH")
+    ])
 });
 
 cron.schedule('* * * * *', async (req, res, next) => {
@@ -122,14 +149,21 @@ cron.schedule('* * * * *', async (req, res, next) => {
 })
 
 //  Cron for XRP-ETH
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
-    console.log("Started cron....");
-    await dashBoardUpdate.updateBuyOrderBook("XRP-ETH");
-});
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("XRP-ETH");
+// });
+
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateSellOrderBook("XRP-ETH");
+// });
 
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
-    await dashBoardUpdate.updateSellOrderBook("XRP-ETH");
+    await Promise.all([
+        dashBoardUpdate.updateBuyOrderBookValue("XRP-ETH")
+    ])
 });
 
 cron.schedule('* * * * *', async (req, res, next) => {

@@ -24,6 +24,7 @@ var randomString = (length) => {
 
 // Common Customized Mailer Function to send mail
 var SendEmail = async (res, requestedData) => {
+  var moment = require("moment");
   // console.log(res)
   if (res == null) {
     var express = require('express');
@@ -50,7 +51,31 @@ var SendEmail = async (res, requestedData) => {
 
   let language_content = template.all_content[user_language].content;
   let language_subject = template.all_content[user_language].subject;
-
+  let tradeData = '';
+  if( format_data.allTradeData ){
+    var sortedOrderData = format_data.allTradeData;
+    sortedOrderData.sort(function(a, b){return b.id - a.id});
+    const allTradeData = sortedOrderData;
+    tradeData += '<table style="border:1px solid #888;border-collapse:collapse;border-spacing:0;font-size:13px;">'
+    tradeData +='<tr>'
+    tradeData +=`<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Filled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData +=`<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Unfilled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData +=`<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Trade Price(${allTradeData[0].currency})</th>`
+    tradeData +=`<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Datetime</th>`
+    tradeData +='</tr>'
+    for ( let i=0; i<allTradeData.length; i++){
+      const remaining = parseFloat(allTradeData[i].fix_quantity) - parseFloat(allTradeData[i].quantity);
+      const datetime = moment(allTradeData[i].created_at).local().format("YYYY-MM-DD HH:mm")
+      tradeData +='<tr>'
+      tradeData +=`<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].quantity).toFixed(8)}</td>`;
+      tradeData +=`<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(remaining).toFixed(8)}</td>`;
+      tradeData +=`<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].fill_price).toFixed(8)}</td>`;
+      tradeData +=`<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${datetime}</td>`;
+      tradeData +='</tr>'
+    }
+    tradeData += '</table>'
+  }
+  format_data.allTradeData = tradeData;
   language_content = await module.exports.formatEmail(language_content, format_data);
 
   // console.log(language_content)
@@ -82,7 +107,6 @@ var SendEmail = async (res, requestedData) => {
 var formatEmail = async (emailContent, data) => {
   let rex = /{{([^}]+)}}/g;
   let key;
-  console.log("data", JSON.stringify(data));
   if ("object" in data) {
     data = data.object;
   }

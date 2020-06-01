@@ -19,16 +19,19 @@ var getInstrumentData = async () => {
 
     instrumentData = await PairsModel
         .query()
-        .select()
+        .select("name", "coin_code1", "coin_code2", "quantity_precision", "price_precision")
         .andWhere('deleted_at', null)
-        .andWhere('is_active', true);
+        .andWhere('is_active', true)
+        .orderBy("id", "DESC");
 
     // Get Coin Data
     let coins = await CoinsModel
         .query()
         .select()
         .where('deleted_at', null)
-        .andWhere('is_active', true);
+        .andWhere('is_active', true)
+        .orderBy('id', 'DESC');
+
     let coinList = {};
     for (let index = 0; index < coins.length; index++) {
         const element = coins[index];
@@ -94,12 +97,14 @@ var getInstrumentData = async () => {
 
         var instrument_data = {
             "name": instrumentData[i].name,
-            "last_price": lastTradePrice,
-            "volume": total_volume,
-            "percentChange": percentChange,
+            "last_price": (lastTradePrice).toFixed(8),
+            "volume": (total_volume).toFixed(2),
+            "percentChange": (percentChange).toFixed(2),
             "coin_icon": (coinList[instrumentData[i].coin_code1] != undefined && coinList[instrumentData[i].coin_code1].coin_icon != null ?
                 coinList[instrumentData[i].coin_code1].coin_icon :
-                "")
+                ""),
+            "quantity_precision": instrumentData[i].quantity_precision,
+            "price_precision": instrumentData[i].price_precision
         }
         pairData.push(instrument_data);
     }
