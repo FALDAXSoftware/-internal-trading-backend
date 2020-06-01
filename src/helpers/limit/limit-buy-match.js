@@ -153,10 +153,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                                     user_detail: user_data,
                                                     formatData: {
                                                         recipientName: user_data.first_name,
-                                                        side: side,
-                                                        pair: symbol,
-                                                        order_type: order_type,
-                                                        quantity: orderQuantity,
+                                                        side: tradeData[0].side,
+                                                        pair: tradeData[0].symbol,
+                                                        order_type: tradeData[0].order_type,
+                                                        quantity: tradeData[0].quantity,
                                                         allTradeData: tradeData
                                                     }
 
@@ -213,10 +213,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                                     user_detail: user_data,
                                                     formatData: {
                                                         recipientName: user_data.first_name,
-                                                        side: side,
-                                                        pair: symbol,
-                                                        order_type: order_type,
-                                                        quantity: orderQuantity,
+                                                        side: tradeData[0].side,
+                                                        pair: tradeData[0].symbol,
+                                                        order_type: tradeData[0].order_type,
+                                                        quantity: tradeData[0].quantity,
                                                         allTradeData: tradeData
                                                     }
 
@@ -522,11 +522,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                         user_detail: user_data,
                                         formatData: {
                                             recipientName: user_data.first_name,
-                                            side: buyLimitOrderData.side,
-                                            pair: buyLimitOrderData.symbol,
-                                            order_type: buyLimitOrderData.order_type,
-                                            quantity: buyLimitOrderData.quantity,
-                                            price: buyLimitOrderData.limit_price,
+                                            side: tradeData[0].side,
+                                            pair: tradeData[0].symbol,
+                                            order_type: tradeData[0].order_type,
+                                            quantity: tradeData[0].quantity,
+                                            allTradeData: tradeData
                                         }
 
                                     }
@@ -591,7 +591,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                         user_detail: user_data,
                                         formatData: {
                                             recipientName: user_data.first_name,
-                                            pair: buyLimitOrderData.symbol
+                                            side: buyLimitOrderData.side,
+                                            pair: buyLimitOrderData.symbol,
+                                            order_type: buyLimitOrderData.order_type,
+                                            quantity: buyLimitOrderData.quantity,
+                                            price: buyLimitOrderData.limit_price,
                                         }
                                     }
                                     await Helper.SendEmail(res, allData)

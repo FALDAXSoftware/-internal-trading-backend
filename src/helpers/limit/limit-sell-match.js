@@ -136,7 +136,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                     side: tradeData[0].side,
                                                     pair: tradeData[0].symbol,
                                                     order_type: tradeData[0].order_type,
-                                                    quantity: tradeData[0].orderQuantity,
+                                                    quantity: tradeData[0].quantity,
                                                     allTradeData: tradeData
                                                 }
                                             }
@@ -195,7 +195,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                     side: tradeData[0].side,
                                                     pair: tradeData[0].symbol,
                                                     order_type: tradeData[0].order_type,
-                                                    quantity: tradeData[0].orderQuantity,
+                                                    quantity: tradeData[0].quantity,
                                                     allTradeData: tradeData
                                                 }
                                             }
@@ -353,7 +353,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                                 side: tradeData[0].side,
                                                 pair: tradeData[0].symbol,
                                                 order_type: tradeData[0].order_type,
-                                                quantity: tradeData[0].orderQuantity,
+                                                quantity: tradeData[0].quantity,
                                                 allTradeData: tradeData
                                             }
                                         }
@@ -506,7 +506,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                             side: tradeData[0].side,
                                             pair: tradeData[0].symbol,
                                             order_type: tradeData[0].order_type,
-                                            quantity: tradeData[0].orderQuantity,
+                                            quantity: tradeData[0].quantity,
                                             allTradeData: tradeData
                                         }
                                     }
