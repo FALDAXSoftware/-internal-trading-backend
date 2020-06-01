@@ -105,9 +105,16 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.taker_fee = tradingFees.taker_fee;
                         trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
 
-                        if (trade_history_data.activity_id) {
+                        if (trade_history_data.activity_id != undefined) {
                             delete trade_history_data.activity_id;
                         }
+                        if (trade_history_data.placed_by != undefined) {
+                            delete trade_history_data.placed_by
+                        }
+                        if (trade_history_data.flag != undefined) {
+                            delete trade_history_data.flag
+                        }
+
                         console.log("BELOW DELETED")
                         // tradeHistory.txn_group_id = txnGroupId;
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
@@ -261,8 +268,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var resendData = {
                             ...buyLimitOrderData
                         };
-                        sellBook[0].quantity = parseFloat(sellBook[0].quantity).toFixed(pairDetails.quantity_precision);
-                        sellBook[0].price = parseFloat(sellBook[0].price).toFixed(pairDetails.price_precision);
+                        sellBook[0].quantity = sellBook[0].quantity;
+                        sellBook[0].price = sellBook[0].price;
 
                         var flag = false;
                         if (sellBook[0].is_stop_limit == true) {
@@ -278,6 +285,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var trade_history_data = {
                             ...buyLimitOrderData
                         };
+                        console.log("trade_history_data", trade_history_data)
                         trade_history_data.fix_quantity = quantityValue;
 
                         trade_history_data.maker_fee = 0.0;
@@ -310,8 +318,14 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.taker_fee = tradingFees.taker_fee;
                         trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
 
-                        if (trade_history_data.activity_id) {
+                        if (trade_history_data.activity_id != undefined) {
                             delete trade_history_data.activity_id;
+                        }
+                        if (trade_history_data.placed_by != undefined) {
+                            delete trade_history_data.placed_by
+                        }
+                        if (trade_history_data.flag != undefined) {
+                            delete trade_history_data.flag
                         }
 
                         console.log("trade_history_data", JSON.stringify(trade_history_data))
@@ -374,10 +388,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                             user_detail: user_data,
                                             formatData: {
                                                 recipientName: user_data.first_name,
-                                                side: side,
-                                                pair: symbol,
-                                                order_type: order_type,
-                                                quantity: orderQuantity,
+                                                side: tradeData[0].side,
+                                                pair: tradeData[0].symbol,
+                                                order_type: tradeData[0].order_type,
+                                                quantity: tradeData[0].quantity,
                                                 allTradeData: tradeData
                                             }
 
@@ -443,7 +457,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                             user_detail: user_data,
                                             formatData: {
                                                 recipientName: user_data.first_name,
-                                                pair: buyLimitOrderData.symbol
+                                                side: buyLimitOrderData.side,
+                                                pair: buyLimitOrderData.symbol,
+                                                order_type: buyLimitOrderData.order_type,
+                                                quantity: buyLimitOrderData.quantity,
+                                                price: buyLimitOrderData.limit_price,
                                             }
                                         }
                                         await Helper.SendEmail(res, allData)
@@ -504,11 +522,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                         user_detail: user_data,
                                         formatData: {
                                             recipientName: user_data.first_name,
-                                            side: side,
-                                            pair: symbol,
-                                            order_type: order_type,
-                                            quantity: orderQuantity,
-                                            allTradeData: tradeData
+                                            side: buyLimitOrderData.side,
+                                            pair: buyLimitOrderData.symbol,
+                                            order_type: buyLimitOrderData.order_type,
+                                            quantity: buyLimitOrderData.quantity,
+                                            price: buyLimitOrderData.limit_price,
                                         }
 
                                     }
