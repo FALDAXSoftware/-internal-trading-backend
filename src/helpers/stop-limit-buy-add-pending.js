@@ -4,6 +4,7 @@ var MakerTakerFees = require("../helpers/wallet/get-maker-taker-fees");
 var ActivityAdd = require("../helpers/activity/add");
 var PendingAdd = require("./pending/add-pending-order");
 var UserNotifications = require("../models/UserNotifications");
+var PairsModel = require("../models/Pairs");
 var Helper = require("../helpers/helpers");
 var Users = require("../models/UsersModel");
 var socketHelper = require("../helpers/sockets/emit-trades");
@@ -11,7 +12,15 @@ var WalletBalanceChecking = require("./wallet-status");
 var moment = require('moment');
 
 var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res) => {
-    try{
+    try {
+        var pairDetails = await PairsModel
+            .query()
+            .first()
+            .select("name", "quantity_precision", "price_precision")
+            .where("deleted_at", null)
+            .andWhere("name", symbol)
+            .orderBy("id", "DESC")
+
         var userIds = [];
         userIds.push(user_id)
         let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -26,14 +35,14 @@ var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_
                 .add(1, 'years')
                 .format(),
             'fill_price': 0.0,
-            'limit_price': limit_price,
-            'stop_price': stop_price,
+            'limit_price': (limit_price).toFixed(pairDetails.price_precision),
+            'stop_price': (stop_price).toFixed(pairDetails.price_precision),
             'price': 0.0,
-            'quantity': orderQuantity,
+            'quantity': (orderQuantity).toFixed(pairDetails.quantity_precision),
             'settle_currency': crypto,
             'order_status': "open",
             'currency': currency,
-            'placed_by':(checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
+            'placed_by': (checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
         });
 
         let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
@@ -44,7 +53,7 @@ var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_
             ...limitBuyOrder
         }
         resultData.is_market = false;
-        resultData.fix_quantity = orderQuantity;
+        resultData.fix_quantity = (orderQuantity).toFixed(pairDetails.quantity_precision);
         resultData.maker_fee = fees.makerFee;
         resultData.taker_fee = fees.takerFee;
 
@@ -112,7 +121,7 @@ var stopBuyAdd = async (symbol, user_id, side, order_type, orderQuantity, limit_
                 message: 'Insufficient balance to place order'
             }
         }
-    }catch(error){
+    } catch (error) {
         console.log("Error", error);
     }
 

@@ -47,6 +47,7 @@ var StopLimitBuyExecute = require("../../helpers/stop/stop-limit-buy");
 var StopLimitSellExecute = require("../../helpers/stop/stop-limit-sell");
 var CoinsModel = require("../../models/Coins");
 var WalletModel = require("../../models/Wallet");
+var PairsModel = require("../../models/Pairs");
 var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
 var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 var TradeHistoryModel = require("../../models/TradeHistory");
@@ -182,7 +183,7 @@ class TradeController extends AppController {
 
         console.log("walletData.crypto.coin_id", JSON.stringify(walletData.crypto.coin_id))
         var allOrderData = [];
-        let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id,allOrderData);
+        let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id, allOrderData);
         console.log("market_sell_order", JSON.stringify(market_sell_order))
 
         // await logger.info({
@@ -347,14 +348,22 @@ class TradeController extends AppController {
       }
     }
 
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "quantity_precision", "price_precision")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC")
+
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
 
-    var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
+    var quantityValue = orderQuantity.toFixed(pairDetails.quantity_precision)
     var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
       var availableQty = buy_book_data[0].quantity;
       var currentBuyBookDetails = buy_book_data[0];
-      var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
+      var priceValue = (currentBuyBookDetails.price).toFixed(pairDetails.price_precision)
       var now = new Date();
       var orderData = {
         user_id: user_id,
@@ -436,7 +445,7 @@ class TradeController extends AppController {
             "type": "Success"
           }, remainigQuantity + tradeHistory)
           let updatedBuyBook = await OrderUpdate.updateBuyBook(currentBuyBookDetails.id, {
-            quantity: (remainigQuantity).toFixed(process.env.QUANTITY_PRECISION)
+            quantity: (remainigQuantity).toFixed(pairDetails.quantity_precision)
           })
         } else {
           await logger.info({
@@ -506,7 +515,7 @@ class TradeController extends AppController {
           user_id: user_id,
           side: side,
           order_type: order_type,
-          orderQuantity: remainingQty,
+          orderQuantity: (remainingQty).toFixed(pairDetails.quantity_precision),
           crypto_wallet_data: crypto_wallet_data,
           userIds: userIds
         };
@@ -594,6 +603,7 @@ class TradeController extends AppController {
       tradeData: emailData
     }
   }
+
   // Used for Buy Market order
   async marketBuy(req, res) {
 
@@ -692,7 +702,7 @@ class TradeController extends AppController {
           order_type,
           orderQuantity,
           user_id,
-          res, walletData.crypto.coin_id, walletData.currency.coin_id,allOrderData);
+          res, walletData.crypto.coin_id, walletData.currency.coin_id, allOrderData);
 
         if (responseData.status > 1) {
           await logger.info({
@@ -886,16 +896,23 @@ class TradeController extends AppController {
       }
     }
 
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "quantity_precision", "price_precision")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC")
 
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var quantityFixed = orderQuantity;
-    var quantityValue = parseFloat(quantityFixed).toFixed(8);
+    var quantityValue = parseFloat(quantityFixed).toFixed(pairDetails.quantity_precision);
     var tradeOrder;
     if (sellBook && sellBook.length > 0) {
       console.log("sellBook[0]", JSON.stringify(sellBook[0]))
       var availableQuantity = sellBook[0].quantity;
       var currentSellBookDetails = sellBook[0];
-      var fillPriceValue = parseFloat(currentSellBookDetails.price).toFixed(8);
+      var fillPriceValue = parseFloat(currentSellBookDetails.price).toFixed(pairDetails.price_precision);
       var now = new Date();
       var orderData = {
         user_id: user_id,
@@ -973,7 +990,7 @@ class TradeController extends AppController {
           let remainigQuantity = availableQuantity - quantityValue;
           if (remainigQuantity > 0) {
             let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
-              quantity: remainigQuantity
+              quantity: (remainigQuantity).toFixed(pairDetails.quantity_precision)
             });
           } else {
             await sellDelete.deleteSellOrder(currentSellBookDetails.id);
@@ -1255,7 +1272,7 @@ class TradeController extends AppController {
         }, i18n.__(responseData.message).message)
         // Send Email notification in single
 
-        if( responseData.tradeData && responseData.tradeData.orderData  ){
+        if (responseData.tradeData && responseData.tradeData.orderData) {
           var userData = responseData.tradeData.userIds;
           var tradeData = responseData.tradeData.orderData;
           for (var i = 0; i < userData.length; i++) {
@@ -1394,10 +1411,18 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "quantity_precision", "price_precision")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC")
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var now = new Date();
-    var quantityValue = parseFloat(orderQuantity).toFixed(8);
-    var priceValue = parseFloat(limit_price).toFixed(8);
+    var quantityValue = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
+    var priceValue = parseFloat(limit_price).toFixed(pairDetails.price_precision);
     var placedBy = "";
     console.log("checkUser", checkUser)
     console.log("flag", flag)
@@ -1821,7 +1846,7 @@ class TradeController extends AppController {
           "type": "Succes"
         }, i18n.__(responseData.message).message)
         // Send Email notification in single
-        if( responseData.tradeData && responseData.tradeData.orderData  ){
+        if (responseData.tradeData && responseData.tradeData.orderData) {
           var userData = responseData.tradeData.userIds;
           var tradeData = responseData.tradeData.orderData;
           for (var i = 0; i < userData.length; i++) {
@@ -1958,10 +1983,18 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
     let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "quantity_precision", "price_precision")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC")
     // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
     var now = new Date();
-    var quantityValue = parseFloat(orderQuantity).toFixed(8);
-    var priceValue = parseFloat(limit_price).toFixed(8);
+    var quantityValue = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
+    var priceValue = parseFloat(limit_price).toFixed(pairDetails.price_precision);
     var placedBy = "";
     console.log("checkUser", checkUser)
     console.log("flag", flag)
@@ -2250,6 +2283,7 @@ class TradeController extends AppController {
         stop_price
         // user_id
       } = req.body;
+
       var userData = await Users
         .query()
         .select()
@@ -2855,7 +2889,7 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
         }
 
-        var queueName = process.env.QUEUE_NAME
+        var queueName = process.env.QUEUE_NAME + '-' + symbol
         var queueData = {
           symbol,
           side,
@@ -3028,7 +3062,7 @@ class TradeController extends AppController {
           userIds: userIds
         };
 
-        var queueName = process.env.QUEUE_NAME
+        var queueName = process.env.QUEUE_NAME + '-' + symbol
         var queueData = {
           object,
           order_type: order_type,
@@ -3169,7 +3203,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
 
-      var queueName = process.env.QUEUE_NAME
+      var queueName = process.env.QUEUE_NAME + '-' + symbol
       var queueData = {
         symbol,
         user_id,
@@ -3314,7 +3348,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
 
-      var queueName = process.env.QUEUE_NAME
+      var queueName = process.env.QUEUE_NAME + '-' + symbol
       var queueData = {
         symbol,
         user_id,

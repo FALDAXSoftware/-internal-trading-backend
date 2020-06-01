@@ -10,6 +10,7 @@ var TradeAdd = require("../../helpers/trade/add");
 var sellUpdate = require("../../helpers/sell/update");
 var sellDelete = require("../../helpers/sell/delete-order");
 var UserNotifications = require("../../models/UserNotifications");
+var PairsModel = require("../../models/Pairs");
 var Helper = require("../../helpers/helpers");
 var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
@@ -18,6 +19,14 @@ var fiatValueHelper = require("../get-fiat-value");
 
 var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData) => {
     try {
+        var pairDetails = await PairsModel
+            .query()
+            .first()
+            .select("name", "quantity_precision", "price_precision")
+            .where("deleted_at", null)
+            .andWhere("name", buyLimitOrderData.symbol)
+            .orderBy("id", "DESC")
+
         var quantityValue = buyLimitOrderData.quantity;
         var userIds = [];
         userIds.push(buyLimitOrderData.user_id);
@@ -58,7 +67,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var trade_history_data = {
                             ...buyLimitOrderData
                         }
-                        trade_history_data.fix_quantity = quantityValue;
+                        trade_history_data.fix_quantity = (quantityValue).toFixed(pairDetails.quantity_precision);
                         console.log(JSON.stringify(trade_history_data))
                         console.log("buyLimitOrderData.quantity >= sellBook[0].quantity", buyLimitOrderData.quantity >= sellBook[0].quantity)
 
@@ -67,7 +76,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.taker_fee = 0.0;
                         trade_history_data.requested_user_id = sellBook[0].user_id;
                         trade_history_data.created_at = new Date();
-                        trade_history_data.quantity = buyLimitOrderData.quantity
+                        trade_history_data.quantity = (buyLimitOrderData.quantity).toFixed(pairDetails.quantity_precision);
                         if (sellBook[0].is_stop_limit == true) {
                             trade_history_data.is_stop_limit = true;
                         }
@@ -81,8 +90,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             currency: buyLimitOrderData.currency,
                             side: buyLimitOrderData.side,
                             settle_currency: buyLimitOrderData.settle_currency,
-                            quantity: buyLimitOrderData.quantity,
-                            fill_price: buyLimitOrderData.fill_price,
+                            quantity: (buyLimitOrderData.quantity).toFixed(pairDetails.quantity_precision),
+                            fill_price: (buyLimitOrderData.fill_price).toFixed(pairDetails.price_precision),
                             crypto_coin_id,
                             currency_coin_id
                         }
@@ -109,7 +118,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var remainigQuantity = availableQuantity - quantityValue;
                         if (remainigQuantity > 0) {
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
-                                quantity: remainigQuantity
+                                quantity: (remainigQuantity).toFixed(pairDetails.quantity_precision)
                             });
                             //Emit data in rooms
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
@@ -149,7 +158,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     console.log("=>If Order can be filled from different book");
                     console.log("INSIDE ELSE")
                     var remainigQuantity = buyLimitOrderData.quantity - sellBook[0].quantity;
-                    remainigQuantity = parseFloat(remainigQuantity).toFixed(8);
+                    remainigQuantity = parseFloat(remainigQuantity).toFixed(pairDetails.toFixed(pairDetails.quantity_precision));
                     console.log("remainigQuantity", remainigQuantity)
                     // var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
                     if (((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
@@ -161,8 +170,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         var resendData = {
                             ...buyLimitOrderData
                         };
-                        sellBook[0].quantity = (sellBook[0].quantity).toFixed(3);
-                        sellBook[0].price = (sellBook[0].price).toFixed(5);
+                        sellBook[0].quantity = (sellBook[0].quantity).toFixed(pairDetails.quantity_precision);
+                        sellBook[0].price = (sellBook[0].price).toFixed(pairDetails.price_precision);
 
                         var flag = false;
                         if (sellBook[0].is_stop_limit == true) {
@@ -220,7 +229,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         tradeOrder = tradeHistory;
                         allOrderData.push(tradeHistory);
                         await sellDelete.deleteSellOrder(sellBook[0].id);
-                         //Emit data in rooms
+                        //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
                         var resendDataLimit = {
                             ...buyLimitOrderData
@@ -252,12 +261,12 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     var buyAddedData = {
                         ...buyLimitOrderData
                     };
-                    buyAddedData.fix_quantity = buyAddedData.quantity;
+                    buyAddedData.fix_quantity = (buyAddedData.quantity).toFixed(pairDetails.quantity_precision);
                     buyAddedData.maker_fee = 0.0;
                     buyAddedData.taker_fee = 0.0;
                     if (buyAddedData.order_type == "StopLimit") {
                         buyAddedData.order_type = "Limit";
-                        buyAddedData.price = buyLimitOrderData.limit_price;
+                        buyAddedData.price = (buyLimitOrderData.limit_price).toFixed(pairDetails.price_precision);
                         buyAddedData.is_stop_limit = true;
                     }
                     delete buyAddedData.id;
@@ -299,7 +308,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     ...buyLimitOrderData
                 };
                 // buyAddedData.price = buyLimitOrderData.limit_price;
-                buyAddedData.fix_quantity = buyAddedData.quantity;
+                buyAddedData.fix_quantity = (buyAddedData.quantity).toFixed(pairDetails.quantity_precision);
                 buyAddedData.maker_fee = 0.0;
                 buyAddedData.taker_fee = 0.0;
                 delete buyAddedData.id;
@@ -308,7 +317,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 buyAddedData.side = "Buy";
                 if (buyAddedData.order_type == "StopLimit") {
                     buyAddedData.order_type = "Limit";
-                    buyAddedData.price = buyLimitOrderData.limit_price;
+                    buyAddedData.price = (buyLimitOrderData.limit_price).toFixed(pairDetails.price_precision);
                     buyAddedData.is_stop_limit = true;
                     // buyAddedData.side = "Buy";
                 }

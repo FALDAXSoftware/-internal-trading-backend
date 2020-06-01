@@ -528,7 +528,7 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -640,7 +640,7 @@ class DashboardController extends AppController {
                         buyLimitOrderData.added = true;
                         var flag = true;
 
-                        var queueName = process.env.QUEUE_NAME
+                        var queueName = process.env.QUEUE_NAME + '-' + pair_name
                         console.log("queueName", queueName)
                         var queueData = {
                             "symbol": pair_name,
