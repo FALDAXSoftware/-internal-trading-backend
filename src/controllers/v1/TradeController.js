@@ -289,7 +289,7 @@ class TradeController extends AppController {
   }
 
   // Helper : Market Sell Order
-  async makeMarketSellOrder(res, alldata, crypto_coin_id, currency_coin_id, allOrderData) {
+  async makeMarketSellOrder(res, alldata, crypto_coin_id, currency_coin_id, allOrderData = []) {
     await logger.info({
       "module": "Market Sell Execution",
       "user_id": "user_" + alldata.user_id,
@@ -358,12 +358,12 @@ class TradeController extends AppController {
 
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
 
-    var quantityValue = orderQuantity.toFixed(pairDetails.quantity_precision)
+    var quantityValue = (orderQuantity)
     var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
-      var availableQty = buy_book_data[0].quantity;
+      var availableQty = parseFloat(buy_book_data[0].quantity).toFixed(pairDetails.quantity_precision);
       var currentBuyBookDetails = buy_book_data[0];
-      var priceValue = (currentBuyBookDetails.price).toFixed(pairDetails.price_precision)
+      var priceValue = parseFloat(currentBuyBookDetails.price).toFixed(pairDetails.price_precision)
       var now = new Date();
       var orderData = {
         user_id: user_id,
@@ -399,10 +399,10 @@ class TradeController extends AppController {
         };
         trade_history_data.maker_fee = 0;
         trade_history_data.taker_fee = 0;
-        trade_history_data.quantity = quantityValue;
+        trade_history_data.quantity = parseFloat(quantityValue).toFixed(pairDetails.quantity_precision);
         trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
         trade_history_data.created_at = now;
-        trade_history_data.fix_quantity = quantityValue;
+        trade_history_data.fix_quantity = parseFloat(quantityValue).toFixed(pairDetails.quantity_precision);
         if (currentBuyBookDetails.is_stop_limit == true) {
           trade_history_data.is_stop_limit = true;
         }
@@ -445,8 +445,54 @@ class TradeController extends AppController {
             "type": "Success"
           }, remainigQuantity + tradeHistory)
           let updatedBuyBook = await OrderUpdate.updateBuyBook(currentBuyBookDetails.id, {
-            quantity: (remainigQuantity).toFixed(pairDetails.quantity_precision)
+            quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
           })
+          var userData = userIds;
+          var tradeData = allOrderData;
+          // var tradeQuantity = tradeData.reduce( (current, next)=>current+next.quantity, 0 );
+          console.log("tradeData", JSON.stringify(tradeData));
+          for (var i = 0; i < userData.length; i++) {
+            // Notification Sending for users
+            var userNotification = await UserNotifications.getSingleData({
+              user_id: userData[i],
+              deleted_at: null,
+              slug: 'trade_execute'
+            })
+            var user_data = await Users.getSingleData({
+              deleted_at: null,
+              id: userData[i],
+              is_active: true
+            });
+            if (user_data != undefined) {
+              if (userNotification != undefined) {
+                if (userNotification.email == true || userNotification.email == "true") {
+                  if (user_data.email != undefined) {
+                    var allData = {
+                      template: "emails/general_mail.ejs",
+                      templateSlug: "trade_execute",
+                      email: user_data.email,
+                      user_detail: user_data,
+                      formatData: {
+                        recipientName: user_data.first_name,
+                        side: side,
+                        pair: symbol,
+                        order_type: order_type,
+                        quantity: orderQuantity,
+                        allTradeData: tradeData
+                      }
+
+                    }
+                    await Helper.SendEmail(res, allData)
+                  }
+                }
+                if (userNotification.text == true || userNotification.text == "true") {
+                  if (user_data.phone_number != undefined) {
+                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                  }
+                }
+              }
+            }
+          }
         } else {
           await logger.info({
             "module": "Market Sell Execution",
@@ -455,16 +501,63 @@ class TradeController extends AppController {
             "type": "Success"
           }, tradeHistory)
           let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
+          var userData = userIds;
+          var tradeData = allOrderData;
+          // var tradeQuantity = tradeData.reduce( (current, next)=>current+next.quantity, 0 );
+          console.log("tradeData", JSON.stringify(tradeData));
+          for (var i = 0; i < userData.length; i++) {
+            // Notification Sending for users
+            var userNotification = await UserNotifications.getSingleData({
+              user_id: userData[i],
+              deleted_at: null,
+              slug: 'trade_execute'
+            })
+            var user_data = await Users.getSingleData({
+              deleted_at: null,
+              id: userData[i],
+              is_active: true
+            });
+            if (user_data != undefined) {
+              if (userNotification != undefined) {
+                if (userNotification.email == true || userNotification.email == "true") {
+                  if (user_data.email != undefined) {
+                    var allData = {
+                      template: "emails/general_mail.ejs",
+                      templateSlug: "trade_execute",
+                      email: user_data.email,
+                      user_detail: user_data,
+                      formatData: {
+                        recipientName: user_data.first_name,
+                        side: side,
+                        pair: symbol,
+                        order_type: order_type,
+                        quantity: orderQuantity,
+                        allTradeData: tradeData
+                      }
+
+                    }
+                    await Helper.SendEmail(res, allData)
+                  }
+                }
+                if (userNotification.text == true || userNotification.text == "true") {
+                  if (user_data.phone_number != undefined) {
+                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                  }
+                }
+              }
+            }
+          }
         }
       } else {
         console.log("INSIDE ELSe")
         var remainingQty = quantityValue - availableQty;
+        console.log("availableQty", availableQty)
         var trade_history_data = {
           ...orderData
         };
         trade_history_data.maker_fee = 0.0;
         trade_history_data.taker_fee = 0.0;
-        trade_history_data.quantity = availableQty;
+        trade_history_data.quantity = parseFloat(availableQty).toFixed(pairDetails.quantity_precision);
         trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
         trade_history_data.created_at = now;
 
@@ -515,7 +608,7 @@ class TradeController extends AppController {
           user_id: user_id,
           side: side,
           order_type: order_type,
-          orderQuantity: (remainingQty).toFixed(pairDetails.quantity_precision),
+          orderQuantity: parseFloat(remainingQty).toFixed(pairDetails.quantity_precision),
           crypto_wallet_data: crypto_wallet_data,
           userIds: userIds
         };
@@ -801,7 +894,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = []) {
     const checkUser = Helper.checkWhichUser(user_id);
     console.log("checkUser", JSON.stringify(checkUser))
     console.log(JSON.stringify({
@@ -990,7 +1083,7 @@ class TradeController extends AppController {
           let remainigQuantity = availableQuantity - quantityValue;
           if (remainigQuantity > 0) {
             let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
-              quantity: (remainigQuantity).toFixed(pairDetails.quantity_precision)
+              quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
             });
           } else {
             await sellDelete.deleteSellOrder(currentSellBookDetails.id);
@@ -1398,7 +1491,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, allOrderData) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, allOrderData = []) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -1970,7 +2063,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Sell Order
-  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id, allOrderData) {
+  async limitSellOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id, currency_coin_id, allOrderData = []) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
