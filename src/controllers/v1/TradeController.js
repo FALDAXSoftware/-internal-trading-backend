@@ -358,7 +358,7 @@ class TradeController extends AppController {
 
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
 
-    var quantityValue = (orderQuantity)
+    var quantityValue = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision)
     var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
       var availableQty = parseFloat(buy_book_data[0].quantity).toFixed(pairDetails.quantity_precision);
