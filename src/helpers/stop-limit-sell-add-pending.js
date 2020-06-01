@@ -35,10 +35,10 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
             .add(1, 'years')
             .format(),
         'fill_price': 0.0,
-        'limit_price': (limit_price).toFixed(pairDetails.price_precision),
-        'stop_price': (stop_price).toFixed(pairDetails.price_precision),
+        'limit_price': parseFloat(limit_price).toFixed(pairDetails.price_precision),
+        'stop_price': parseFloat(stop_price).toFixed(pairDetails.price_precision),
         'price': 0.0,
-        'quantity': (orderQuantity).toFixed(pairDetails.quantity_precision),
+        'quantity': parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision),
         'settle_currency': crypto,
         'order_status': "open",
         'currency': currency,
@@ -53,7 +53,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         ...limitSellOrder
     }
     resultData.is_market = false;
-    resultData.fix_quantity = (orderQuantity).toFixed(pairDetails.quantity_precision);
+    resultData.fix_quantity = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
     resultData.maker_fee = fees.makerFee;
     resultData.taker_fee = fees.takerFee;
 
