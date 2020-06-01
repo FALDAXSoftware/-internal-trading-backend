@@ -1061,8 +1061,8 @@ class TradeController extends AppController {
             currency: currency,
             side: side,
             settle_currency: crypto,
-            quantity: quantityValue,
-            fill_price: fillPriceValue,
+            quantity: parseFloat(quantityValue).toFixed(pairDetails.quantity_precision),
+            fill_price: parseFloat(fillPriceValue).toFixed(pairDetails.quantity_precision),
             crypto_coin_id,
             currency_coin_id
           }
@@ -1085,8 +1085,110 @@ class TradeController extends AppController {
             let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
               quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
             });
+            var userData = userIds;
+            var tradeData = allOrderData;
+            // var tradeQuantity = tradeData.reduce( (current, next)=>current+next.quantity, 0 );
+            console.log("tradeData", JSON.stringify(tradeData));
+            for (var i = 0; i < userData.length; i++) {
+              // Notification Sending for users
+              var userNotification = await UserNotifications.getSingleData({
+                user_id: userData[i],
+                deleted_at: null,
+                slug: 'trade_execute'
+              })
+              var user_data = await Users.getSingleData({
+                deleted_at: null,
+                id: userData[i],
+                is_active: true
+              });
+              if (user_data != undefined) {
+                if (userNotification != undefined) {
+                  if (userNotification.email == true || userNotification.email == "true") {
+                    if (user_data.email != undefined) {
+                      var allData = {
+                        template: "emails/general_mail.ejs",
+                        templateSlug: "trade_execute",
+                        email: user_data.email,
+                        user_detail: user_data,
+                        formatData: {
+                          recipientName: user_data.first_name,
+                          side: side,
+                          pair: symbol,
+                          order_type: order_type,
+                          quantity: orderQuantity,
+                          allTradeData: tradeData
+                        }
+
+                      }
+                      await Helper.SendEmail(res, allData)
+                    }
+                  }
+                  if (userNotification.text == true || userNotification.text == "true") {
+                    if (user_data.phone_number != undefined) {
+                      // await sails.helpers.notification.send.text("trade_execute", user_data)
+                    }
+                  }
+                }
+              }
+            }
+            return {
+              status: 1,
+              message: '',
+              tradeData: emailData
+            }
           } else {
             await sellDelete.deleteSellOrder(currentSellBookDetails.id);
+            var userData = userIds;
+            var tradeData = allOrderData;
+            // var tradeQuantity = tradeData.reduce( (current, next)=>current+next.quantity, 0 );
+            console.log("tradeData", JSON.stringify(tradeData));
+            for (var i = 0; i < userData.length; i++) {
+              // Notification Sending for users
+              var userNotification = await UserNotifications.getSingleData({
+                user_id: userData[i],
+                deleted_at: null,
+                slug: 'trade_execute'
+              })
+              var user_data = await Users.getSingleData({
+                deleted_at: null,
+                id: userData[i],
+                is_active: true
+              });
+              if (user_data != undefined) {
+                if (userNotification != undefined) {
+                  if (userNotification.email == true || userNotification.email == "true") {
+                    if (user_data.email != undefined) {
+                      var allData = {
+                        template: "emails/general_mail.ejs",
+                        templateSlug: "trade_execute",
+                        email: user_data.email,
+                        user_detail: user_data,
+                        formatData: {
+                          recipientName: user_data.first_name,
+                          side: side,
+                          pair: symbol,
+                          order_type: order_type,
+                          quantity: orderQuantity,
+                          allTradeData: tradeData
+                        }
+
+                      }
+                      await Helper.SendEmail(res, allData)
+                    }
+                  }
+                  if (userNotification.text == true || userNotification.text == "true") {
+                    if (user_data.phone_number != undefined) {
+                      // await sails.helpers.notification.send.text("trade_execute", user_data)
+                    }
+                  }
+                }
+              }
+            }
+            return {
+              status: 1,
+              message: '',
+              tradeData: emailData
+            }
           }
         } else {
           await logger.info({
@@ -1102,16 +1204,17 @@ class TradeController extends AppController {
         }
       } else {
         var remainingQty = quantityValue - availableQuantity;
+        remainingQty = parseFloat(remainingQty).toFixed(pairDetails.quantity_precision)
         if ((parseFloat(fillPriceValue * quantityValue).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
           };
           trade_history_data.maker_fee = 0;
           trade_history_data.taker_fee = 0;
-          trade_history_data.quantity = availableQuantity;
+          trade_history_data.quantity = parseFloat(availableQuantity).toFixed(pairDetails.quantity_precision);
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
-          trade_history_data.fix_quantity = quantityValue;
+          trade_history_data.fix_quantity = parseFloat(quantityValue).toFixed(pairDetails.quantity_precision);
           console.log(JSON.stringify(trade_history_data));
           if (currentSellBookDetails.is_stop_limit == true) {
             trade_history_data.is_stop_limit = true
@@ -1125,8 +1228,8 @@ class TradeController extends AppController {
             currency: currency,
             side: side,
             settle_currency: crypto,
-            quantity: availableQuantity,
-            fill_price: fillPriceValue,
+            quantity: parseFloat(availableQuantity).toFixed(pairDetails.quantity_precision),
+            fill_price: parseFloat(fillPriceValue).toFixed(pairDetails.price_precision),
             crypto_coin_id,
             currency_coin_id
           }
@@ -1186,50 +1289,6 @@ class TradeController extends AppController {
         message: 'Order Book Empty'
       }
     }
-
-
-    // for (var i = 0; i < userIds.length; i++) {
-    //   // Notification Sending for users
-    //   var userNotification = await UserNotifications.getSingleData({
-    //     user_id: userIds[i],
-    //     deleted_at: null,
-    //     slug: 'trade_execute'
-    //   })
-    //   var user_data = await Users.getSingleData({
-    //     deleted_at: null,
-    //     id: userIds[i],
-    //     is_active: true
-    //   });
-    //   if (user_data != undefined) {
-    //     if (userNotification != undefined) {
-    //       if (userNotification.email == true || userNotification.email == "true") {
-    //         if (user_data.email != undefined) {
-    //           var allData = {
-    //             template: "emails/general_mail.ejs",
-    //             templateSlug: "trade_execute",
-    //             email: user_data.email,
-    //             user_detail: user_data,
-    //             formatData: {
-    //               recipientName: user_data.first_name,
-    //               side: tradeOrder.side,
-    //               pair: tradeOrder.symbol,
-    //               order_type: tradeOrder.order_type,
-    //               quantity: tradeOrder.quantity,
-    //               price: tradeOrder.fill_price,
-    //             }
-
-    //           }
-    //           await Helper.SendEmail(res, allData)
-    //         }
-    //       }
-    //       if (userNotification.text == true || userNotification.text == "true") {
-    //         if (user_data.phone_number != undefined) {
-    //           // await sails.helpers.notification.send.text("trade_execute", user_data)
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
 
     //Emit data in rooms
     let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
@@ -2385,6 +2444,7 @@ class TradeController extends AppController {
         .andWhere("is_active", true)
         .andWhere("id", user_id)
         .orderBy("id", "DESC");
+
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
@@ -2914,6 +2974,14 @@ class TradeController extends AppController {
       } = req.body;
       // var user_id = await Helper.getUserId(req.headers, res);
 
+      var pairDetails = await PairsModel
+        .query()
+        .first()
+        .select("name", "quantity_precision", "price_precision")
+        .where("deleted_at", null)
+        .andWhere("name", symbol)
+        .orderBy("id", "DESC")
+
       let { crypto, currency } = await Currency.get_currencies(symbol);
 
       var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
@@ -2987,7 +3055,7 @@ class TradeController extends AppController {
           symbol,
           side,
           order_type,
-          orderQuantity,
+          orderQuantity: parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision),
           user_id,
           res: null,
           crypto: walletData.crypto.coin_id,
@@ -3060,6 +3128,17 @@ class TradeController extends AppController {
         orderQuantity,
         // user_id
       } = req.body;
+
+      var pairDetails = await PairsModel
+        .query()
+        .first()
+        .select("name", "quantity_precision", "price_precision")
+        .where("deleted_at", null)
+        .andWhere("name", symbol)
+        .orderBy("id", "DESC");
+
+      orderQuantity = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision)
+
       let { crypto, currency } = await Currency.get_currencies(symbol);
 
       var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
@@ -3231,6 +3310,17 @@ class TradeController extends AppController {
       orderQuantity,
       limit_price
     } = req.body;
+
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "quantity_precision", "price_precision")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC");
+    orderQuantity = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
+    limit_price = parseFloat(limit_price).toFixed(pairDetails.price_precision)
+
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
     var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
@@ -3364,6 +3454,16 @@ class TradeController extends AppController {
       orderQuantity,
       limit_price
     } = req.body;
+
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "quantity_precision", "price_precision")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC");
+    orderQuantity = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
+    limit_price = parseFloat(limit_price).toFixed(pairDetails.price_precision)
 
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
