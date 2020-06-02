@@ -348,7 +348,7 @@ class TradeController extends AppController {
         let remainigQuantity = buyBookValue[0].quantity - quantityValue;
         console.log("remainigQuantity", remainigQuantity)
         if (remainigQuantity > 0) {
-          let updatedBuyBook = await OrderUpdate.updateBuyBook(currentBuyBookDetails.id, {
+          let updatedBuyBook = await OrderUpdate.updateBuyBook(buyBookValue[0].id, {
             quantity: (remainigQuantity).toFixed(process.env.QUANTITY_PRECISION)
           })
           var trade_history_data = {
@@ -357,14 +357,14 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = 0;
           trade_history_data.taker_fee = 0;
           trade_history_data.quantity = quantityValue;
-          trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
+          trade_history_data.requested_user_id = buyBookValue[0].user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          if (currentBuyBookDetails.is_stop_limit == true) {
+          if (buyBookValue[0].is_stop_limit == true) {
             trade_history_data.is_stop_limit = true;
           }
           // Update activity
-          await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
+          await ActivityUpdate.updateActivityData(buyBookValue[0].activity_id, trade_history_data)
           userIds.push(parseInt(trade_history_data.requested_user_id));
           var request = {
             requested_user_id: trade_history_data.requested_user_id,
@@ -398,21 +398,21 @@ class TradeController extends AppController {
           //   "url": "Trade Function",
           //   "type": "Success"
           // }, tradeHistory)
-          let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
+          let deleteBuyBook = await OrderDelete.deleteOrder(buyBookValue[0].id)
           var trade_history_data = {
             ...orderData
           };
           trade_history_data.maker_fee = 0;
           trade_history_data.taker_fee = 0;
           trade_history_data.quantity = quantityValue;
-          trade_history_data.requested_user_id = currentBuyBookDetails.user_id;
+          trade_history_data.requested_user_id = buyBookValue[0].user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          if (currentBuyBookDetails.is_stop_limit == true) {
+          if (buyBookValue[0].is_stop_limit == true) {
             trade_history_data.is_stop_limit = true;
           }
           // Update activity
-          await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
+          await ActivityUpdate.updateActivityData(buyBookValue[0].activity_id, trade_history_data)
           userIds.push(parseInt(trade_history_data.requested_user_id));
           var request = {
             requested_user_id: trade_history_data.requested_user_id,
