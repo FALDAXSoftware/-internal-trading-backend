@@ -10,6 +10,7 @@ var TradingViewController = require('../controllers/v1/TradingViewController');
 var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
+var sqsController = require("../controllers/v1/SQSController");
 
 router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
@@ -51,5 +52,10 @@ router.get('/tradingview/config', TradingViewController.getConfig);
 router.get('/tradingview/time', TradingViewController.getCurrentTime);
 router.get('/tradingview/symbols', TradingViewController.getSymbolInfo);
 router.get('/tradingview/history', TradingViewController.getHistoryData);
+
+// SQS routes
+// router.post('/send-data',)
+// router.get("/list-queues", sqsController.getSQSData);
+router.get("/send--to-queue", sqsController.sendToSQS);
 
 module.exports = router;
