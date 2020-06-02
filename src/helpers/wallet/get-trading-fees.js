@@ -299,6 +299,10 @@ var getTraddingFees = async (inputs) => {
 
         } else if (inputs.side == "Sell") {
             // --------------------------------------crypto--------------------------- //
+            console.log("cryptoWalletRequested", cryptoWalletRequested);
+            console.log("cryptoWalletUser", cryptoWalletUser)
+            console.log("cryptoWalletUser.balance", cryptoWalletUser.balance);
+            console.log("cryptoWalletUser.placed_balance", cryptoWalletUser.placed_balance)
             var cryptouserbalance = parseFloat(cryptoWalletUser.balance).toFixed(8) - parseFloat((inputs.quantity)).toFixed(8);
             var cryptouserbalance = parseFloat(cryptouserbalance.toFixed(8))
             var cryptouserPlacedbalance = parseFloat(cryptoWalletUser.placed_balance).toFixed(8) - parseFloat(inputs.quantity).toFixed(8);
@@ -311,6 +315,9 @@ var getTraddingFees = async (inputs) => {
             var a = updateSql.rows[0]
             var cryptorequestedbalance;
             var cryptorequestedplacedbalance
+            console.log("cryptoWalletRequested.balance", cryptoWalletRequested.balance);
+            console.log("cryptoWalletRequested.placed_balance", cryptoWalletRequested.placed_balance)
+            console.log("inputs.makerFee", inputs.makerFee)
             if (user_id == requested_user_id) {
                 cryptorequestedbalance = parseFloat(a.balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
                 cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8)
