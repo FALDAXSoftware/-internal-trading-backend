@@ -373,7 +373,7 @@ class TradeController extends AppController {
             side: side,
             settle_currency: crypto,
             quantity: quantityValue,
-            fill_price: priceValue,
+            fill_price: buyBookValue[0].price,
             crypto_coin_id,
             currency_coin_id
           }
@@ -421,7 +421,7 @@ class TradeController extends AppController {
             side: side,
             settle_currency: crypto,
             quantity: quantityValue,
-            fill_price: priceValue,
+            fill_price: buyBookValue[0].price,
             crypto_coin_id,
             currency_coin_id
           }
@@ -471,7 +471,7 @@ class TradeController extends AppController {
           currency: currency,
           side: side,
           settle_currency: crypto,
-          quantity: quantityValue,
+          quantity: availableQty,
           fill_price: priceValue,
           crypto_coin_id,
           currency_coin_id
@@ -501,7 +501,7 @@ class TradeController extends AppController {
           user_id: user_id,
           side: side,
           order_type: order_type,
-          orderQuantity: remainingQty,
+          orderQuantity: availableQty,
           crypto_wallet_data: crypto_wallet_data,
           userIds: userIds
         };
