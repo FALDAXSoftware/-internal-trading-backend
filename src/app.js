@@ -234,6 +234,7 @@ server.listen(app.get('port'), function () {
 });
 
 CronSendEmail = async (requestedData) => {
+  var moment = require("moment");
   var EmailTemplate = require("./models/EmailTemplate");
   var template_name = requestedData.template;
   var email = requestedData.email;
@@ -244,17 +245,45 @@ CronSendEmail = async (requestedData) => {
   var format_data = requestedData.formatData;
 
   let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
-
   let template = await EmailTemplate.getSingleData({
     slug: requestedData.templateSlug
   });
 
+
   let language_content = template.all_content[user_language].content;
   let language_subject = template.all_content[user_language].subject;
+  let tradeData = '';
 
+  if (format_data.allTradeData) {
+    var sortedOrderData = format_data.allTradeData;
+    // console.log("sortedOrderData", sortedOrderData)
+    sortedOrderData.sort(function (a, b) { return b.id - a.id });
+    const allTradeData = sortedOrderData;
+    // console.log("allTradeData", allTradeData)
+    tradeData += '<table style="border:1px solid #888;border-collapse:collapse;border-spacing:0;font-size:13px;">'
+    tradeData += '<tr>'
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Filled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Unfilled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Trade Price(${allTradeData[0].currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Datetime</th>`
+    tradeData += '</tr>'
+    for (let i = 0; i < allTradeData.length; i++) {
+      const remaining = parseFloat(allTradeData[i].fix_quantity) - parseFloat(allTradeData[i].quantity);
+      const datetime = moment(allTradeData[i].created_at).local().format("YYYY-MM-DD HH:mm")
+      tradeData += '<tr>'
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].quantity).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(remaining).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].fill_price).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${datetime}</td>`;
+      tradeData += '</tr>'
+    }
+    tradeData += '</table>'
+  }
+
+  format_data.allTradeData = tradeData;
   var emailContent = require("./helpers/helpers")
   language_content = await emailContent.formatEmail(language_content, format_data);
-
+  // console.log("language_content", language_content)
   var object = {
     to: email,
     subject: language_subject,
@@ -263,7 +292,7 @@ CronSendEmail = async (requestedData) => {
     SITE_URL: process.env.SITE_URL,
     homelink: process.env.SITE_URL
   }
-
+  // console.log("email", email)
   try {
     await app.mailer
       .send(template_name, {
@@ -274,7 +303,7 @@ CronSendEmail = async (requestedData) => {
         SITE_URL: process.env.SITE_URL,
         homelink: process.env.SITE_URL
       }, function (err) {
-        console.log("err", JSON.stringify(err))
+        console.log("err", err)
         if (err) {
           return 0;
         } else {
@@ -282,7 +311,7 @@ CronSendEmail = async (requestedData) => {
         }
       });
   } catch (err) {
-    console.log("EMail err:", JSON.stringify(err));
+    console.log("EMail err:", (err));
     return 0;
   }
 }
