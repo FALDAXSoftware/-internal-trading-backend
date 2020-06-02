@@ -7,10 +7,12 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
     console.log("err", err)
     conn.createChannel(function (err, channel) {
         // ch.chequeQueue(queueName);
+        channel.assertQueue(process.env.QUEUE_NAME + '-' + 'Buy');
+        channel.assertQueue(process.env.QUEUE_NAME + '-' + 'Sell');
         channel.prefetch(1)
         ch = channel;
         console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
-        ch.consume(process.env.QUEUE_NAME, (msg, err) => {
+        ch.consume(process.env.QUEUE_NAME + '-' + 'Buy', (msg, err) => {
             // console.log("mesages");
             console.log(err)
             console.log("Message", msg.content.toString())
@@ -22,17 +24,6 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                 case "Market":
                     if (dataValue.side == "Buy") {
                         tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency)
-                            .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                ch.ack(msg)
-                            })
-                        break;
-                    } else if (dataValue.side == "Sell") {
-                        tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
@@ -55,7 +46,36 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                                 ch.ack(msg)
                             })
                         break;
-                    } else if (dataValue.side == "Sell") {
+                    }
+                // break;
+                default:
+                    break;
+            }
+        }, { noAck: false })
+        ch.consume(process.env.QUEUE_NAME + '-' + 'Sell', (msg, err) => {
+            // console.log("mesages");
+            console.log(err)
+            console.log("Message", msg.content.toString())
+            var tradeData = require("./TradeController");
+            var dataValue = JSON.parse(msg.content.toString());
+            var type = dataValue.order_type
+            console.log("dataValue", dataValue)
+            switch (type) {
+                case "Market":
+                    if (dataValue.side == "Sell") {
+                        tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
+                            .then((orderDataResponse) => {
+                                console.log("orderDataResponse", orderDataResponse)
+                                ch.ack(msg)
+                            })
+                            .catch((err) => {
+                                console.log(err)
+                                ch.ack(msg)
+                            })
+                        break;
+                    }
+                case "Limit":
+                    if (dataValue.side == "Sell") {
                         tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
@@ -89,75 +109,75 @@ var publishToQueue = async (queueName, data) => {
             priorityValue
         });
         // console.log("ch", ch)
-        var dataValue = ch.assertQueue(queueName + '-' + data.user_id);
+        var dataValue = ch.assertQueue(queueName + '-' + data.side);
         // console.log("dataValue", dataValue)
-        ch.sendToQueue(queueName + '-' + data.user_id, Buffer.from(JSON.stringify(data)), {
+        ch.sendToQueue(queueName + '-' + data.side, Buffer.from(JSON.stringify(data)), {
             persistent: true,
             priority: priorityValue
         });
-        ch.prefetch(1)
-        ch.consume(queueName + '-' + data.user_id, (msg, err) => {
-            // console.log("mesages");
-            console.log(err)
-            console.log("Message", msg.content.toString())
-            var tradeData = require("./TradeController");
-            var dataValue = JSON.parse(msg.content.toString());
-            var type = dataValue.order_type
-            console.log("dataValue", dataValue)
-            switch (type) {
-                case "Market":
-                    if (dataValue.side == "Buy") {
-                        tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency)
-                            .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                ch.ack(msg)
-                            })
-                        break;
-                    } else if (dataValue.side == "Sell") {
-                        tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
-                            .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                ch.ack(msg)
-                            })
-                        break;
-                    }
-                case "Limit":
-                    if (dataValue.side == "Buy") {
-                        tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
-                            .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                ch.ack(msg)
-                            })
-                        break;
-                    } else if (dataValue.side == "Sell") {
-                        tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
-                            .then((orderDataResponse) => {
-                                console.log("orderDataResponse", orderDataResponse)
-                                ch.ack(msg)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                ch.ack(msg)
-                            })
-                        break;
-                    }
-                // break;
-                default:
-                    break;
-            }
-        }, { noAck: false })
+        // ch.prefetch(1)
+        // ch.consume(queueName + '-' + data.user_id, (msg, err) => {
+        //     // console.log("mesages");
+        //     console.log(err)
+        //     console.log("Message", msg.content.toString())
+        //     var tradeData = require("./TradeController");
+        //     var dataValue = JSON.parse(msg.content.toString());
+        //     var type = dataValue.order_type
+        //     console.log("dataValue", dataValue)
+        //     switch (type) {
+        //         case "Market":
+        //             if (dataValue.side == "Buy") {
+        //                 tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency)
+        //                     .then((orderDataResponse) => {
+        //                         console.log("orderDataResponse", orderDataResponse)
+        //                         ch.ack(msg)
+        //                     })
+        //                     .catch((err) => {
+        //                         console.log(err)
+        //                         ch.ack(msg)
+        //                     })
+        //                 break;
+        //             } else if (dataValue.side == "Sell") {
+        //                 tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
+        //                     .then((orderDataResponse) => {
+        //                         console.log("orderDataResponse", orderDataResponse)
+        //                         ch.ack(msg)
+        //                     })
+        //                     .catch((err) => {
+        //                         console.log(err)
+        //                         ch.ack(msg)
+        //                     })
+        //                 break;
+        //             }
+        //         case "Limit":
+        //             if (dataValue.side == "Buy") {
+        //                 tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
+        //                     .then((orderDataResponse) => {
+        //                         console.log("orderDataResponse", orderDataResponse)
+        //                         ch.ack(msg)
+        //                     })
+        //                     .catch((err) => {
+        //                         console.log(err)
+        //                         ch.ack(msg)
+        //                     })
+        //                 break;
+        //             } else if (dataValue.side == "Sell") {
+        //                 tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
+        //                     .then((orderDataResponse) => {
+        //                         console.log("orderDataResponse", orderDataResponse)
+        //                         ch.ack(msg)
+        //                     })
+        //                     .catch((err) => {
+        //                         console.log(err)
+        //                         ch.ack(msg)
+        //                     })
+        //                 break;
+        //             }
+        //         // break;
+        //         default:
+        //             break;
+        //     }
+        // }, { noAck: false })
         // return 0;
     } catch (error) {
         console.log(error)
