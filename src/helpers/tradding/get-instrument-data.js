@@ -19,7 +19,7 @@ var getInstrumentData = async () => {
 
     instrumentData = await PairsModel
         .query()
-        .select()
+        .select("name", "coin_code1", "coin_code2", "quantity_precision", "price_precision")
         .andWhere('deleted_at', null)
         .andWhere('is_active', true);
 
@@ -99,7 +99,9 @@ var getInstrumentData = async () => {
             "percentChange": percentChange,
             "coin_icon": (coinList[instrumentData[i].coin_code1] != undefined && coinList[instrumentData[i].coin_code1].coin_icon != null ?
                 coinList[instrumentData[i].coin_code1].coin_icon :
-                "")
+                ""),
+            "quantity_precision": instrumentData[i].quantity_precision,
+            "price_precision": instrumentData[i].price_precision
         }
         pairData.push(instrument_data);
     }
