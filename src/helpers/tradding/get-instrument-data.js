@@ -12,6 +12,7 @@ var getInstrumentData = async () => {
     var now = moment
         .utc()
         .format();
+
     var yesterday = moment
         .utc(now)
         .subtract(1, 'days')
