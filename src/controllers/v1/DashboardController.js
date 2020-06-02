@@ -523,6 +523,152 @@ class DashboardController extends AppController {
         }
     }
 
+    async updateBuyOrderBookValue(pair_name) {
+        try {
+            let pair = pair_name.split("-").join("")
+
+            await request({
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                json: true
+            }, async function (err, httpResponse, body) {
+                var bidValue = body.bids;
+                var askValue = body.asks;
+
+                let { crypto, currency } = await Currency.get_currencies(pair_name);
+                var maxValue = await PairsModel
+                    .query()
+                    .first()
+                    .select()
+                    .where("deleted_at", null)
+                    .andWhere("name", pair_name)
+                    .orderBy("id", 'DESC')
+
+                if (maxValue.bot_status) {
+
+                    var getCryptoValue = await CurrencyConversionModel
+                        .query()
+                        .first()
+                        .select()
+                        .where("deleted_at", null)
+                        .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                        .orderBy("id", "DESC");
+
+                    var usdValue = getCryptoValue.quote.USD.price
+                    var min = (maxValue.crypto_minimum) / (usdValue);
+                    var max = (maxValue.crypto_maximum) / (usdValue);
+                    var mergedArray = [];
+                    for (var i = 0; i < bidValue.length; i++) {
+                        bidValue[i][2] = "Buy"
+                        if (bidValue[i][1] > max) {
+                            var highlightedNumber = Math.random() * (max - min) + min;
+                            bidValue[i][1] = highlightedNumber
+                        } else {
+                            bidValue[i][1] = bidValue[i][1]
+                        }
+                        mergedArray.push(bidValue[i])
+                    }
+                    for (var i = 0; i < askValue.length; i++) {
+                        askValue[i][2] = "Sell"
+                        if (askValue[i][1] > max) {
+                            var highlightedNumber = Math.random() * (max - min) + min;
+                            askValue[i][1] = highlightedNumber
+                        } else {
+                            askValue[i][1] = askValue[i][1]
+                        }
+                        mergedArray.push(askValue[i])
+                    }
+
+                    console.log("mergedArray", mergedArray)
+
+                    var mergedArray = await module.exports.shuffle(mergedArray)
+                    console.log("mergedArray", mergedArray)
+
+                    var now = new Date();
+                    let requestedWallets = await CoinsModel
+                        .query()
+                        .select()
+                        .where('deleted_at', null)
+                        .andWhere('is_active', true)
+                        .andWhere(function () {
+                            this.where("coin", currency).orWhere("coin", crypto)
+                        })
+
+                    var crypto_coin_id = null
+                    var currency_coin_id = null
+                    for (let index = 0; index < requestedWallets.length; index++) {
+                        const element = requestedWallets[index];
+                        if (element.coin == crypto) {
+                            crypto_coin_id = element
+                        } else if (element.coin == currency) {
+                            currency_coin_id = element
+                        }
+                    }
+
+                    for (var i = 0; i < mergedArray.length; i++) {
+                        console.log("mergedArray", mergedArray[i])
+                        // setTimeout(async () => {
+                        var quantityValue = parseFloat(mergedArray[i][1]).toFixed(8);
+                        var priceValue = parseFloat(mergedArray[i][0]).toFixed(8);
+
+                        var buyLimitOrderData = {
+                            'user_id': process.env.TRADEDESK_USER_ID,
+                            'symbol': pair_name,
+                            'side': mergedArray[i][2],
+                            'order_type': 'Limit',
+                            'created_at': now,
+                            'updated_at': now,
+                            'fill_price': 0.0,
+                            'limit_price': priceValue,
+                            'stop_price': 0.0,
+                            'price': priceValue,
+                            'quantity': quantityValue,
+                            'fix_quantity': quantityValue,
+                            'order_status': "open",
+                            'currency': currency,
+                            'settle_currency': crypto,
+                            'maximum_time': now,
+                            'is_partially_fulfilled': false,
+                            'placed_by': process.env.TRADEDESK_BOT
+                        };
+                        // console.log("buyLimitOrderData", buyLimitOrderData)
+                        buyLimitOrderData.is_partially_fulfilled = true;
+                        buyLimitOrderData.is_filled = false;
+                        buyLimitOrderData.added = true;
+                        var flag = true;
+
+                        var queueName = process.env.QUEUE_NAME + '-' + pair_name
+                        console.log("queueName", queueName)
+                        var queueData = {
+                            "symbol": pair_name,
+                            user_id: process.env.TRADEDESK_USER_ID,
+                            'side': mergedArray[i][2],
+                            'order_type': 'Limit',
+                            'orderQuantity': quantityValue,
+                            "limit_price": buyLimitOrderData.limit_price,
+                            res: null,
+                            flag: true,
+                            crypto: crypto_coin_id.id,
+                            currency: currency_coin_id.id
+                        }
+                        QueueValue.publishToQueue(queueName, queueData)
+
+                        // }, i * 800)
+                        // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                    }
+                }
+
+                // return res.status(200).json({ "status": "OK" })
+
+
+            })
+        } catch (error) {
+
+        }
+    }
 
     shuffle(arra1) {
         var ctr = arra1.length, temp, index;

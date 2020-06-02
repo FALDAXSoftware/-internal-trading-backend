@@ -2483,9 +2483,9 @@ class TradeController extends AppController {
 
       var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
 
-      if (quantityTotal.total < orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      }
+      // if (quantityTotal.total < orderQuantity) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      // }
 
       var userIds = [];
       userIds.push(user_id);
@@ -2629,9 +2629,9 @@ class TradeController extends AppController {
 
       var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
 
-      if (quantityTotal.total_quantity < orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      }
+      // if (quantityTotal.total_quantity < orderQuantity) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      // }
       // get user id from header
       let userIds = [];
       userIds.push(user_id);
@@ -2800,9 +2800,9 @@ class TradeController extends AppController {
 
     var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
 
-    if (quantityTotal.total < orderQuantity) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-    }
+    // if (quantityTotal.total < orderQuantity) {
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    // }
 
     var userData = await Users
       .query()
@@ -2934,9 +2934,9 @@ class TradeController extends AppController {
 
     var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
 
-    if (quantityTotal.total_quantity < orderQuantity) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-    }
+    // if (quantityTotal.total_quantity < orderQuantity) {
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    // }
 
     var userData = await Users
       .query()

@@ -12,6 +12,7 @@ var getInstrumentData = async () => {
     var now = moment
         .utc()
         .format();
+
     var yesterday = moment
         .utc(now)
         .subtract(1, 'days')
@@ -19,7 +20,7 @@ var getInstrumentData = async () => {
 
     instrumentData = await PairsModel
         .query()
-        .select()
+        .select("name", "coin_code1", "coin_code2", "quantity_precision", "price_precision")
         .andWhere('deleted_at', null)
         .andWhere('is_active', true);
 
@@ -29,6 +30,7 @@ var getInstrumentData = async () => {
         .select()
         .where('deleted_at', null)
         .andWhere('is_active', true);
+
     let coinList = {};
     for (let index = 0; index < coins.length; index++) {
         const element = coins[index];
@@ -99,7 +101,9 @@ var getInstrumentData = async () => {
             "percentChange": percentChange,
             "coin_icon": (coinList[instrumentData[i].coin_code1] != undefined && coinList[instrumentData[i].coin_code1].coin_icon != null ?
                 coinList[instrumentData[i].coin_code1].coin_icon :
-                "")
+                ""),
+            "price_precision": instrumentData[i].price_precision,
+            "quantity_precision": instrumentData[i].quantity_precision
         }
         pairData.push(instrument_data);
     }
