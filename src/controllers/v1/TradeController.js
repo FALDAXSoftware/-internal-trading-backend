@@ -258,6 +258,7 @@ class TradeController extends AppController {
       currency_wallet_data,
       userIds
     } = alldata;
+    console.log("alldata", alldata)
     const checkUser = Helper.checkWhichUser(user_id);
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
@@ -298,14 +299,18 @@ class TradeController extends AppController {
       }
     }
 
+    console.log("buy_book_data", buy_book_data)
+
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
 
     var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
     var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
       var availableQty = buy_book_data[0].quantity;
+      console.log("availableQty", availableQty)
       var currentBuyBookDetails = buy_book_data[0];
-      var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION)
+      var priceValue = (currentBuyBookDetails.price).toFixed(process.env.PRICE_PRECISION);
+      console.log("priceValue", priceValue)
       var now = new Date();
       var orderData = {
         user_id: user_id,
@@ -334,7 +339,8 @@ class TradeController extends AppController {
       resultData.maker_fee = 0;
       resultData.taker_fee = 0;
       // Log this in Activity
-      await ActivityAdd.addActivityData(resultData)
+      await ActivityAdd.addActivityData(resultData);
+      console.log("quantityValue <= availableQty", quantityValue <= availableQty)
       if (quantityValue <= availableQty) {
         var trade_history_data = {
           ...orderData
@@ -400,6 +406,9 @@ class TradeController extends AppController {
       } else {
         console.log("INSIDE ELSe")
         var remainingQty = quantityValue - availableQty;
+        console.log("remainingQty", remainingQty);
+        console.log("quantityValue", quantityValue);
+        console.log("availableQty", availableQty)
         var trade_history_data = {
           ...orderData
         };
@@ -459,6 +468,7 @@ class TradeController extends AppController {
           crypto_wallet_data: crypto_wallet_data,
           userIds: userIds
         };
+        console.log("object", object)
         await logger.info({
           "module": "Market Sell Execution",
           "user_id": "user_" + alldata.user_id,
@@ -1178,7 +1188,7 @@ class TradeController extends AppController {
       "user_id": "user_" + user_id,
       "url": "Trade Function",
       "type": "Entry"
-    }, symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id = null, currency_coin_id = null)
+    }, symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id, currency_coin_id)
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
