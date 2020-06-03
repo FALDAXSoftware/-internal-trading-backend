@@ -3237,6 +3237,7 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3), []);
     }
 
+    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
     var userData = await Users
       .query()
