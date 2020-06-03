@@ -12,7 +12,7 @@ var getTraddingFees = async (inputs) => {
     var makerTakerFees = {};
     try {
         var request = inputs;
-        console.log("inputs", JSON.stringify(inputs))
+        console.log("inputs", (inputs))
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
         // inputs.makerFee = 0.21
