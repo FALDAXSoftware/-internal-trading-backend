@@ -12,7 +12,8 @@ var sellOrderBookSummary = async (crypto, currency) => {
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
         .groupBy('price')
-        .orderBy('price', 'ASC').limit(100);
+        .orderBy('price', 'ASC')
+        .limit(100);
 
     var totalSql = `SELECT SUM(quantity) as total
                         FROM sell_book WHERE settle_currency='${crypto}' AND currency='${currency}'

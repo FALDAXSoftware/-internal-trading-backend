@@ -60,7 +60,8 @@ var QueueValue = require("./QueueController");
 
 /**
  * Trade Controller : Used for live tradding
- */
+*/
+
 class TradeController extends AppController {
 
   constructor() {
@@ -2531,11 +2532,7 @@ class TradeController extends AppController {
 
       let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
-
-      if (quantityTotal.total < orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      }
+      var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
       var userIds = [];
       userIds.push(user_id);
@@ -2595,6 +2592,16 @@ class TradeController extends AppController {
             "type": "Entry"
           }, i18n.__("Create Crypto Wallet").message)
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+        }
+
+        if (walletData.currency < quantityTotal[0].price) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Insufficient balance to place order").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         }
 
         var queueName = process.env.QUEUE_NAME
@@ -2752,7 +2759,7 @@ class TradeController extends AppController {
 
         // Check balance sufficient or not
         console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
-        if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
+        if ((parseFloat(walletData.crypto.placed_balance) < orderQuantity) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
             "user_id": "user_" + user_id,
@@ -2855,11 +2862,11 @@ class TradeController extends AppController {
     } = req.body;
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
-    var quantityTotal = await sellOrderBookSummary.sellOrderBookSummary(crypto, currency);
+    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
-    if (quantityTotal.total < orderQuantity) {
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-    }
+    // if (quantityTotal.total < orderQuantity) {
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    // }
 
     var userData = await Users
       .query()
@@ -2916,6 +2923,16 @@ class TradeController extends AppController {
           "type": "Succes"
         }, i18n.__("Create Crypto Wallet").message)
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
+      }
+
+      if (walletData.currency < quantityTotal[0].price) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__("Insufficient balance to place order").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
       }
 
       var queueName = process.env.QUEUE_NAME
