@@ -88,11 +88,11 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
 
     let userTradeHistorySum = {}
     let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                    FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                    WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                    FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-                                                                    WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-                                                                    ON a1.user_coin = a2.requested_coin`)
+                                                                FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                ON a1.user_coin = a2.requested_coin`)
 
     for (let index = 0; index < userTradesum.rows.length; index++) {
         const element = userTradesum.rows[index];

@@ -302,7 +302,7 @@ class TradeController extends AppController {
     console.log("buy_book_data", buy_book_data)
 
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
-
+    console.log("orderQuantity", orderQuantity)
     var quantityValue = orderQuantity.toFixed(process.env.QUANTITY_PRECISION)
     var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
@@ -343,6 +343,8 @@ class TradeController extends AppController {
       console.log("quantityValue <= availableQty", quantityValue <= availableQty)
       var buyBookValue = await BuyBookHelper.getBuyBookOrder(crypto, currency);
       availableQty = buyBookValue[0].quantity
+      console.log("INSIDE ELSe", quantityValue)
+      console.log("availableQty", availableQty)
       if (quantityValue <= availableQty) {
         // console.log("buyBookValue", buyBookValue)
         let remainigQuantity = buyBookValue[0].quantity - quantityValue;
@@ -441,7 +443,8 @@ class TradeController extends AppController {
           tradeOrder = tradeHistory;
         }
       } else {
-        console.log("INSIDE ELSe")
+        console.log("INSIDE ELSe", quantityValue)
+        console.log("availableQty", availableQty)
         var remainingQty = quantityValue - availableQty;
         console.log("remainingQty", remainingQty);
         console.log("quantityValue", quantityValue);
@@ -456,7 +459,7 @@ class TradeController extends AppController {
         trade_history_data.created_at = now;
 
         trade_history_data.fix_quantity = quantityValue;
-        console.log("trade_history_data", JSON.stringify(trade_history_data))
+        // console.log("trade_history_data", JSON.stringify(trade_history_data))
 
         if (currentBuyBookDetails.is_stop_limit == true) {
           trade_history_data.is_stop_limit = true;
@@ -464,14 +467,14 @@ class TradeController extends AppController {
 
         let updatedActivity = await ActivityUpdate.updateActivityData(currentBuyBookDetails.activity_id, trade_history_data)
         userIds.push(parseInt(trade_history_data.requested_user_id));
-        console.log("userIds", JSON.stringify(userIds))
+        // console.log("userIds", JSON.stringify(userIds))
         var request = {
           requested_user_id: trade_history_data.requested_user_id,
           user_id: user_id,
           currency: currency,
           side: side,
           settle_currency: crypto,
-          quantity: quantityValue,
+          quantity: availableQty,
           fill_price: priceValue,
           crypto_coin_id,
           currency_coin_id
@@ -480,7 +483,7 @@ class TradeController extends AppController {
         console.log("request", JSON.stringify(request))
 
         var tradingFees = await TradingFees.getTraddingFees(request)
-        console.log("tradingFees", JSON.stringify(tradingFees))
+        // console.log("tradingFees", JSON.stringify(tradingFees))
         trade_history_data.user_fee = (tradingFees.userFee);
         trade_history_data.requested_fee = (tradingFees.requestedFee);
         trade_history_data.user_coin = currency;
@@ -488,7 +491,7 @@ class TradeController extends AppController {
         trade_history_data.maker_fee = tradingFees.maker_fee;
         trade_history_data.taker_fee = tradingFees.taker_fee;
         trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-        console.log("trade_history_data", JSON.stringify(trade_history_data))
+        // console.log("trade_history_data", JSON.stringify(trade_history_data))
 
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
         tradeOrder = tradeHistory;
