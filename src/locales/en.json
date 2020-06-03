@@ -278,5 +278,12 @@
 		"message_type": "success",
 		"message_english": "Trade data has been retrieved successfully.",
 		"message": "Trade data has been retrieved successfully."
+	},
+	"Invalid Quantity for Maximum": {
+		"page": "Invalid quantity",
+		"context": "Invalid Order Quantity",
+		"message_type": "error",
+		"message_english": "Order Quantity should be greated than 0.",
+		"message": "Order Quantity should be less than"
 	}
 }

@@ -51,6 +51,7 @@ var PairsModel = require("../../models/Pairs");
 var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
 var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var TradeStatusChecking = require("../../helpers/user-trade-checking");
 var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
 var RefferalHelper = require("../../helpers/get-refffered-amount");
@@ -2812,6 +2813,44 @@ class TradeController extends AppController {
       var userIds = [];
       userIds.push(user_id);
 
+      var pairDetails = await PairsModel
+        .query()
+        .first()
+        .select("name", "order_maximum")
+        .where("deleted_at", null)
+        .andWhere("name", symbol)
+        .orderBy("id", "DESC")
+
+      var USDPriceValue = await CurrencyConversionModel
+        .query()
+        .first()
+        .select("quote")
+        .where("deleted_at", null)
+        .andWhere("symbol", "LIKE", '%' + crypto + '%')
+        .orderBy("id", "DESC");
+      var usdValue = USDPriceValue.quote.USD.price
+      var maximumValue = (pairDetails.order_maximum) / (usdValue)
+      console.log("maximumValue", maximumValue)
+      if (orderQuantity <= 0) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+
+      if (orderQuantity > maximumValue) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3), []);
+      }
+
       var userData = await Users
         .query()
         .select()
@@ -2826,16 +2865,6 @@ class TradeController extends AppController {
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);
-
-        if (orderQuantity <= 0) {
-          await logger.info({
-            "module": "Market Buy",
-            "user_id": "user_" + user_id,
-            "url": "Trade Function",
-            "type": "Entry"
-          }, i18n.__("Invalid Quantity").message);
-          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-        }
 
         // Get Currency/Crypto each asset
 
@@ -2960,11 +2989,44 @@ class TradeController extends AppController {
       console.log("req.body", req.body)
       let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
+      var pairDetails = await PairsModel
+        .query()
+        .first()
+        .select("name", "order_maximum")
+        .where("deleted_at", null)
+        .andWhere("name", symbol)
+        .orderBy("id", "DESC")
 
-      // if (quantityTotal.total_quantity < orderQuantity) {
-      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      // }
+      var USDPriceValue = await CurrencyConversionModel
+        .query()
+        .first()
+        .select("quote")
+        .where("deleted_at", null)
+        .andWhere("symbol", "LIKE", '%' + crypto + '%')
+        .orderBy("id", "DESC");
+      var usdValue = USDPriceValue.quote.USD.price
+      var maximumValue = (pairDetails.order_maximum) / (usdValue)
+      console.log("maximumValue", maximumValue)
+      if (orderQuantity <= 0) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      }
+
+      if (orderQuantity > maximumValue) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3), []);
+      }
+
       // get user id from header
       let userIds = [];
       userIds.push(user_id);
@@ -2988,15 +3050,15 @@ class TradeController extends AppController {
         orderQuantity = parseFloat(orderQuantity);
 
         // Order Quantity Validation
-        if (orderQuantity <= 0) {
-          await logger.info({
-            "module": "Market Buy",
-            "user_id": "user_" + user_id,
-            "url": "Trade Function",
-            "type": "Success"
-          }, i18n.__("Invalid Quantity").message);
-          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-        }
+        // if (orderQuantity <= 0) {
+        //   await logger.info({
+        //     "module": "Market Buy",
+        //     "user_id": "user_" + user_id,
+        //     "url": "Trade Function",
+        //     "type": "Success"
+        //   }, i18n.__("Invalid Quantity").message);
+        //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+        // }
 
         // Get Currency/Crypto each asset
 
@@ -3137,11 +3199,44 @@ class TradeController extends AppController {
     } = req.body;
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
-    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "order_maximum")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC")
 
-    // if (quantityTotal.total < orderQuantity) {
-    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-    // }
+    var USDPriceValue = await CurrencyConversionModel
+      .query()
+      .first()
+      .select("quote")
+      .where("deleted_at", null)
+      .andWhere("symbol", "LIKE", '%' + crypto + '%')
+      .orderBy("id", "DESC");
+    var usdValue = USDPriceValue.quote.USD.price
+    var maximumValue = (pairDetails.order_maximum) / (usdValue)
+    console.log("maximumValue", maximumValue)
+    if (orderQuantity <= 0) {
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, i18n.__("Invalid Quantity").message);
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+    }
+
+    if (orderQuantity > maximumValue) {
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, i18n.__("Invalid Quantity").message);
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3), []);
+    }
+
 
     var userData = await Users
       .query()
@@ -3158,15 +3253,15 @@ class TradeController extends AppController {
 
       orderQuantity = parseFloat(orderQuantity);
 
-      if (orderQuantity <= 0) {
-        await logger.info({
-          "module": "Limit Buy",
-          "user_id": "user_" + user_id,
-          "url": "Trade Function",
-          "type": "Succes"
-        }, i18n.__("Invalid Quantity").message)
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
-      }
+      // if (orderQuantity <= 0) {
+      //   await logger.info({
+      //     "module": "Limit Buy",
+      //     "user_id": "user_" + user_id,
+      //     "url": "Trade Function",
+      //     "type": "Succes"
+      //   }, i18n.__("Invalid Quantity").message)
+      //   return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
+      // }
 
 
       if (crypto == currency) {
@@ -3281,11 +3376,44 @@ class TradeController extends AppController {
 
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
-    var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
+    var pairDetails = await PairsModel
+      .query()
+      .first()
+      .select("name", "order_maximum")
+      .where("deleted_at", null)
+      .andWhere("name", symbol)
+      .orderBy("id", "DESC")
 
-    if (quantityTotal.total_quantity < orderQuantity) {
+    var USDPriceValue = await CurrencyConversionModel
+      .query()
+      .first()
+      .select("quote")
+      .where("deleted_at", null)
+      .andWhere("symbol", "LIKE", '%' + crypto + '%')
+      .orderBy("id", "DESC");
+    var usdValue = USDPriceValue.quote.USD.price
+    var maximumValue = (pairDetails.order_maximum) / (usdValue)
+    console.log("maximumValue", maximumValue)
+    if (orderQuantity <= 0) {
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, i18n.__("Invalid Quantity").message);
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
     }
+
+    if (orderQuantity > maximumValue) {
+      await logger.info({
+        "module": "Market Buy",
+        "user_id": "user_" + user_id,
+        "url": "Trade Function",
+        "type": "Entry"
+      }, i18n.__("Invalid Quantity").message);
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3), []);
+    }
+
 
     var userData = await Users
       .query()
@@ -3300,17 +3428,6 @@ class TradeController extends AppController {
     if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
       orderQuantity = parseFloat(orderQuantity);
-
-      if (orderQuantity <= 0) {
-        await logger.info({
-          "module": "Limit Sell",
-          "user_id": "user_" + user_id,
-          "url": "Trade Function",
-          "type": "Succes"
-        }, i18n.__("Invalid Quantity").message)
-        return Helper.jsonFormat(res, constants.NO_RECORD, i18n.__("Invalid Quantity").message, []);
-      }
-
 
       if (crypto == currency) {
         await logger.info({
