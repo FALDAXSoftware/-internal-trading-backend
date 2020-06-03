@@ -9,23 +9,37 @@ var TradeAdd = require("../../helpers/trade/add");
 var buyUpdate = require("../buy/update-buy-order");
 var buyDelete = require("../buy/delete-order");
 var UserNotifications = require("../../models/UserNotifications");
+var PairsModel = require("../../models/Pairs")
 var Helper = require("../../helpers/helpers");
 var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
-var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null) => {
+var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0) => {
     try {
-        var quantityValue = sellLimitOrderData.quantity;
+        var pairDetails = await PairsModel
+            .query()
+            .first()
+            .select("name", "quantity_precision", "price_precision")
+            .where("deleted_at", null)
+            .andWhere("name", sellLimitOrderData.symbol)
+            .orderBy("id", "DESC")
+        console.log("pairDetails", pairDetails)
+        var quantityValue = parseFloat(sellLimitOrderData.quantity).toFixed(pairDetails.quantity_precision);
         var userIds = [];
         userIds.push(parseInt(sellLimitOrderData.user_id));
-        if (sellLimitOrderData.orderQuantity) {
+        if (sellLimitOrderData.quantity <= 0) {
             return {
                 status: 3,
                 message: 'Invalid Quantity'
             }
         }
+
+        if (allOrderData.length == 0) {
+            originalQuantityValue = quantityValue
+        }
+
         let buyBook = await BuyBookHelper.getBuyBookOrder(crypto, currency);
         let walletData = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, sellLimitOrderData.user_id);
         if (walletData.placed_balance < sellLimitOrderData.quantity) {
@@ -68,6 +82,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 message: "Insufficient balance to place order"
             }
         }
+
         var tradeOrder;
         if (sellLimitOrderData.order_type == "StopLimit") {
             const checkUser = Helper.checkWhichUser(sellLimitOrderData.user_id);
@@ -80,8 +95,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
         if (buyBook && buyBook.length > 0) {
             if ((buyBook[0].order_type == "Limit") ? (buyBook[0].price >= sellLimitOrderData.limit_price) : (buyBook[0].price <= sellLimitOrderData.stop_price && buyBook[0].price >= sellLimitOrderData.limit_price)) {
                 if (buyBook[0].quantity >= sellLimitOrderData.quantity) {
-                    var availableQuantity = buyBook[0].quantity;
-                    sellLimitOrderData.fill_price = buyBook[0].price;
+                    var availableQuantity = parseFloat(buyBook[0].quantity).toFixed(pairDetails.quantity_precision);
+                    sellLimitOrderData.fill_price = parseFloat(buyBook[0].price).toFixed(pairDetails.price_precision);
                     delete sellLimitOrderData.id;
                     var sellAddedData = {
                         ...sellLimitOrderData
@@ -91,7 +106,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         ...sellLimitOrderData
                     }
                     trade_history_data.fix_quantity = quantityValue;
-                    trade_history_data.quantity = sellLimitOrderData.quantity
+                    trade_history_data.quantity = parseFloat(sellLimitOrderData.quantity).toFixed(pairDetails.quantity_precision)
                     trade_history_data.maker_fee = 0.0;
                     trade_history_data.taker_fee = 0.0;
                     trade_history_data.requested_user_id = buyBook[0].user_id;
@@ -126,22 +141,26 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+                    allOrderData.push(tradeHistory)
                     tradeOrder = tradeHistory;
                     var remainningQuantity = availableQuantity - quantityValue;
                     if (remainningQuantity > 0) {
                         let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
-                            quantity: remainningQuantity
+                            quantity: parseFloat(remainningQuantity).toFixed(pairDetails.quantity_precision)
                         });
-                        for (var i = 0; i < userIds.length; i++) {
+
+                        var userData = userIds;
+                        var tradeData = allOrderData;
+                        for (var i = 0; i < userData.length; i++) {
                             // Notification Sending for users
                             var userNotification = await UserNotifications.getSingleData({
-                                user_id: userIds[i],
+                                user_id: userData[i],
                                 deleted_at: null,
                                 slug: 'trade_execute'
                             })
                             var user_data = await Users.getSingleData({
                                 deleted_at: null,
-                                id: userIds[i],
+                                id: userData[i],
                                 is_active: true
                             });
                             if (user_data != undefined) {
@@ -150,19 +169,18 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                         if (user_data.email != undefined) {
                                             var allData = {
                                                 template: "emails/general_mail.ejs",
-                                                templateSlug: "trade_execute",
+                                                templateSlug: "trade_partially_filled",
                                                 email: user_data.email,
                                                 user_detail: user_data,
                                                 formatData: {
                                                     recipientName: user_data.first_name,
-                                                    side: tradeOrder.side,
-                                                    pair: tradeOrder.symbol,
-                                                    order_type: tradeOrder.order_type,
-                                                    quantity: tradeOrder.quantity,
-                                                    price: tradeOrder.limit_price,
+                                                    side: tradeData[0].side,
+                                                    pair: tradeData[0].symbol,
+                                                    order_type: tradeData[0].order_type,
+                                                    originalQuantity: originalQuantityValue,
+                                                    allTradeData: tradeData
                                                 }
                                             }
-                                            // console.log(res)
                                             await Helper.SendEmail(res, allData)
                                         }
                                     }
@@ -183,16 +201,18 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
                     } else {
                         await buyDelete.deleteOrder(buyBook[0].id)
-                        for (var i = 0; i < userIds.length; i++) {
+                        var userData = userIds;
+                        var tradeData = allOrderData;
+                        for (var i = 0; i < userData.length; i++) {
                             // Notification Sending for users
                             var userNotification = await UserNotifications.getSingleData({
-                                user_id: userIds[i],
+                                user_id: userData[i],
                                 deleted_at: null,
                                 slug: 'trade_execute'
                             })
                             var user_data = await Users.getSingleData({
                                 deleted_at: null,
-                                id: userIds[i],
+                                id: userData[i],
                                 is_active: true
                             });
                             if (user_data != undefined) {
@@ -201,16 +221,16 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                         if (user_data.email != undefined) {
                                             var allData = {
                                                 template: "emails/general_mail.ejs",
-                                                templateSlug: "trade_execute",
+                                                templateSlug: "trade_partially_filled",
                                                 email: user_data.email,
                                                 user_detail: user_data,
                                                 formatData: {
                                                     recipientName: user_data.first_name,
-                                                    side: tradeOrder.side,
-                                                    pair: tradeOrder.symbol,
-                                                    order_type: tradeOrder.order_type,
-                                                    quantity: tradeOrder.quantity,
-                                                    price: tradeOrder.limit_price,
+                                                    side: tradeData[0].side,
+                                                    pair: tradeData[0].symbol,
+                                                    order_type: tradeData[0].order_type,
+                                                    originalQuantity: originalQuantityValue,
+                                                    allTradeData: tradeData
                                                 }
                                             }
                                             await Helper.SendEmail(res, allData)
@@ -235,7 +255,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 } else {
                     console.log("ELSE", remainningQuantity)
                     var remainningQuantity = sellLimitOrderData.quantity - buyBook[0].quantity;
-                    remainningQuantity = parseFloat(remainningQuantity).toFixed(8);
+                    remainningQuantity = parseFloat(remainningQuantity).toFixed(pairDetails.quantity_precision);
                     var sellAddedData = {
                         ...sellLimitOrderData
                     }
@@ -243,8 +263,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var resendData = {
                         ...sellLimitOrderData
                     }
-                    buyBook[0].quantity = (buyBook[0].quantity).toFixed(3);
-                    buyBook[0].price = (buyBook[0].price).toFixed(5);
+                    buyBook[0].quantity = parseFloat(buyBook[0].quantity).toFixed(pairDetails.quantity_precision);
+                    buyBook[0].price = parseFloat(buyBook[0].price).toFixed(pairDetails.price_precision);
 
                     var flag = false;
                     if (buyBook[0].is_stop_limit == true) {
@@ -252,7 +272,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     }
                     sellLimitOrderData.quantity = buyBook[0].quantity;
                     sellLimitOrderData.order_status = "partially_filled";
-                    sellLimitOrderData.fill_price = buyBook[0].price;
+                    sellLimitOrderData.fill_price = parseFloat(buyBook[0].price).toFixed(pairDetails.price_precision);
 
                     var deleteResult = await buyDelete.deleteOrder(buyBook[0].id);
                     delete sellLimitOrderData.id;
@@ -278,8 +298,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         currency: sellLimitOrderData.currency,
                         side: sellLimitOrderData.side,
                         settle_currency: sellLimitOrderData.settle_currency,
-                        quantity: buyBook[0].quantity,
-                        fill_price: sellLimitOrderData.fill_price,
+                        quantity: parseFloat(buyBook[0].quantity).toFixed(pairDetails.quantity_precision),
+                        fill_price: parseFloat(sellLimitOrderData.fill_price).toFixed(pairDetails.price_precision),
                         crypto_coin_id,
                         currency_coin_id
                     }
@@ -299,20 +319,42 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     console.log(JSON.stringify(trade_history_data))
 
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+                    allOrderData.push(tradeHistory)
                     tradeOrder = tradeHistory;
 
                     await buyDelete.deleteOrder(buyBook[0].id);
 
-                    for (var i = 0; i < userIds.length; i++) {
+                    //Emit data in rooms
+                    let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+
+                    var resendDataLimit = {
+                        ...sellLimitOrderData
+                    }
+
+                    resendDataLimit.quantity = remainningQuantity;
+                    resendDataLimit.activity_id = activityResult.id;
+
+                    if (remainningQuantity > 0) {
+                        var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue);
+                        return responseData
+                    }
+                }
+                // Check for referral
+                let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
+            } else {
+                if (allOrderData.length > 0) {
+                    var userData = userIds;
+                    var tradeData = allOrderData;
+                    for (var i = 0; i < userData.length; i++) {
                         // Notification Sending for users
                         var userNotification = await UserNotifications.getSingleData({
-                            user_id: userIds[i],
+                            user_id: userData[i],
                             deleted_at: null,
                             slug: 'trade_execute'
                         })
                         var user_data = await Users.getSingleData({
                             deleted_at: null,
-                            id: userIds[i],
+                            id: userData[i],
                             is_active: true
                         });
                         if (user_data != undefined) {
@@ -321,16 +363,16 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                     if (user_data.email != undefined) {
                                         var allData = {
                                             template: "emails/general_mail.ejs",
-                                            templateSlug: "trade_execute",
+                                            templateSlug: "trade_partially_filled",
                                             email: user_data.email,
                                             user_detail: user_data,
                                             formatData: {
                                                 recipientName: user_data.first_name,
-                                                side: tradeOrder.side,
-                                                pair: tradeOrder.symbol,
-                                                order_type: tradeOrder.order_type,
-                                                quantity: tradeOrder.quantity,
-                                                price: tradeOrder.limit_price,
+                                                side: tradeData[0].side,
+                                                pair: tradeData[0].symbol,
+                                                order_type: tradeData[0].order_type,
+                                                originalQuantity: originalQuantityValue,
+                                                allTradeData: tradeData
                                             }
                                         }
                                         await Helper.SendEmail(res, allData)
@@ -344,25 +386,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                             }
                         }
                     }
-
-                    //Emit data in rooms
-                    let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-
-                    var resendDataLimit = {
-                        ...sellLimitOrderData
-                    }
-
-                    resendDataLimit.quantity = remainningQuantity;
-                    resendDataLimit.activity_id = activityResult.id;
-
-                    if (remainningQuantity > 0) {
-                        var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res, crypto_coin_id, currency_coin_id);
-                        return responseData
-                    }
                 }
-                // Check for referral
-                let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
-            } else {
                 if (walletData.placed_balance < sellLimitOrderData.quantity) {
                     var userNotification = await UserNotifications.getSingleData({
                         user_id: sellLimitOrderData.user_id,
@@ -443,12 +467,16 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                 if (user_data.email != undefined) {
                                     var allData = {
                                         template: "emails/general_mail.ejs",
-                                        templateSlug: "trade_partially_filled",
+                                        templateSlug: "trade_place",
                                         email: user_data.email,
                                         user_detail: user_data,
                                         formatData: {
                                             recipientName: user_data.first_name,
-                                            pair: sellLimitOrderData.symbol
+                                            side: sellLimitOrderData.side,
+                                            pair: sellLimitOrderData.symbol,
+                                            order_type: sellLimitOrderData.order_type,
+                                            quantity: sellLimitOrderData.quantity,
+                                            price: sellLimitOrderData.limit_price,
                                         }
                                     }
                                     await Helper.SendEmail(res, allData)
@@ -471,6 +499,51 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 }
             }
         } else {
+            if (allOrderData.length > 0) {
+                var userData = userIds;
+                var tradeData = allOrderData;
+                for (var i = 0; i < userData.length; i++) {
+                    // Notification Sending for users
+                    var userNotification = await UserNotifications.getSingleData({
+                        user_id: userData[i],
+                        deleted_at: null,
+                        slug: 'trade_execute'
+                    })
+                    var user_data = await Users.getSingleData({
+                        deleted_at: null,
+                        id: userData[i],
+                        is_active: true
+                    });
+                    if (user_data != undefined) {
+                        if (userNotification != undefined) {
+                            if (userNotification.email == true || userNotification.email == "true") {
+                                if (user_data.email != undefined) {
+                                    var allData = {
+                                        template: "emails/general_mail.ejs",
+                                        templateSlug: "trade_partially_filled",
+                                        email: user_data.email,
+                                        user_detail: user_data,
+                                        formatData: {
+                                            recipientName: user_data.first_name,
+                                            side: tradeData[0].side,
+                                            pair: tradeData[0].symbol,
+                                            order_type: tradeData[0].order_type,
+                                            originalQuantity: originalQuantityValue,
+                                            allTradeData: tradeData
+                                        }
+                                    }
+                                    await Helper.SendEmail(res, allData)
+                                }
+                            }
+                            if (userNotification.text == true || userNotification.text == "true") {
+                                if (user_data.phone_number != undefined) {
+                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if (walletData.placed_balance < sellLimitOrderData.quantity) {
                 var userNotification = await UserNotifications.getSingleData({
                     user_id: sellLimitOrderData.user_id,
@@ -551,13 +624,18 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                             if (user_data.email != undefined) {
                                 var allData = {
                                     template: "emails/general_mail.ejs",
-                                    templateSlug: "trade_partially_filled",
+                                    templateSlug: "trade_place",
                                     email: user_data.email,
                                     user_detail: user_data,
                                     formatData: {
                                         recipientName: user_data.first_name,
-                                        pair: sellLimitOrderData.symbol
+                                        side: sellLimitOrderData.side,
+                                        pair: sellLimitOrderData.symbol,
+                                        order_type: sellLimitOrderData.order_type,
+                                        quantity: sellLimitOrderData.quantity,
+                                        price: sellLimitOrderData.limit_price,
                                     }
+
                                 }
                                 await Helper.SendEmail(res, allData)
                             }
