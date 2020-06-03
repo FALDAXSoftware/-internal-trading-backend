@@ -48,9 +48,39 @@ var SendEmail = async (res, requestedData) => {
     slug: requestedData.templateSlug
   });
 
+  // let language_content = template.all_content[user_language].content;
+  // let language_subject = template.all_content[user_language].subject;
+
   let language_content = template.all_content[user_language].content;
   let language_subject = template.all_content[user_language].subject;
+  let tradeData = '';
 
+  if (format_data.allTradeData) {
+    var sortedOrderData = format_data.allTradeData;
+    // console.log("sortedOrderData", sortedOrderData)
+    sortedOrderData.sort(function (a, b) { return b.id - a.id });
+    const allTradeData = sortedOrderData;
+    // console.log("allTradeData", allTradeData)
+    tradeData += '<table style="border:1px solid #888;border-collapse:collapse;border-spacing:0;font-size:13px;">'
+    tradeData += '<tr>'
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Filled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Unfilled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Trade Price(${allTradeData[0].currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Datetime</th>`
+    tradeData += '</tr>'
+    for (let i = 0; i < allTradeData.length; i++) {
+      const remaining = parseFloat(allTradeData[i].fix_quantity) - parseFloat(allTradeData[i].quantity);
+      const datetime = moment(allTradeData[i].created_at).local().format("YYYY-MM-DD HH:mm")
+      tradeData += '<tr>'
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].quantity).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(remaining).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].fill_price).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${datetime}</td>`;
+      tradeData += '</tr>'
+    }
+    tradeData += '</table>'
+  }
+  format_data.allTradeData = tradeData;
   language_content = await module.exports.formatEmail(language_content, format_data);
 
   // console.log(language_content)
@@ -129,14 +159,14 @@ var checkWhichUser = function (user_id) {
 }
 
 // Generate Trasnsaction group
-var generateTxGroup = function(user_id){
+var generateTxGroup = function (user_id) {
   var result = '';
   let length = 48;
   let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
   for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
   var current_date = new Date();
   current_date = current_date.getTime();
-  return values = ("txg_"+user_id+current_date+result).toLocaleLowerCase();
+  return values = ("txg_" + user_id + current_date + result).toLocaleLowerCase();
 
 }
 
