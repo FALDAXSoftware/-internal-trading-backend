@@ -92,9 +92,9 @@ class TradeController extends AppController {
 
       var quantityTotal = await buyOrderBookSummary.getBuyBookOrderSummary(crypto, currency);
 
-      if (quantityTotal.total_quantity < orderQuantity) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
-      }
+      // if (quantityTotal.total_quantity < orderQuantity) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message, []);
+      // }
 
       var userData = await Users
         .query()

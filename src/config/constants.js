@@ -28,6 +28,7 @@ module.exports = {
 	"TRADE_USER_WALLET_BALANCE": "user-wallet-balance",
 	"TRADE_HIGH_LEVEL_INFO": 'symbol-high-level-info',
 	"TRADE_ALL_PENDING_ORDERS_EVENT": "all-pending-orders-data",
+	"LATEST_TRADEVALUE": "get-latest-price",
 	"USER_LOGOUT": "user-logout",
 
 	"SECRET_KEY": process.env.SECRET_KEY,

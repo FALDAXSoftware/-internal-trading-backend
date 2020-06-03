@@ -30,6 +30,7 @@ var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 // var fetSocketInfo = require("../../helpers/tradding/get-socket-value");
+var latestBidPrice = require("../../helpers/get-bid-ask-latest");
 var QueueValue = require("./QueueController");
 
 class DashboardController extends AppController {
@@ -51,6 +52,8 @@ class DashboardController extends AppController {
             var total = 0;
             // var data = await fetSocketInfo.getSocketValueData("LTC-BTC");
             // console.log(data);
+            // var data = await latestBidPrice.getLatestVaue("LTC-BTC");
+            // console.log("data", data)
             var diffrenceValue = 0;
             var user_data = await UserModel
                 .query()
