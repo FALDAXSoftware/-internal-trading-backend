@@ -175,6 +175,7 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
     socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol));
+    socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol));
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
