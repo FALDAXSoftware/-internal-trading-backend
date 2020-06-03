@@ -216,6 +216,40 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             }
                         }
                     } else {
+                        var userNotification = await UserNotifications.getSingleData({
+                            user_id: sellLimitOrderData.user_id,
+                            deleted_at: null,
+                            slug: 'trade_execute'
+                        })
+                        var user_data = await Users.getSingleData({
+                            deleted_at: null,
+                            id: sellLimitOrderData.user_id,
+                            is_active: true
+                        });
+                        if (user_data != undefined) {
+                            if (userNotification != undefined) {
+                                if (userNotification.email == true || userNotification.email == "true") {
+                                    if (user_data.email != undefined) {
+                                        var allData = {
+                                            template: "emails/general_mail.ejs",
+                                            templateSlug: "order_failed",
+                                            email: user_data.email,
+                                            user_detail: user_data,
+                                            formatData: {
+                                                recipientName: user_data.first_name,
+                                                reason: i18n.__("Insufficient balance to place order").message
+                                            }
+                                        }
+                                        await Helper.SendEmail(res, allData)
+                                    }
+                                }
+                                if (userNotification.text == true || userNotification.text == "true") {
+                                    if (user_data.phone_number != undefined) {
+                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                    }
+                                }
+                            }
+                        }
                         return {
                             status: 3,
                             message: 'Insufficient balance to place order'
@@ -356,6 +390,40 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             return responseData;
                         }
                     } else {
+                        var userNotification = await UserNotifications.getSingleData({
+                            user_id: sellLimitOrderData.user_id,
+                            deleted_at: null,
+                            slug: 'trade_execute'
+                        })
+                        var user_data = await Users.getSingleData({
+                            deleted_at: null,
+                            id: sellLimitOrderData.user_id,
+                            is_active: true
+                        });
+                        if (user_data != undefined) {
+                            if (userNotification != undefined) {
+                                if (userNotification.email == true || userNotification.email == "true") {
+                                    if (user_data.email != undefined) {
+                                        var allData = {
+                                            template: "emails/general_mail.ejs",
+                                            templateSlug: "order_failed",
+                                            email: user_data.email,
+                                            user_detail: user_data,
+                                            formatData: {
+                                                recipientName: user_data.first_name,
+                                                reason: i18n.__("Insufficient balance to place order").message
+                                            }
+                                        }
+                                        await Helper.SendEmail(res, allData)
+                                    }
+                                }
+                                if (userNotification.text == true || userNotification.text == "true") {
+                                    if (user_data.phone_number != undefined) {
+                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                    }
+                                }
+                            }
+                        }
                         return {
                             status: 3,
                             message: 'Insufficient balance to place order'
@@ -437,6 +505,40 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         message: 'Order Partially Fulfilled and Added to Buy Book'
                     }
                 } else {
+                    var userNotification = await UserNotifications.getSingleData({
+                        user_id: sellLimitOrderData.user_id,
+                        deleted_at: null,
+                        slug: 'trade_execute'
+                    })
+                    var user_data = await Users.getSingleData({
+                        deleted_at: null,
+                        id: sellLimitOrderData.user_id,
+                        is_active: true
+                    });
+                    if (user_data != undefined) {
+                        if (userNotification != undefined) {
+                            if (userNotification.email == true || userNotification.email == "true") {
+                                if (user_data.email != undefined) {
+                                    var allData = {
+                                        template: "emails/general_mail.ejs",
+                                        templateSlug: "order_failed",
+                                        email: user_data.email,
+                                        user_detail: user_data,
+                                        formatData: {
+                                            recipientName: user_data.first_name,
+                                            reason: i18n.__("Insufficient balance to place order").message
+                                        }
+                                    }
+                                    await Helper.SendEmail(res, allData)
+                                }
+                            }
+                            if (userNotification.text == true || userNotification.text == "true") {
+                                if (user_data.phone_number != undefined) {
+                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                }
+                            }
+                        }
+                    }
                     // Insufficent Funds Error
                     return {
                         status: 3,
@@ -516,6 +618,40 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     message: 'Order Palce Success'
                 }
             } else {
+                var userNotification = await UserNotifications.getSingleData({
+                    user_id: sellLimitOrderData.user_id,
+                    deleted_at: null,
+                    slug: 'trade_execute'
+                })
+                var user_data = await Users.getSingleData({
+                    deleted_at: null,
+                    id: sellLimitOrderData.user_id,
+                    is_active: true
+                });
+                if (user_data != undefined) {
+                    if (userNotification != undefined) {
+                        if (userNotification.email == true || userNotification.email == "true") {
+                            if (user_data.email != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "order_failed",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        reason: i18n.__("Insufficient balance to place order").message
+                                    }
+                                }
+                                await Helper.SendEmail(res, allData)
+                            }
+                        }
+                        if (userNotification.text == true || userNotification.text == "true") {
+                            if (user_data.phone_number != undefined) {
+                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                            }
+                        }
+                    }
+                }
                 return {
                     status: 3,
                     message: 'Insufficient balance to place order'
