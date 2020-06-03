@@ -44,6 +44,12 @@ var getUserBalance = async (user_id, crypto, currency) => {
     return data;
 }
 
+var getLatestValue = async (symbol) => {
+    let helper = require("../../helpers/get-bid-ask-latest");
+    let data = await helper.getLatestVaue(symbol);
+    return data;
+}
+
 // Get Card Data
 // var getCardData = async (symbol) => {
 //     let helper = require("../../helpers/dashboard/get-card-data");
@@ -148,5 +154,6 @@ module.exports = {
     getUserFavouritesData,
     getPortfolioData,
     getActivityData,
-    getHighInfo
+    getHighInfo,
+    getLatestValue
 }
