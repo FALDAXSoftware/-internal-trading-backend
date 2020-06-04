@@ -20,9 +20,9 @@ var addBuyBookData = async (buyLimitOrderData) => {
 
         console.log("buyAdd", JSON.stringify(buyAdd));
 
-        // if (buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
-        //     return (buyAdd);
-        // }
+        if (buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
+            return (buyAdd);
+        }
 
         var walletBalance = await walletBalanceValue.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);
         console.log("walletBalance", JSON.stringify(walletBalance))
