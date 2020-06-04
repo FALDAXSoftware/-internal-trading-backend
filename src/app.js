@@ -196,6 +196,15 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
 
+  socket.on("get-limit-stop-latest", async function (data) {
+    var socket_headers = socket.request.headers;
+    var authentication = await require("./config/authorization")(socket_headers);
+    if (authentication.status > constants.SUCCESS_CODE) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
+    socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(data.symbol));
+  })
+
   // Temp FIXAPI
   socket.on("check-offer-code", async function (data) {
     let check_offer = require("./helpers/fixapi/check-offer-code-status");

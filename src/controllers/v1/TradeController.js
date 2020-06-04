@@ -271,37 +271,43 @@ class TradeController extends AppController {
     }
     // Get and check Crypto Wallet details
     let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
-    if (walletData.crypto.placed_balance < orderQuantity) {
-      var userNotification = await UserNotifications.getSingleData({
-        user_id: user_id,
-        deleted_at: null,
-        slug: 'trade_execute'
-      })
-      var user_data = await Users.getSingleData({
-        deleted_at: null,
-        id: userIds[i],
-        is_active: true
-      });
-      if (user_data != undefined) {
-        if (userNotification != undefined) {
-          if (userNotification.email == true || userNotification.email == "true") {
-            if (user_data.email != undefined) {
-              var allData = {
-                template: "emails/general_mail.ejs",
-                templateSlug: "order_failed",
-                email: user_data.email,
-                user_detail: user_data,
-                formatData: {
-                  recipientName: user_data.first_name,
-                  reason: i18n.__("Insufficient balance to place order").message
+
+    console.log("walletData", walletData)
+
+    if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+    } else {
+      if (walletData.crypto.placed_balance < orderQuantity) {
+        var userNotification = await UserNotifications.getSingleData({
+          user_id: user_id,
+          deleted_at: null,
+          slug: 'trade_execute'
+        })
+        var user_data = await Users.getSingleData({
+          deleted_at: null,
+          id: userIds[i],
+          is_active: true
+        });
+        if (user_data != undefined) {
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                var allData = {
+                  template: "emails/general_mail.ejs",
+                  templateSlug: "order_failed",
+                  email: user_data.email,
+                  user_detail: user_data,
+                  formatData: {
+                    recipientName: user_data.first_name,
+                    reason: i18n.__("Insufficient balance to place order").message
+                  }
                 }
+                await Helper.SendEmail(res, allData)
               }
-              await Helper.SendEmail(res, allData)
             }
-          }
-          if (userNotification.text == true || userNotification.text == "true") {
-            if (user_data.phone_number != undefined) {
-              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              }
             }
           }
         }
@@ -327,7 +333,8 @@ class TradeController extends AppController {
       console.log("availableQty", availableQty)
       var currentBuyBookDetails = buy_book_data[0];
       var priceValue = parseFloat(currentBuyBookDetails.price).toFixed(pairDetails.price_precision);
-      console.log("priceValue", priceValue)
+      // console.log("priceValue", priceValue)
+      // priceValue = (priceValue.length > 0) ? (priceValue)
       var now = new Date();
       var orderData = {
         user_id: user_id,
@@ -397,7 +404,18 @@ class TradeController extends AppController {
             currency_coin_id
           }
 
-          var tradingFees = await TradingFees.getTraddingFees(request)
+          if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+            var tradingFees = {
+              userFee: 0.0,
+              requestedFee: 0.0,
+              maker_fee: 0.0,
+              taker_fee: 0.0
+            }
+          } else {
+            var tradingFees = await TradingFees.getTraddingFees(request)
+          }
+
+          console.log("tradingFees", tradingFees)
 
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -493,7 +511,19 @@ class TradeController extends AppController {
             currency_coin_id
           }
 
-          var tradingFees = await TradingFees.getTraddingFees(request)
+          if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+            var tradingFees = {
+              userFee: 0.0,
+              requestedFee: 0.0,
+              maker_fee: 0.0,
+              taker_fee: 0.0
+            }
+          } else {
+            var tradingFees = await TradingFees.getTraddingFees(request)
+          }
+
+          console.log("tradingFees", tradingFees)
+
 
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -592,7 +622,19 @@ class TradeController extends AppController {
 
         console.log("request", JSON.stringify(request))
 
-        var tradingFees = await TradingFees.getTraddingFees(request)
+        if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+          var tradingFees = {
+            userFee: 0.0,
+            requestedFee: 0.0,
+            maker_fee: 0.0,
+            taker_fee: 0.0
+          }
+        } else {
+          var tradingFees = await TradingFees.getTraddingFees(request)
+        }
+
+        console.log("tradingFees", tradingFees)
+
         // console.log("tradingFees", JSON.stringify(tradingFees))
         trade_history_data.user_fee = (tradingFees.userFee);
         trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -833,72 +875,77 @@ class TradeController extends AppController {
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
 
-    if (wallet == 1) {
-      var userNotification = await UserNotifications.getSingleData({
-        user_id: user_id,
-        deleted_at: null,
-        slug: 'trade_execute'
-      })
-      var user_data = await Users.getSingleData({
-        deleted_at: null,
-        id: userIds[i],
-        is_active: true
-      });
-      if (user_data != undefined) {
-        if (userNotification != undefined) {
-          if (userNotification.email == true || userNotification.email == "true") {
-            if (user_data.email != undefined) {
-              var allData = {
-                template: "emails/general_mail.ejs",
-                templateSlug: "order_failed",
-                email: user_data.email,
-                user_detail: user_data,
-                formatData: {
-                  recipientName: user_data.first_name,
-                  reason: i18n.__("Create Currency Wallet").message
+    if (sellBook.length > 0) {
+      if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+      } else {
+        if (wallet == 1) {
+          var userNotification = await UserNotifications.getSingleData({
+            user_id: user_id,
+            deleted_at: null,
+            slug: 'trade_execute'
+          })
+          var user_data = await Users.getSingleData({
+            deleted_at: null,
+            id: userIds[i],
+            is_active: true
+          });
+          if (user_data != undefined) {
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  var allData = {
+                    template: "emails/general_mail.ejs",
+                    templateSlug: "order_failed",
+                    email: user_data.email,
+                    user_detail: user_data,
+                    formatData: {
+                      recipientName: user_data.first_name,
+                      reason: i18n.__("Create Currency Wallet").message
+                    }
+                  }
+                  await Helper.SendEmail(res, allData)
                 }
               }
-              await Helper.SendEmail(res, allData)
-            }
-          }
-          if (userNotification.text == true || userNotification.text == "true") {
-            if (user_data.phone_number != undefined) {
-              // await sails.helpers.notification.send.text("trade_execute", user_data)
-            }
-          }
-        }
-      }
-    } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
-      var userNotification = await UserNotifications.getSingleData({
-        user_id: user_id,
-        deleted_at: null,
-        slug: 'trade_execute'
-      })
-      var user_data = await Users.getSingleData({
-        deleted_at: null,
-        id: userIds[i],
-        is_active: true
-      });
-      if (user_data != undefined) {
-        if (userNotification != undefined) {
-          if (userNotification.email == true || userNotification.email == "true") {
-            if (user_data.email != undefined) {
-              var allData = {
-                template: "emails/general_mail.ejs",
-                templateSlug: "order_failed",
-                email: user_data.email,
-                user_detail: user_data,
-                formatData: {
-                  recipientName: user_data.first_name,
-                  reason: i18n.__("Insufficient balance to place order").message
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  // await sails.helpers.notification.send.text("trade_execute", user_data)
                 }
               }
-              await Helper.SendEmail(res, allData)
             }
           }
-          if (userNotification.text == true || userNotification.text == "true") {
-            if (user_data.phone_number != undefined) {
-              // await sails.helpers.notification.send.text("trade_execute", user_data)
+        } else if (wallet.placed_balance < (sellBook[0].price * sellBook[0].quantity)) {
+          var userNotification = await UserNotifications.getSingleData({
+            user_id: user_id,
+            deleted_at: null,
+            slug: 'trade_execute'
+          })
+          var user_data = await Users.getSingleData({
+            deleted_at: null,
+            id: userIds[i],
+            is_active: true
+          });
+          if (user_data != undefined) {
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  var allData = {
+                    template: "emails/general_mail.ejs",
+                    templateSlug: "order_failed",
+                    email: user_data.email,
+                    user_detail: user_data,
+                    formatData: {
+                      recipientName: user_data.first_name,
+                      reason: i18n.__("Insufficient balance to place order").message
+                    }
+                  }
+                  await Helper.SendEmail(res, allData)
+                }
+              }
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  // await sails.helpers.notification.send.text("trade_execute", user_data)
+                }
+              }
             }
           }
         }
@@ -983,7 +1030,17 @@ class TradeController extends AppController {
             currency_coin_id
           }
 
-          var tradingFees = await TradingFees.getTraddingFees(request);
+          if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+            var tradingFees = {
+              userFee: 0.0,
+              requestedFee: 0.0,
+              maker_fee: 0.0,
+              taker_fee: 0.0
+            }
+          } else {
+            var tradingFees = await TradingFees.getTraddingFees(request);
+          }
+          console.log("tradingFees", tradingFees)
           var usd_value = resultData * (request.fill_price * request.quantity);
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -1184,7 +1241,17 @@ class TradeController extends AppController {
             crypto_coin_id,
             currency_coin_id
           }
-          var tradingFees = await TradingFees.getTraddingFees(request);
+          if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
+            var tradingFees = {
+              userFee: 0.0,
+              requestedFee: 0.0,
+              maker_fee: 0.0,
+              taker_fee: 0.0
+            }
+          } else {
+            var tradingFees = await TradingFees.getTraddingFees(request);
+          }
+          console.log("tradingFees", tradingFees)
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
           trade_history_data.user_coin = crypto;
@@ -1514,72 +1581,74 @@ class TradeController extends AppController {
     }
 
     if (placedBy != process.env.TRADEDESK_BOT) {
-      if (wallet == 1) {
-        var userNotification = await UserNotifications.getSingleData({
-          user_id: user_id,
-          deleted_at: null,
-          slug: 'trade_execute'
-        })
-        var user_data = await Users.getSingleData({
-          deleted_at: null,
-          id: userIds[i],
-          is_active: true
-        });
-        if (user_data != undefined) {
-          if (userNotification != undefined) {
-            if (userNotification.email == true || userNotification.email == "true") {
-              if (user_data.email != undefined) {
-                var allData = {
-                  template: "emails/general_mail.ejs",
-                  templateSlug: "order_failed",
-                  email: user_data.email,
-                  user_detail: user_data,
-                  formatData: {
-                    recipientName: user_data.first_name,
-                    reason: i18n.__("Create Currency Wallet").message
+      if (sellBook.length > 0) {
+        if (wallet == 1) {
+          var userNotification = await UserNotifications.getSingleData({
+            user_id: user_id,
+            deleted_at: null,
+            slug: 'trade_execute'
+          })
+          var user_data = await Users.getSingleData({
+            deleted_at: null,
+            id: userIds[i],
+            is_active: true
+          });
+          if (user_data != undefined) {
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  var allData = {
+                    template: "emails/general_mail.ejs",
+                    templateSlug: "order_failed",
+                    email: user_data.email,
+                    user_detail: user_data,
+                    formatData: {
+                      recipientName: user_data.first_name,
+                      reason: i18n.__("Create Currency Wallet").message
+                    }
                   }
+                  await Helper.SendEmail(res, allData)
                 }
-                await Helper.SendEmail(res, allData)
               }
-            }
-            if (userNotification.text == true || userNotification.text == "true") {
-              if (user_data.phone_number != undefined) {
-                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  // await sails.helpers.notification.send.text("trade_execute", user_data)
+                }
               }
             }
           }
-        }
-      } else if (wallet.placed_balance < (sellBook[0].fill_price * sellBook[0].quantity)) {
-        var userNotification = await UserNotifications.getSingleData({
-          user_id: user_id,
-          deleted_at: null,
-          slug: 'trade_execute'
-        })
-        var user_data = await Users.getSingleData({
-          deleted_at: null,
-          id: userIds[i],
-          is_active: true
-        });
-        if (user_data != undefined) {
-          if (userNotification != undefined) {
-            if (userNotification.email == true || userNotification.email == "true") {
-              if (user_data.email != undefined) {
-                var allData = {
-                  template: "emails/general_mail.ejs",
-                  templateSlug: "order_failed",
-                  email: user_data.email,
-                  user_detail: user_data,
-                  formatData: {
-                    recipientName: user_data.first_name,
-                    reason: i18n.__("Insufficient balance to place order").message
+        } else if (wallet.placed_balance < (sellBook[0].price * sellBook[0].quantity)) {
+          var userNotification = await UserNotifications.getSingleData({
+            user_id: user_id,
+            deleted_at: null,
+            slug: 'trade_execute'
+          })
+          var user_data = await Users.getSingleData({
+            deleted_at: null,
+            id: userIds[i],
+            is_active: true
+          });
+          if (user_data != undefined) {
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  var allData = {
+                    template: "emails/general_mail.ejs",
+                    templateSlug: "order_failed",
+                    email: user_data.email,
+                    user_detail: user_data,
+                    formatData: {
+                      recipientName: user_data.first_name,
+                      reason: i18n.__("Insufficient balance to place order").message
+                    }
                   }
+                  await Helper.SendEmail(res, allData)
                 }
-                await Helper.SendEmail(res, allData)
               }
-            }
-            if (userNotification.text == true || userNotification.text == "true") {
-              if (user_data.phone_number != undefined) {
-                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  // await sails.helpers.notification.send.text("trade_execute", user_data)
+                }
               }
             }
           }
@@ -3296,14 +3365,17 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
 
-      if (walletData.currency < quantityTotal[0].price) {
-        await logger.info({
-          "module": "Market Buy",
-          "user_id": "user_" + user_id,
-          "url": "Trade Function",
-          "type": "Success"
-        }, i18n.__("Insufficient balance to place order").message);
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+      console.log("quantityTotal", quantityTotal)
+      if (quantityTotal.length > 0) {
+        if (walletData.currency < quantityTotal[0].price) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Success"
+          }, i18n.__("Insufficient balance to place order").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
+        }
       }
 
       var queueName = process.env.QUEUE_NAME

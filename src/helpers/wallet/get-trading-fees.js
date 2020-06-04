@@ -207,21 +207,55 @@ var getTraddingFees = async (inputs) => {
                                                         WHERE id = ${cryptoWalletUser.id}
                                                         RETURNING *`)
             var a = updateSql.rows[0]
-            var cryptorequestedbalance
+            var cryptorequestedbalance;
+            var cryptorequestedplacedbalance;
             if (user_id == requested_user_id) {
-                cryptorequestedbalance = a.balance - ((inputs.quantity));
-                cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+                if (requested_user_id == process.env.TRADEDESK_USER_ID) {
+                    cryptorequestedbalance = a.balance - ((inputs.quantity));
+                    cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8);
+                    cryptorequestedplacedbalance = a.balance - ((inputs.quantity));
+                    cryptorequestedplacedbalance = parseFloat(cryptorequestedplacedbalance).toFixed(8)
+                    var a = await Wallet
+                        .query()
+                        .where('id', cryptoWalletRequested.id)
+                        .update({
+                            balance: cryptorequestedbalance,
+                            placed_balance: cryptorequestedplacedbalance
+                        });
+                } else {
+                    cryptorequestedbalance = a.balance - ((inputs.quantity));
+                    cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+                    var a = await Wallet
+                        .query()
+                        .where('id', cryptoWalletRequested.id)
+                        .update({
+                            balance: cryptorequestedbalance
+                        });
+                }
             } else {
-                cryptorequestedbalance = cryptoWalletRequested.balance - ((inputs.quantity));
-                cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+                if (requested_user_id == process.env.TRADEDESK_USER_ID) {
+                    cryptorequestedbalance = cryptoWalletRequested.balance - ((inputs.quantity));
+                    cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8);
+                    cryptorequestedplacedbalance = cryptoWalletRequested.placed_balance - ((inputs.quantity));
+                    cryptorequestedplacedbalance = parseFloat(cryptorequestedplacedbalance).toFixed(8);
+                    var a = await Wallet
+                        .query()
+                        .where('id', cryptoWalletRequested.id)
+                        .update({
+                            balance: cryptorequestedbalance,
+                            placed_balance: cryptorequestedplacedbalance
+                        });
+                } else {
+                    cryptorequestedbalance = cryptoWalletRequested.balance - ((inputs.quantity));
+                    cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
+                    var a = await Wallet
+                        .query()
+                        .where('id', cryptoWalletRequested.id)
+                        .update({
+                            balance: cryptorequestedbalance
+                        });
+                }
             }
-
-            var a = await Wallet
-                .query()
-                .where('id', cryptoWalletRequested.id)
-                .update({
-                    balance: cryptorequestedbalance
-                });
 
             // -----------------------currency-------------------------------------- //
             var currencyuserbalance = currencyWalletUser.balance - (((inputs.quantity) * inputs.fill_price));
@@ -360,25 +394,61 @@ var getTraddingFees = async (inputs) => {
                                                         WHERE id = ${currencyWalletUser.id}
                                                         RETURNING *`)
             var b = updateSql.rows[0]
-            var currencyrequestedbalance
+            var currencyrequestedbalance;
+            var currencyrequestedplacedbalance;
             if (user_id == requested_user_id) {
-                currencyrequestedbalance = b.balance - ((((inputs.quantity) * (inputs.fill_price))));
-                currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+                if (requested_user_id == process.env.TRADEDESK_USER_ID) {
+                    currencyrequestedbalance = b.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+                    currencyrequestedplacedbalance = b.placed_balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedplacedbalance = parseFloat(currencyrequestedplacedbalance).toFixed(8)
+                    var b = await Wallet
+                        .query()
+                        .where('id', currencyWalletRequested.id)
+                        .update({
+                            balance: currencyrequestedbalance,
+                            placed_balance: currencyrequestedplacedbalance
+                        });
+                } else {
+                    currencyrequestedbalance = b.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+                    var b = await Wallet
+                        .query()
+                        .where('id', currencyWalletRequested.id)
+                        .update({
+                            balance: currencyrequestedbalance
+                        });
+                }
             } else {
-                currencyrequestedbalance = currencyWalletRequested.balance - ((((inputs.quantity) * (inputs.fill_price))));
-                currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+                if (requested_user_id == process.env.TRADEDESK_USER_ID) {
+                    currencyrequestedbalance = currencyWalletRequested.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8);
+                    currencyrequestedplacedbalance = currencyWalletRequested.placed_balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedplacedbalance = parseFloat(currencyrequestedplacedbalance).toFixed(8)
+                    var b = await Wallet
+                        .query()
+                        .where('id', currencyWalletRequested.id)
+                        .update({
+                            balance: currencyrequestedbalance,
+                            placed_balance: currencyrequestedplacedbalance
+                        });
+                } else {
+                    currencyrequestedbalance = currencyWalletRequested.balance - ((((inputs.quantity) * (inputs.fill_price))));
+                    currencyrequestedbalance = parseFloat(currencyrequestedbalance).toFixed(8)
+                    var b = await Wallet
+                        .query()
+                        .where('id', currencyWalletRequested.id)
+                        .update({
+                            balance: currencyrequestedbalance
+                        });
+                }
             }
 
 
-            var b = await Wallet
-                .query()
-                .where('id', currencyWalletRequested.id)
-                .update({
-                    balance: currencyrequestedbalance
-                });
             var requestedFee = (((inputs.quantity)) * ((inputs.makerFee / 100)).toFixed(8))
             var userFee = ((((inputs.quantity) * inputs.fill_price) * ((inputs.takerFee / 100)))).toFixed(8);
 
+            console.log("adminWalletCrypto", adminWalletCrypto)
             var adminBalance = parseFloat(adminWalletCrypto.balance) + parseFloat(requestedFee)
             var adminPlacedBalance = parseFloat(adminWalletCrypto.placed_balance) + parseFloat(requestedFee)
 
@@ -425,7 +495,7 @@ var getTraddingFees = async (inputs) => {
             "taker_fee": inputs.takerFee
         })
     } catch (err) {
-        console.log("fees Error", JSON.stringify(err));
+        console.log("fees Error", (err));
         return (1);
     }
 }
