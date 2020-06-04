@@ -101,7 +101,7 @@ var publishToQueue = async (queueName, data) => {
         var priorityValue = 1;
         if (data.order_type == "Limit" && data.flag == true) {
             // if(data.flag == f)
-            priorityValue = 2;
+            priorityValue = 10;
         }
         console.log({
             queueName,
