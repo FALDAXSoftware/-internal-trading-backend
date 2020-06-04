@@ -59,6 +59,7 @@ var fiatValueHelper = require("../../helpers/get-fiat-value");
 var sellOrderBookSummary = require("../../helpers/sell/get-sell-book-order-summary");
 var buyOrderBookSummary = require("../../helpers/buy/get-buy-book-order-summary");
 var QueueValue = require("./QueueController");
+var PendingOrderExecutuionModel = require("../../models/PendingOrdersExecutuions")
 
 /**
  * Trade Controller : Used for live tradding
@@ -847,7 +848,7 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = [], originalQuantityValue = 0) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0) {
     const checkUser = Helper.checkWhichUser(user_id);
     console.log("checkUser", JSON.stringify(checkUser))
     console.log(JSON.stringify({
@@ -889,6 +890,55 @@ class TradeController extends AppController {
             id: userIds[i],
             is_active: true
           });
+          var getPendingData = await PendingOrderExecutuionModel
+            .query()
+            .first()
+            .select("is_cancel")
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
+          if (allOrderData.length > 0) {
+
+            if (user_data != undefined) {
+              if (userNotification != undefined) {
+                if (userNotification.email == true || userNotification.email == "true") {
+                  if (user_data.email != undefined) {
+                    var allData = {
+                      template: "emails/general_mail.ejs",
+                      templateSlug: "trade_execute",
+                      email: user_data.email,
+                      user_detail: user_data,
+                      formatData: {
+                        recipientName: user_data.first_name,
+                        side: side,
+                        pair: symbol,
+                        order_type: order_type,
+                        quantity: originalQuantityValue,
+                        allTradeData: tradeData
+                      }
+
+                    }
+                    await Helper.SendEmail(res, allData)
+                  }
+                }
+                if (userNotification.text == true || userNotification.text == "true") {
+                  if (user_data.phone_number != undefined) {
+                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                  }
+                }
+              }
+            }
+          }
           if (user_data != undefined) {
             if (userNotification != undefined) {
               if (userNotification.email == true || userNotification.email == "true") {
@@ -924,6 +974,57 @@ class TradeController extends AppController {
             id: userIds[i],
             is_active: true
           });
+
+          var getPendingData = await PendingOrderExecutuionModel
+            .query()
+            .first()
+            .select("is_cancel")
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+            if (allOrderData.length > 0) {
+            }
+
+            if (user_data != undefined) {
+              if (userNotification != undefined) {
+                if (userNotification.email == true || userNotification.email == "true") {
+                  if (user_data.email != undefined) {
+                    var allData = {
+                      template: "emails/general_mail.ejs",
+                      templateSlug: "trade_execute",
+                      email: user_data.email,
+                      user_detail: user_data,
+                      formatData: {
+                        recipientName: user_data.first_name,
+                        side: side,
+                        pair: symbol,
+                        order_type: order_type,
+                        quantity: originalQuantityValue,
+                        allTradeData: tradeData
+                      }
+
+                    }
+                    await Helper.SendEmail(res, allData)
+                  }
+                }
+                if (userNotification.text == true || userNotification.text == "true") {
+                  if (user_data.phone_number != undefined) {
+                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                  }
+                }
+              }
+            }
+          }
+
           if (user_data != undefined) {
             if (userNotification != undefined) {
               if (userNotification.email == true || userNotification.email == "true") {
@@ -1051,8 +1152,27 @@ class TradeController extends AppController {
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
           // trade_history_data.txn_group_id = txnGroupId;
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          console.log("tradeHistory", tradeHistory)
+          console.log("allOrderData", allOrderData)
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
+          var getPendingData = await PendingOrderExecutuionModel
+            .query()
+            .first()
+            .select("is_cancel")
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
           let remainigQuantity = availableQuantity - quantityValue;
           if (remainigQuantity > 0) {
             let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
@@ -1272,6 +1392,25 @@ class TradeController extends AppController {
             user_id
           }
           requestData.orderQuantity = parseFloat(remainingQty).toFixed(8);
+
+          var getPendingData = await PendingOrderExecutuionModel
+            .query()
+            .first()
+            .select("is_cancel")
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
+
           await logger.info({
             "module": "Market Buy Execution",
             "user_id": "user_" + user_id,
@@ -1330,6 +1469,24 @@ class TradeController extends AppController {
       // Check for referral
       let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
     } else {
+
+      var getPendingData = await PendingOrderExecutuionModel
+        .query()
+        .first()
+        .select("is_cancel")
+        .where("id", pending_order_id)
+        .andWhere("deleted_at", null)
+        .orderBy("id", "DESC");
+
+      if (getPendingData != undefined) {
+        var getData = await PendingOrderExecutuionModel
+          .query()
+          .where("id", id)
+          .andWhere("deleted_at", null)
+          .patch({
+            is_executed: true
+          })
+      }
       await logger.info({
         "module": "Market Buy Execution",
         "user_id": "user_" + user_id,
@@ -1554,6 +1711,7 @@ class TradeController extends AppController {
     }, symbol, user_id, side, order_type, orderQuantity, limit_price, res, flag, crypto_coin_id, currency_coin_id)
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
+    // Bot User By pass
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
 
@@ -2873,8 +3031,32 @@ class TradeController extends AppController {
         order_type,
         orderQuantity,
       } = req.body;
-      // var user_id = await Helper.getUserId(req.headers, res);
 
+      var getPendingDetails = await PendingOrderExecutuionModel
+        .query()
+        .select()
+        .first()
+        .where("deleted_at", null)
+        .andWhere("user_id", user_id)
+        .andWhere("side", "Buy")
+        .andWhere("order_type", "Market")
+        .andWhere("is_executed", false)
+        .orderBy("id", "DESC");
+
+      console.log("getPendingDetails", getPendingDetails)
+
+      if (getPendingDetails!= undefined) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
+      }
+
+      // var user_id = await Helper.getUserId(req.headers, res);
+      const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
 
       var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
@@ -2890,6 +3072,7 @@ class TradeController extends AppController {
         .andWhere("name", symbol)
         .orderBy("id", "DESC")
 
+      // Fetch USD Value
       var USDPriceValue = await CurrencyConversionModel
         .query()
         .first()
@@ -2900,6 +3083,8 @@ class TradeController extends AppController {
       var usdValue = USDPriceValue.quote.USD.price
       var maximumValue = (pairDetails.order_maximum) / (usdValue)
       console.log("maximumValue", maximumValue)
+
+      // For minimum and maximum order quantity checking
       if (orderQuantity <= 0) {
         await logger.info({
           "module": "Market Buy",
@@ -2977,7 +3162,29 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Insufficient balance to place order").message, []);
         }
 
-        var queueName = process.env.QUEUE_NAME
+        var pendingAdd = await PendingOrderExecutuionModel
+          .query()
+          .insert({
+            user_id: user_id,
+            side: side,
+            order_type: order_type,
+            created_at: new Date(),
+            updated_at: null,
+            deleted_at: null,
+            limit_price: 0.0,
+            quantity: orderQuantity,
+            currency: currency,
+            settle_currency: crypto,
+            placed_by: (checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER),
+            symbol: symbol,
+            is_cancel: false,
+            is_executed: false
+          });
+
+        console.log("pendingAdd", pendingAdd)
+        console.log("pendingAdd.id", pendingAdd.id)
+
+        var queueName = process.env.PENDING_QUEUE_NAME
         var queueData = {
           symbol,
           side,
@@ -2986,7 +3193,8 @@ class TradeController extends AppController {
           user_id,
           res: null,
           crypto: walletData.crypto.coin_id,
-          currency: walletData.currency.coin_id
+          currency: walletData.currency.coin_id,
+          pending_order_id: pendingAdd.id
         }
         var responseValue = await QueueValue.publishToQueue(queueName, queueData)
         if (responseValue == 0) {
@@ -2996,7 +3204,7 @@ class TradeController extends AppController {
             "url": "Trade Function",
             "type": "Success"
           }, i18n.__('Order Success').message)
-          return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Your order is successfully placed.").message, []);
         } else {
           await logger.info({
             "module": "Market Buy",
@@ -3027,7 +3235,7 @@ class TradeController extends AppController {
 
       // console.log(responseData)
     } catch (err) {
-      console.log("err", JSON.stringify(err));
+      console.log("err", (err));
       await logger.info({
         "module": "Market Buy",
         "user_id": "user_" + user_id,
@@ -3208,7 +3416,7 @@ class TradeController extends AppController {
             "url": "Trade Function",
             "type": "Success"
           }, i18n.__('Order Success').message)
-          return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+          return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Your order is successfully placed.").message, []);
         } else {
           await logger.error({
             "module": "Market Sell",
@@ -3400,7 +3608,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Success"
         }, i18n.__('Order Success').message)
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Your order is successfully placed.").message, []);
       } else {
         await logger.info({
           "module": "Market Buy",
@@ -3567,7 +3775,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Success"
         }, i18n.__('Order Success').message)
-        return Helper.jsonFormat(res, constants.SUCCESS_CODE, "Your order is successfully placed.", []);
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("Your order is successfully placed.").message, []);
       } else {
         await logger.info({
           "module": "Market Buy",

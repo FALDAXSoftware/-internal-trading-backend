@@ -4,7 +4,7 @@ Get Completed Orders of Users
 var moment = require('moment');
 var TradeHistoryModel = require("../../models/TradeHistory");
 
-var getCompletedOrders = async (user_id, crypto, currency, month, limit = 100) => {
+var getCompletedOrders = async (user_id, crypto, currency, month, limit = 2000) => {
     // Get completed data.
     var completedData;
     var yesterday = moment
@@ -45,7 +45,7 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 100) =
     return tradeData;
 }
 
-var getUserCompletedOrders = async (user_id, crypto, currency, limit = 100, page, fromDate = '', toDate = '') => {
+var getUserCompletedOrders = async (user_id, crypto, currency, limit = 2000, page, fromDate = '', toDate = '') => {
     console.log("fromDate", fromDate);
     console.log("toDate", toDate);
     var tradeData = await TradeHistoryModel

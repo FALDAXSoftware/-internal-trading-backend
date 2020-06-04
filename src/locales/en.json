@@ -285,5 +285,19 @@
 		"message_type": "error",
 		"message_english": "Order Quantity should be greated than 0.",
 		"message": "Order Quantity should be less than"
+	},
+	"Unable to place order": {
+		"page": "Trade Page",
+		"context": "Market order trying to place when already place",
+		"message_type": "error",
+		"message_english": "Please wait until your previous order get executed.",
+		"message": "Please wait until your previous order get executed."
+	},
+	"Your order is successfully placed.": {
+		"page": "Trade Page",
+		"context": "When order added to queue",
+		"message_type": "success",
+		"message_english": "Your order is placed. You will be notified once your order get executed",
+		"message": "Your order is placed. You will be notified once your order get executed"
 	}
 }
