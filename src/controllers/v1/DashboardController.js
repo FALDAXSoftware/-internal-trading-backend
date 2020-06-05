@@ -532,6 +532,8 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
             let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
             let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
+            let SellBookHelper = require("../../helpers/sell/get-sell-order-by-price");
+            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-by-price");
             let BuyAdd = require("../../helpers/buy/add-buy-order");
             let SellAdd = require("../../helpers/sell/add-sell-order");
             var now = new Date();
