@@ -3551,6 +3551,7 @@ class TradeController extends AppController {
         .andWhere("user_id", user_id)
         .andWhere("side", "Buy")
         .andWhere("order_type", "Market")
+        .andWhere("symbol",symbol)
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
@@ -3784,6 +3785,7 @@ class TradeController extends AppController {
         .andWhere("user_id", user_id)
         .andWhere("side", "Sell")
         .andWhere("order_type", "Market")
+        .andWhere("symbol",symbol)
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
@@ -4035,6 +4037,7 @@ class TradeController extends AppController {
       .andWhere("user_id", user_id)
       .andWhere("side", "Buy")
       .andWhere("order_type", "Limit")
+      .andWhere("symbol",symbol)
       .andWhere("is_executed", false)
       .orderBy("id", "DESC");
 
@@ -4256,6 +4259,7 @@ class TradeController extends AppController {
       .andWhere("user_id", user_id)
       .andWhere("side", "Sell")
       .andWhere("order_type", "Limit")
+      .andWhere("symbol",symbol)
       .andWhere("is_executed", false)
       .orderBy("id", "DESC");
 
