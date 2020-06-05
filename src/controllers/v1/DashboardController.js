@@ -529,6 +529,11 @@ class DashboardController extends AppController {
     async updateBuyOrderBookValue(pair_name) {
         try {
             let pair = pair_name.split("-").join("")
+            let SellBookHelper = require("../../helpers/sell/get-sell-order-by-price");
+            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-by-price");
+            let BuyAdd = require("../../helpers/buy/add-buy-order");
+            let SellAdd = require("../../helpers/sell/add-sell-order");
+            var now = new Date();
 
             await request({
                 url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
@@ -540,7 +545,6 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
                 var askValue = body.asks;
-
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -548,7 +552,7 @@ class DashboardController extends AppController {
                     .select()
                     .where("deleted_at", null)
                     .andWhere("name", pair_name)
-                    .orderBy("id", 'DESC')
+                    .orderBy("id", 'DESC');
 
                 if (maxValue.bot_status) {
 
@@ -590,7 +594,6 @@ class DashboardController extends AppController {
                     var mergedArray = await module.exports.shuffle(mergedArray)
                     console.log("mergedArray", mergedArray)
 
-                    var now = new Date();
                     let requestedWallets = await CoinsModel
                         .query()
                         .select()
@@ -616,57 +619,122 @@ class DashboardController extends AppController {
                         // setTimeout(async () => {
                         var quantityValue = parseFloat(mergedArray[i][1]).toFixed(8);
                         var priceValue = parseFloat(mergedArray[i][0]).toFixed(8);
-
-                        var buyLimitOrderData = {
-                            'user_id': process.env.TRADEDESK_USER_ID,
-                            'symbol': pair_name,
-                            'side': mergedArray[i][2],
-                            'order_type': 'Limit',
-                            'created_at': now,
-                            'updated_at': now,
-                            'fill_price': 0.0,
-                            'limit_price': priceValue,
-                            'stop_price': 0.0,
-                            'price': priceValue,
-                            'quantity': quantityValue,
-                            'fix_quantity': quantityValue,
-                            'order_status': "open",
-                            'currency': currency,
-                            'settle_currency': crypto,
-                            'maximum_time': now,
-                            'is_partially_fulfilled': false,
-                            'placed_by': process.env.TRADEDESK_BOT
-                        };
-                        // console.log("buyLimitOrderData", buyLimitOrderData)
-                        buyLimitOrderData.is_partially_fulfilled = true;
-                        buyLimitOrderData.is_filled = false;
-                        buyLimitOrderData.added = true;
-                        var flag = true;
-
-                        var queueName = process.env.QUEUE_NAME
-                        console.log("queueName", queueName)
-                        var queueData = {
-                            "symbol": pair_name,
-                            user_id: process.env.TRADEDESK_USER_ID,
-                            'side': mergedArray[i][2],
-                            'order_type': 'Limit',
-                            'orderQuantity': quantityValue,
-                            "limit_price": buyLimitOrderData.limit_price,
-                            res: null,
-                            flag: true,
-                            crypto: crypto_coin_id.id,
-                            currency: currency_coin_id.id
+                        let bookData;
+                        if( mergedArray[i][2] == 'Buy'){
+                            bookData = await SellBookHelper.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
                         }
-                        QueueValue.publishToQueue(queueName, queueData)
+                        if( mergedArray[i][2] == 'Sell'){
+                            bookData = await BuyBookHelper.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                        }
+                        // Check if book data found
+                        if (bookData.length > 0) {
+                            // Check if quantity is greater than maximum crypto set by admin
+                            // var availableQuantity = bookData[0].quantity;
+                            // console.log('availableQuantity < max', availableQuantity < max);
+                            // if ( availableQuantity < max ) {
+                                // quantityValue = parseFloat(max)-parseFloat(availableQuantity);
+                                var buyLimitOrderData = {
+                                    'user_id': process.env.TRADEDESK_USER_ID,
+                                    'symbol': pair_name,
+                                    'side': mergedArray[i][2],
+                                    'order_type': 'Limit',
+                                    'created_at': now,
+                                    'updated_at': now,
+                                    'fill_price': 0.0,
+                                    'limit_price': priceValue,
+                                    'stop_price': 0.0,
+                                    'price': priceValue,
+                                    'quantity': quantityValue,
+                                    'fix_quantity': quantityValue,
+                                    'order_status': "open",
+                                    'currency': currency,
+                                    'settle_currency': crypto,
+                                    'maximum_time': now,
+                                    'is_partially_fulfilled': false,
+                                    'placed_by': process.env.TRADEDESK_BOT
+                                };
+                                // console.log("buyLimitOrderData", buyLimitOrderData)
+                                buyLimitOrderData.is_partially_fulfilled = true;
+                                buyLimitOrderData.is_filled = false;
+                                buyLimitOrderData.added = true;
+                                var flag = true;
 
+                                var queueName = process.env.QUEUE_NAME + "-" + mergedArray[i][2]
+                                console.log("queueName", queueName)
+                                var queueData = {
+                                    "symbol": pair_name,
+                                    user_id: process.env.TRADEDESK_USER_ID,
+                                    'side': mergedArray[i][2],
+                                    'order_type': 'Limit',
+                                    'orderQuantity': quantityValue,
+                                    "limit_price": buyLimitOrderData.limit_price,
+                                    res: null,
+                                    flag: true,
+                                    crypto: crypto_coin_id.id,
+                                    currency: currency_coin_id.id,
+                                }
+                                QueueValue.publishToQueue(queueName, queueData)
+                            // }
+                        }else{
+                            console.log("Book is empty ......");
+                            let bookData;
+                            if( mergedArray[i][2] == 'Buy'){
+                                bookData = await BuyBookHelper.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                            }
+                            if( mergedArray[i][2] == 'Sell'){
+                                bookData = await SellBookHelper.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                            }
+
+                            var flag = false;
+                            if ( bookData.length >  0 ) {
+                                var availableQuantity = bookData[0].quantity;
+                                console.log('availableQuantity < max', availableQuantity < max);
+                                console.log("bookData", bookData);
+                                if( availableQuantity < max ){
+                                    quantityValue = parseFloat(parseFloat(max)-parseFloat(availableQuantity)).toFixed(8);
+                                    flag = true;
+                                }
+                            }else{
+                                flag = true;
+                            }
+                            if(flag == true){
+                                var limitOrderData = {
+                                    'user_id': process.env.TRADEDESK_USER_ID,
+                                    'symbol': pair_name,
+                                    'side': mergedArray[i][2],
+                                    'order_type': 'Limit',
+                                    'created_at': now,
+                                    'updated_at': now,
+                                    'fill_price': 0.0,
+                                    'limit_price': priceValue,
+                                    'stop_price': 0.0,
+                                    'price': priceValue,
+                                    'quantity': quantityValue,
+                                    'fix_quantity': quantityValue,
+                                    'order_status': "open",
+                                    'currency': currency,
+                                    'settle_currency': crypto,
+                                    'maximum_time': now,
+                                    'is_partially_fulfilled': false,
+                                    'placed_by': process.env.TRADEDESK_BOT
+                                };
+                                limitOrderData.is_partially_fulfilled = true;
+                                limitOrderData.is_filled = false;
+                                limitOrderData.added = true;
+
+                                if( mergedArray[i][2] == 'Buy'){
+                                    await BuyAdd.addBuyBookData(limitOrderData);
+                                }
+                                if( mergedArray[i][2] == 'Sell'){
+                                    await SellAdd.SellOrderAdd(limitOrderData);
+                                }
+                            }
+                        }
                         // }, i * 800)
                         // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                     }
                 }
-
                 // return res.status(200).json({ "status": "OK" })
-
-
             })
         } catch (error) {
 
