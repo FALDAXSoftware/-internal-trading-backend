@@ -34,7 +34,12 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
             getPendingDetails[i].flag = true;
         }
 
-        tradePendingDetails = tradePendingDetails.concat(getPendingDetails);
+        if (tradePendingDetails != undefined) {
+            tradePendingDetails = tradePendingDetails.concat(getPendingDetails);
+        } else {
+            tradePendingDetails = getPendingDetails;
+        }
+
         // console.log()
     } else {
         var yesterday = moment
@@ -69,7 +74,11 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
             getPendingDetails[i].flag = true;
         }
 
-        tradePendingDetails = tradePendingDetails.concat(getPendingDetails);
+        if (tradePendingDetails != undefined) {
+            tradePendingDetails = tradePendingDetails.concat(getPendingDetails);
+        } else {
+            tradePendingDetails = getPendingDetails;
+        }
     }
     console.log("tradePendingDetails", tradePendingDetails)
     return tradePendingDetails;
