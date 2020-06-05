@@ -60,6 +60,7 @@ var sellOrderBookSummary = require("../../helpers/sell/get-sell-book-order-summa
 var buyOrderBookSummary = require("../../helpers/buy/get-buy-book-order-summary");
 var QueueValue = require("./QueueController");
 var PendingOrderExecutuionModel = require("../../models/PendingOrdersExecutuions")
+var cancelOrderHelper = require("../../helpers/pending/cancel-pending-order")
 
 /**
  * Trade Controller : Used for live tradding
@@ -2746,7 +2747,7 @@ class TradeController extends AppController {
       var currentPrice = buyBook[0].price;
       if (priceValue <= currentPrice) {
         console.log("INSIDE IF")
-        console.log("pending_order_id",pending_order_id)
+        console.log("pending_order_id", pending_order_id)
         var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
         await logger.info({
           "module": "Limit Sell Execution",
@@ -3387,9 +3388,13 @@ class TradeController extends AppController {
         "url": "Trade Function",
         "type": "Entry"
       }, "Entered the function")
-      var { side, id, order_type, user_id } = req.body;
+      var { side, id, order_type, user_id, flag } = req.body;
       console.log(JSON.stringify(req.body));
-      var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
+      if (flag == undefined || Boolean(flag) == false) {
+        var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
+      } else if (Boolean(flag) == true) {
+        var cancel_pending_data = await cancelOrderHelper.cancelData(id);
+      }
       console.log("cancel_pending_data", JSON.stringify(cancel_pending_data))
       if (cancel_pending_data == 0) {
         await logger.info({
@@ -3431,6 +3436,30 @@ class TradeController extends AppController {
           "type": "Success"
         }, i18n.__("server error").message)
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+      } else if (cancel_pending_data == 6) {
+        await logger.info({
+          "module": "Cancel PEnding Order",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__("No Pending Order Found").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("No Pending Order Found").message, []);
+      } else if (cancel_pending_data == 7) {
+        await logger.info({
+          "module": "Cancel PEnding Order",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__("Execution under process").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Execution under process").message, []);
+      } else if (cancel_pending_data == 8) {
+        await logger.info({
+          "module": "Cancel PEnding Order",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Success"
+        }, i18n.__("Market Order Cannot be cancelled").message)
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Market Order Cannot be cancelled").message, []);
       }
     } catch (error) {
       console.log(JSON.stringify(error));

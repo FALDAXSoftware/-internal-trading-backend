@@ -52,6 +52,18 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                 .andWhere("deleted_at", null)
                 .orderBy("id", "DESC");
 
+            if (pendingDataStatus != undefined) {
+                var pendinfStatusValue = await PendingOrderExecutionModel
+                    .query()
+                    .where("id", dataValue.pending_order_id)
+                    .andWhere("deleted_at", null)
+                    .patch({
+                        is_under_execution: true
+                    });
+
+                global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+            }
+
             console.log("pendingDataStatus", pendingDataStatus)
             console.log("dataValue", dataValue)
             switch (type) {
@@ -101,6 +113,21 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                 .where("id", dataValue.pending_order_id)
                 .andWhere("deleted_at", null)
                 .orderBy("id", "DESC");
+
+            if (pendingDataStatus != undefined) {
+                var pendingValue = await PendingOrderExecutionModel
+                    .query()
+                    .where("id", dataValue.pending_order_id)
+                    .andWhere("deleted_at", null)
+                    .patch({
+                        is_under_execution: true
+                    })
+                // if (type == "Market") {
+                global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+                // } else if (type == "Limit") {
+                //     global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+                // }
+            }
 
             console.log("pendingDataStatus", pendingDataStatus)
             console.log("dataValue", dataValue)

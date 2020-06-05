@@ -299,5 +299,26 @@
 		"message_type": "success",
 		"message_english": "Your order is placed. You will be notified once your order get executed",
 		"message": "Your order is placed. You will be notified once your order get executed"
+	},
+	"Market Order Cannot be cancelled": {
+		"page": "Trade Page",
+		"context": "When order needs to be cancelled",
+		"message_type": "error",
+		"message_english": "Your pending market order cannot be cancelled.",
+		"message": "Your pending market order cannot be cancelled."
+	},
+	"Execution under process": {
+		"page": "Trade Page",
+		"context": "When order needs to be cancelled",
+		"message_type": "error",
+		"message_english": "Your pending order cannot be cancelled as it is already in process",
+		"message": "Your pending order cannot be cancelled as it is already in process"
+	},
+	"No Pending Order Found": {
+		"page": "Trade Page",
+		"context": "When order needs to be cancelled",
+		"message_type": "error",
+		"message_english": "No Pending Orders have been found",
+		"message": "No Pending Orders have been found"
 	}
 }
