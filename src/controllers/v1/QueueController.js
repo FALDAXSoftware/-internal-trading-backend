@@ -26,8 +26,10 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                 .orderBy("id", "DESC");
 
             console.log("pendingDataStatus", pendingDataStatus)
+            console.log("pendingDataStatus.is_cancel", pendingDataStatus.is_cancel)
 
             if (pendingDataStatus != undefined && pendingDataStatus.is_cancel == false) {
+                console.log("INSIDE IF", (process.env.QUEUE_NAME + '-' + dataValue.side));
                 var priorityValue = 1;
                 ch.sendToQueue(process.env.QUEUE_NAME + '-' + dataValue.side, Buffer.from(JSON.stringify(dataValue)), {
                     persistent: true,
