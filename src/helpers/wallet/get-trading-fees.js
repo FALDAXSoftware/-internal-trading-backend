@@ -23,11 +23,23 @@ var getTraddingFees = async (inputs) => {
 
         var getCryptoPriceData = null
 
-        let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
-                                FROM currency_conversion
-                                WHERE currency_conversion.deleted_at IS NULL`
+        // let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
+        //                         FROM currency_conversion
+        //                         WHERE currency_conversion.deleted_at IS NULL`
 
-        let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
+        // let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
+
+        let conversionData = await CurrencyConversionModel
+            .query()
+            .select()
+            .where("deleted_at", null)
+            .andWhere(builder => {
+                builder.where('coin_id', request.crypto_coin_id)
+                    .orWhere('coin_id', request.currency_coin_id)
+            })
+            .orderBy("id", "DESC");
+
+        console.log("conversionData", conversionData)
 
         // console.log("conversionData", conversionData.rows)
 
@@ -66,8 +78,8 @@ var getTraddingFees = async (inputs) => {
 
         let userTotalUSDSum = 0
         let requestedTotalUSDSum = 0
-        for (let index = 0; index < conversionData.rows.length; index++) {
-            const element = conversionData.rows[index];
+        for (let index = 0; index < conversionData.length; index++) {
+            const element = conversionData[index];
             if (element.coin_id == request.crypto_coin_id) {
                 getCryptoPriceData = element
             }
