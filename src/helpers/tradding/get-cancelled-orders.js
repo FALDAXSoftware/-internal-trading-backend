@@ -5,7 +5,7 @@ const {
 } = require('objection');
 
 
-var getCancelledOrders = async (user_id, crypto, currency, month, limit = 100) => {
+var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) => {
 
     var cancelDetails;
 
@@ -41,7 +41,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 100) =
 
 }
 
-var getUserCancelledOrders = async (user_id, crypto, currency, limit = 100, page, fromDate, toDate) => {
+var getUserCancelledOrders = async (user_id, crypto, currency, limit = 2000, page, fromDate, toDate) => {
 
     var cancelDetails;
     cancelDetails = await ActivityModel

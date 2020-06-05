@@ -169,6 +169,11 @@ io.on('connection', async function (socket) {
     socket.join(room.room + user_id); // Join to new Room with Userid
     socket.join(pair[1]); // Join to new Currency Room
 
+    if (authentication.isAdmin == true) {
+      console.log("INSIDE ADMIN");
+      socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
+    }
+
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
     socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));

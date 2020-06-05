@@ -29,6 +29,7 @@ module.exports = {
 	"TRADE_HIGH_LEVEL_INFO": 'symbol-high-level-info',
 	"TRADE_ALL_PENDING_ORDERS_EVENT": "all-pending-orders-data",
 	"LATEST_TRADEVALUE": "get-latest-price",
+	"TRADE_PRECISION": "trade-data-precision",
 	"USER_LOGOUT": "user-logout",
 
 	"SECRET_KEY": process.env.SECRET_KEY,

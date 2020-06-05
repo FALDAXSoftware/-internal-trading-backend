@@ -3,7 +3,7 @@ var PendingBookModel = require("../../models/PendingBook");
 var BuyBookModel = require("../../models/BuyBook");
 var SellBookModel = require("../../models/SellBook");
 
-var getPendingOrders = async (user_id, crypto, currency, month, limit = 100) => {
+var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) => {
     var tradePendingDetails;
 
     if (month == 0) {
@@ -37,7 +37,7 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 100) => 
 
 }
 
-var getUserPendingOrders = async (user_id, crypto, currency, limit = 100, page, fromDate, toDate) => {
+var getUserPendingOrders = async (user_id, crypto, currency, limit = 2000, page, fromDate, toDate) => {
     var tradePendingDetails;
     // var yesterday = moment
     //     .utc()
