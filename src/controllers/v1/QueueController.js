@@ -44,28 +44,31 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             var tradeData = require("./TradeController");
             var dataValue = JSON.parse(msg.content.toString());
             var type = dataValue.order_type
-            var pendingDataStatus = await PendingOrderExecutionModel
-                .query()
-                .first("is_cancel")
-                .select()
-                .where("id", dataValue.pending_order_id)
-                .andWhere("deleted_at", null)
-                .orderBy("id", "DESC");
-
-            if (pendingDataStatus != undefined) {
-                var pendinfStatusValue = await PendingOrderExecutionModel
+            if (dataValue.pending_order_id) {
+                var pendingDataStatus = await PendingOrderExecutionModel
                     .query()
+                    .first("is_cancel")
+                    .select()
                     .where("id", dataValue.pending_order_id)
                     .andWhere("deleted_at", null)
-                    .patch({
-                        is_under_execution: true
-                    });
+                    .orderBy("id", "DESC");
 
-                global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+                if (pendingDataStatus != undefined) {
+                    var pendinfStatusValue = await PendingOrderExecutionModel
+                        .query()
+                        .where("id", dataValue.pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .patch({
+                            is_under_execution: true
+                        });
+
+                    global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+                }
             }
 
             console.log("pendingDataStatus", pendingDataStatus)
             console.log("dataValue", dataValue)
+            // if (pendingDataStatus != undefined) {
             switch (type) {
                 case "Market":
                     if (dataValue.side == "Buy" && pendingDataStatus.is_cancel == false) {
@@ -81,7 +84,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                         break;
                     }
                 case "Limit":
-                    if (dataValue.side == "Buy" && pendingDataStatus.is_cancel == false) {
+                    if (dataValue.side == "Buy" && (dataValue.pending_order_id == undefined || pendingDataStatus.is_cancel == false)) {
                         tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, [], dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
@@ -97,6 +100,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                 default:
                     break;
             }
+            // }
         }, { noAck: false })
         ch.consume(process.env.QUEUE_NAME + '-' + 'Sell', async (msg, err) => {
             // console.log("mesages");
@@ -106,32 +110,35 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             var tradeData = require("./TradeController");
             var dataValue = JSON.parse(msg.content.toString());
             var type = dataValue.order_type
-            var pendingDataStatus = await PendingOrderExecutionModel
-                .query()
-                .first("is_cancel")
-                .select()
-                .where("id", dataValue.pending_order_id)
-                .andWhere("deleted_at", null)
-                .orderBy("id", "DESC");
-
-            if (pendingDataStatus != undefined) {
-                var pendingValue = await PendingOrderExecutionModel
+            if (dataValue.pending_order_id) {
+                var pendingDataStatus = await PendingOrderExecutionModel
                     .query()
+                    .first("is_cancel")
+                    .select()
                     .where("id", dataValue.pending_order_id)
                     .andWhere("deleted_at", null)
-                    .patch({
-                        is_under_execution: true
-                    })
-                // if (type == "Market") {
-                global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
-                // } else if (type == "Limit") {
-                //     global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
-                // }
+                    .orderBy("id", "DESC");
+
+                if (pendingDataStatus != undefined) {
+                    var pendingValue = await PendingOrderExecutionModel
+                        .query()
+                        .where("id", dataValue.pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .patch({
+                            is_under_execution: true
+                        })
+                    // if (type == "Market") {
+                    global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+                    // } else if (type == "Limit") {
+                    //     global.io.sockets.to(pendingDataStatus.crypto + "-" + pendingDataStatus.currency + pendingDataStatus.user_id).emit("users-completed-flag", true)
+                    // }
+                }
             }
 
             console.log("pendingDataStatus", pendingDataStatus)
             console.log("dataValue", dataValue)
 
+            // if (pendingDataStatus != undefined) {
             switch (type) {
                 case "Market":
                     if (dataValue.side == "Sell" && pendingDataStatus.is_cancel == false) {
@@ -147,7 +154,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                         break;
                     }
                 case "Limit":
-                    if (dataValue.side == "Sell" && pendingDataStatus.is_cancel == false) {
+                    if (dataValue.side == "Sell" && (dataValue.pending_order_id == undefined || pendingDataStatus.is_cancel == false)) {
                         tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, [], dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
@@ -163,6 +170,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                 default:
                     break;
             }
+            // }
         }, { noAck: false })
         // conn.close();
     });
@@ -186,8 +194,32 @@ var publishToQueue = async (queueName, data) => {
     }
 }
 
+var cronPublishToQueue = async (queueName, data) => {
+    try {
+        console.log({
+            queueName,
+            data
+        });
+        var dataValue = ch.assertQueue(queueName);
+        var priorityValue = 1;
+        if (data.order_type == "Limit" && data.user_id == process.env.TRADEDESK_USER_ID) {
+            priorityValue = 10;
+        }
+        ch.sendToQueue(queueName, Buffer.from(JSON.stringify(data)), {
+            persistent: true,
+            priority: priorityValue
+        });
+
+        return 0;
+    } catch (error) {
+        console.log(error)
+        return 1;
+    }
+}
+
 module.exports = {
-    publishToQueue
+    publishToQueue,
+    cronPublishToQueue
 }
 
 process.on('exit', (code) => {

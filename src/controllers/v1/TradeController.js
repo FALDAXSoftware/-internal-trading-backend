@@ -377,22 +377,24 @@ class TradeController extends AppController {
           is_active: true
         });
 
-        var getPendingData = await PendingOrderExecutuionModel
-          .query()
-          .first()
-          .select("is_cancel")
-          .where("id", pending_order_id)
-          .andWhere("deleted_at", null)
-          .orderBy("id", "DESC");
-
-        if (getPendingData != undefined) {
-          var getData = await PendingOrderExecutuionModel
+        if (pending_order_id != 0) {
+          var getPendingData = await PendingOrderExecutuionModel
             .query()
+            .first()
+            .select("is_cancel")
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
-            .patch({
-              is_executed: true
-            })
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
         }
 
         if (allOrderData.length > 0) {
@@ -570,22 +572,24 @@ class TradeController extends AppController {
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
 
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
 
           var userData = userIds;
@@ -697,22 +701,24 @@ class TradeController extends AppController {
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
 
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
 
           var userData = userIds;
@@ -827,22 +833,24 @@ class TradeController extends AppController {
         tradeOrder = tradeHistory;
         allOrderData.push(tradeHistory);
         let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)
-        var getPendingData = await PendingOrderExecutuionModel
-          .query()
-          .first()
-          .select("is_cancel")
-          .where("id", pending_order_id)
-          .andWhere("deleted_at", null)
-          .orderBy("id", "DESC");
-
-        if (getPendingData != undefined) {
-          var getData = await PendingOrderExecutuionModel
+        if (pending_order_id != 0) {
+          var getPendingData = await PendingOrderExecutuionModel
             .query()
+            .first()
+            .select("is_cancel")
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
-            .patch({
-              is_executed: true
-            })
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
         }
         let object = {
           crypto: crypto,
@@ -1103,23 +1111,26 @@ class TradeController extends AppController {
             id: userIds[i],
             is_active: true
           });
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
+
           if (allOrderData.length > 0) {
 
             if (user_data != undefined) {
@@ -1188,22 +1199,24 @@ class TradeController extends AppController {
             is_active: true
           });
 
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
           if (allOrderData.length > 0) {
             if (user_data != undefined) {
@@ -1369,22 +1382,24 @@ class TradeController extends AppController {
           console.log("allOrderData", allOrderData)
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
           let remainigQuantity = availableQuantity - quantityValue;
           if (remainigQuantity > 0) {
@@ -1606,22 +1621,24 @@ class TradeController extends AppController {
           }
           requestData.orderQuantity = parseFloat(remainingQty).toFixed(8);
 
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
 
           await logger.info({
@@ -2151,22 +2168,24 @@ class TradeController extends AppController {
           var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
           addBuyBook.added = true;
 
-          var getPendingData = await PendingOrderExecutuionModel
-            .query()
-            .first()
-            .select("is_cancel")
-            .where("id", pending_order_id)
-            .andWhere("deleted_at", null)
-            .orderBy("id", "DESC");
-
-          if (getPendingData != undefined) {
-            var getData = await PendingOrderExecutuionModel
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
               .query()
+              .first()
+              .select("is_cancel")
               .where("id", pending_order_id)
               .andWhere("deleted_at", null)
-              .patch({
-                is_executed: true
-              })
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
           }
 
           // Send Notification to users
@@ -2249,22 +2268,24 @@ class TradeController extends AppController {
         var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
         addBuyBook.added = true;
 
-        var getPendingData = await PendingOrderExecutuionModel
-          .query()
-          .first()
-          .select("is_cancel")
-          .where("id", pending_order_id)
-          .andWhere("deleted_at", null)
-          .orderBy("id", "DESC");
-
-        if (getPendingData != undefined) {
-          var getData = await PendingOrderExecutuionModel
+        if (pending_order_id != 0) {   
+          var getPendingData = await PendingOrderExecutuionModel
             .query()
+            .first()
+            .select("is_cancel")
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
-            .patch({
-              is_executed: true
-            })
+            .orderBy("id", "DESC");
+  
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
         }
 
         // Send Notification to users
@@ -2544,22 +2565,24 @@ class TradeController extends AppController {
           is_active: true
         });
 
-        var getPendingData = await PendingOrderExecutuionModel
-          .query()
-          .first()
-          .select("is_cancel")
-          .where("id", pending_order_id)
-          .andWhere("deleted_at", null)
-          .orderBy("id", "DESC");
-
-        if (getPendingData != undefined) {
-          var getData = await PendingOrderExecutuionModel
+        if (pending_order_id != 0) {   
+          var getPendingData = await PendingOrderExecutuionModel
             .query()
+            .first()
+            .select("is_cancel")
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
-            .patch({
-              is_executed: true
-            })
+            .orderBy("id", "DESC");
+  
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
         }
 
         if (allOrderData.length > 0) {
@@ -2632,22 +2655,24 @@ class TradeController extends AppController {
           is_active: true
         });
 
-        var getPendingData = await PendingOrderExecutuionModel
-          .query()
-          .first()
-          .select("is_cancel")
-          .where("id", pending_order_id)
-          .andWhere("deleted_at", null)
-          .orderBy("id", "DESC");
-
-        if (getPendingData != undefined) {
-          var getData = await PendingOrderExecutuionModel
+        if (pending_order_id != 0) {   
+          var getPendingData = await PendingOrderExecutuionModel
             .query()
+            .first()
+            .select("is_cancel")
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
-            .patch({
-              is_executed: true
-            })
+            .orderBy("id", "DESC");
+  
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
         }
 
         if (allOrderData.length > 0) {
@@ -2769,22 +2794,24 @@ class TradeController extends AppController {
         var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData, crypto_coin_id);
         addSellBook.added = true;
 
-        var getPendingData = await PendingOrderExecutuionModel
-          .query()
-          .first()
-          .select("is_cancel")
-          .where("id", pending_order_id)
-          .andWhere("deleted_at", null)
-          .orderBy("id", "DESC");
-
-        if (getPendingData != undefined) {
-          var getData = await PendingOrderExecutuionModel
+        if (pending_order_id != 0) {   
+          var getPendingData = await PendingOrderExecutuionModel
             .query()
+            .first()
+            .select("is_cancel")
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
-            .patch({
-              is_executed: true
-            })
+            .orderBy("id", "DESC");
+  
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
         }
 
         // Send Notification to users
@@ -2852,22 +2879,24 @@ class TradeController extends AppController {
       var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData, crypto_coin_id);
       addSellBook.added = true;
 
-      var getPendingData = await PendingOrderExecutuionModel
-        .query()
-        .first()
-        .select("is_cancel")
-        .where("id", pending_order_id)
-        .andWhere("deleted_at", null)
-        .orderBy("id", "DESC");
-
-      if (getPendingData != undefined) {
-        var getData = await PendingOrderExecutuionModel
+      if (pending_order_id != 0) {   
+        var getPendingData = await PendingOrderExecutuionModel
           .query()
+          .first()
+          .select("is_cancel")
           .where("id", pending_order_id)
           .andWhere("deleted_at", null)
-          .patch({
-            is_executed: true
-          })
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
       }
 
       // Send Notification to users

@@ -140,22 +140,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             var userData = userIds;
                             var tradeData = allOrderData;
 
-                            var getPendingData = await PendingOrderExecutuionModel
-                                .query()
-                                .first()
-                                .select("is_cancel")
-                                .where("id", pending_order_id)
-                                .andWhere("deleted_at", null)
-                                .orderBy("id", "DESC");
-
-                            if (getPendingData != undefined) {
-                                var getData = await PendingOrderExecutuionModel
+                            if (pending_order_id != 0) {
+                                var getPendingData = await PendingOrderExecutuionModel
                                     .query()
+                                    .first()
+                                    .select("is_cancel")
                                     .where("id", pending_order_id)
                                     .andWhere("deleted_at", null)
-                                    .patch({
-                                        is_executed: true
-                                    })
+                                    .orderBy("id", "DESC");
+
+                                if (getPendingData != undefined) {
+                                    var getData = await PendingOrderExecutuionModel
+                                        .query()
+                                        .where("id", pending_order_id)
+                                        .andWhere("deleted_at", null)
+                                        .patch({
+                                            is_executed: true
+                                        })
+                                }
                             }
 
                             for (var i = 0; i < userData.length; i++) {
@@ -216,22 +218,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             var userData = userIds;
                             var tradeData = allOrderData;
 
-                            var getPendingData = await PendingOrderExecutuionModel
-                                .query()
-                                .first()
-                                .select("is_cancel")
-                                .where("id", pending_order_id)
-                                .andWhere("deleted_at", null)
-                                .orderBy("id", "DESC");
-
-                            if (getPendingData != undefined) {
-                                var getData = await PendingOrderExecutuionModel
+                            if (pending_order_id != 0) {
+                                var getPendingData = await PendingOrderExecutuionModel
                                     .query()
+                                    .first()
+                                    .select("is_cancel")
                                     .where("id", pending_order_id)
                                     .andWhere("deleted_at", null)
-                                    .patch({
-                                        is_executed: true
-                                    })
+                                    .orderBy("id", "DESC");
+
+                                if (getPendingData != undefined) {
+                                    var getData = await PendingOrderExecutuionModel
+                                        .query()
+                                        .where("id", pending_order_id)
+                                        .andWhere("deleted_at", null)
+                                        .patch({
+                                            is_executed: true
+                                        })
+                                }
                             }
 
                             for (var i = 0; i < userData.length; i++) {
@@ -285,22 +289,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     } else {
 
-                        var getPendingData = await PendingOrderExecutuionModel
-                            .query()
-                            .first()
-                            .select("is_cancel")
-                            .where("id", pending_order_id)
-                            .andWhere("deleted_at", null)
-                            .orderBy("id", "DESC");
-
-                        if (getPendingData != undefined) {
-                            var getData = await PendingOrderExecutuionModel
+                        if (pending_order_id != 0) {
+                            var getPendingData = await PendingOrderExecutuionModel
                                 .query()
+                                .first()
+                                .select("is_cancel")
                                 .where("id", pending_order_id)
                                 .andWhere("deleted_at", null)
-                                .patch({
-                                    is_executed: null
-                                })
+                                .orderBy("id", "DESC");
+
+                            if (getPendingData != undefined) {
+                                var getData = await PendingOrderExecutuionModel
+                                    .query()
+                                    .where("id", pending_order_id)
+                                    .andWhere("deleted_at", null)
+                                    .patch({
+                                        is_executed: true
+                                    })
+                            }
                         }
 
                         if (allOrderData.length > 0) {
@@ -465,22 +471,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         allOrderData.push(tradeHistory)
                         tradeOrder = tradeHistory;
 
-                        var getPendingData = await PendingOrderExecutuionModel
-                            .query()
-                            .first()
-                            .select("is_cancel")
-                            .where("id", pending_order_id)
-                            .andWhere("deleted_at", null)
-                            .orderBy("id", "DESC");
-
-                        if (getPendingData != undefined) {
-                            var getData = await PendingOrderExecutuionModel
+                        if (pending_order_id != 0) {
+                            var getPendingData = await PendingOrderExecutuionModel
                                 .query()
+                                .first()
+                                .select("is_cancel")
                                 .where("id", pending_order_id)
                                 .andWhere("deleted_at", null)
-                                .patch({
-                                    is_executed: true
-                                })
+                                .orderBy("id", "DESC");
+
+                            if (getPendingData != undefined) {
+                                var getData = await PendingOrderExecutuionModel
+                                    .query()
+                                    .where("id", pending_order_id)
+                                    .andWhere("deleted_at", null)
+                                    .patch({
+                                        is_executed: true
+                                    })
+                            }
                         }
 
                         await sellDelete.deleteSellOrder(sellBook[0].id);
@@ -619,22 +627,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
                     console.log(JSON.stringify(addBuyBook))
 
-                    var getPendingData = await PendingOrderExecutuionModel
-                        .query()
-                        .first()
-                        .select("is_cancel")
-                        .where("id", pending_order_id)
-                        .andWhere("deleted_at", null)
-                        .orderBy("id", "DESC");
-
-                    if (getPendingData != undefined) {
-                        var getData = await PendingOrderExecutuionModel
+                    if (pending_order_id != 0) {
+                        var getPendingData = await PendingOrderExecutuionModel
                             .query()
+                            .first()
+                            .select("is_cancel")
                             .where("id", pending_order_id)
                             .andWhere("deleted_at", null)
-                            .patch({
-                                is_executed: null
-                            })
+                            .orderBy("id", "DESC");
+
+                        if (getPendingData != undefined) {
+                            var getData = await PendingOrderExecutuionModel
+                                .query()
+                                .where("id", pending_order_id)
+                                .andWhere("deleted_at", null)
+                                .patch({
+                                    is_executed: true
+                                })
+                        }
                     }
 
                     for (var i = 0; i < userIds.length; i++) {
@@ -819,23 +829,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 buyLimitOrderData.added = true;
                 var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
 
-                var getPendingData = await PendingOrderExecutuionModel
-                    .query()
-                    .first()
-                    .select("is_cancel")
-                    .where("id", pending_order_id)
-                    .andWhere("deleted_at", null)
-                    .orderBy("id", "DESC");
-
-                if (getPendingData != undefined) {
-                    var getData = await PendingOrderExecutuionModel
+                if (pending_order_id != 0) {
+                    var getPendingData = await PendingOrderExecutuionModel
                         .query()
+                        .first()
+                        .select("is_cancel")
                         .where("id", pending_order_id)
                         .andWhere("deleted_at", null)
-                        .patch({
-                            is_executed: true
-                            // reason: "Order Book Empty"
-                        })
+                        .orderBy("id", "DESC");
+
+                    if (getPendingData != undefined) {
+                        var getData = await PendingOrderExecutuionModel
+                            .query()
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .patch({
+                                is_executed: true
+                            })
+                    }
                 }
 
                 for (var i = 0; i < userIds.length; i++) {
