@@ -1,5 +1,6 @@
 var moment = require('moment');
 var PendingBookModel = require("../../models/PendingBook");
+var PendngOrderExecutionModels = require("../../models/PendingOrdersExecutuions");
 var BuyBookModel = require("../../models/BuyBook");
 var SellBookModel = require("../../models/SellBook");
 
@@ -17,6 +18,24 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
         console.log("pendingSql", pendingSql)
         tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
         tradePendingDetails = tradePendingDetails.rows;
+
+        var getPendingDetails = await PendngOrderExecutionModels
+            .query()
+            .select("id", "user_id", "order_type", "limit_price", "quantity", "currency", "settle_currency", "side", "placed_by", "is_cancel", "is_under_execution")
+            .where("deleted_at", null)
+            .andWhere("is_executed", false)
+            .andWhere("user_id", user_id)
+            .andWhere("settle_currency", crypto)
+            .andWhere("currency", currency)
+            .orderBy("id", "DESC")
+            .limit(limit);
+
+        for (var i = 0; i < getPendingDetails.length; i++) {
+            getPendingDetails[i].flag = true;
+        }
+
+        tradePendingDetails = tradePendingDetails.concat(getPendingDetails);
+        // console.log()
     } else {
         var yesterday = moment
             .utc()
@@ -32,7 +51,27 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
         console.log("pendingSql", pendingSql)
         tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
         tradePendingDetails = tradePendingDetails.rows;
+        console.log("tradePendingDetails", tradePendingDetails)
+        var getPendingDetails = await PendngOrderExecutionModels
+            .query()
+            .select("id", "user_id", "order_type", "limit_price", "quantity", "currency", "settle_currency", "side", "placed_by", "is_cancel", "is_under_execution")
+            .where("deleted_at", null)
+            .andWhere("is_cancel", false)
+            .andWhere("is_executed", false)
+            .andWhere("user_id", user_id)
+            .andWhere("settle_currency", crypto)
+            .andWhere("currency", currency)
+            .andWhere("created_at", ">=", yesterday)
+            .orderBy("id", "DESC")
+            .limit(limit);
+
+        for (var i = 0; i < getPendingDetails.length; i++) {
+            getPendingDetails[i].flag = true;
+        }
+
+        tradePendingDetails = tradePendingDetails.concat(getPendingDetails);
     }
+    console.log("tradePendingDetails", tradePendingDetails)
     return tradePendingDetails;
 
 }
