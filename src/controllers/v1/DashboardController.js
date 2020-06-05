@@ -532,8 +532,8 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
             let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
             let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-            let SellBookHelper = require("../../helpers/sell/get-sell-order-by-price");
-            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-by-price");
+            let SellBookHelperAdd = require("../../helpers/sell/get-sell-order-by-price");
+            let BuyBookHelperAdd = require("../../helpers/buy/get-buy-book-order-by-price");
             let BuyAdd = require("../../helpers/buy/add-buy-order");
             let SellAdd = require("../../helpers/sell/add-sell-order");
             var now = new Date();
@@ -699,10 +699,10 @@ class DashboardController extends AppController {
                             // console.log("Book is empty under addittion ......");
                             let bookData;
                             if (mergedArray[i][2] == 'Buy') {
-                                bookData = await BuyBookHelper.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                                bookData = await BuyBookHelperAdd.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
                             }
                             if (mergedArray[i][2] == 'Sell') {
-                                bookData = await SellBookHelper.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                                bookData = await SellBookHelperAdd.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
                             }
 
                             // console.log("bookData", bookData.length)
