@@ -530,8 +530,8 @@ class DashboardController extends AppController {
     async updateBuyOrderBookValue(pair_name) {
         try {
             let pair = pair_name.split("-").join("")
-            let SellBookHelper = require("../../helpers/sell/get-sell-order-by-price");
-            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-by-price");
+            let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
+            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
             let BuyAdd = require("../../helpers/buy/add-buy-order");
             let SellAdd = require("../../helpers/sell/add-sell-order");
             var now = new Date();
@@ -621,15 +621,30 @@ class DashboardController extends AppController {
                         var quantityValue = parseFloat(mergedArray[i][1]).toFixed(8);
                         var priceValue = parseFloat(mergedArray[i][0]).toFixed(8);
                         let bookData;
+                        var flagValue = false;
                         if (mergedArray[i][2] == 'Buy') {
-                            bookData = await SellBookHelper.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                            bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
+                            if (bookData.length > 0) {
+                                if (priceValue >= bookData[0].price) {
+                                    flagValue == true
+                                } else {
+                                    flagValue = false;
+                                }
+                            }
                         }
                         if (mergedArray[i][2] == 'Sell') {
-                            bookData = await BuyBookHelper.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                            bookData = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
+                            if (bookData.length > 0) {
+                                if (priceValue <= bookData[0].price) {
+                                    flagValue = true;
+                                } else {
+                                    flagValue = false;
+                                }
+                            }
                         }
-                        // console.log("bookData", bookData.length);
+
                         // Check if book data found
-                        if (bookData.length > 0) {
+                        if (bookData.length > 0 && flagValue == true) {
                             console.log("UNDER Execution");
                             // Check if quantity is greater than maximum crypto set by admin
                             // var availableQuantity = bookData[0].quantity;
