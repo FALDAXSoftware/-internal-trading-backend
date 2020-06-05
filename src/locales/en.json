@@ -59,8 +59,8 @@
 		"page": "Invalid quantity",
 		"context": "Invalid Order Quantity",
 		"message_type": "error",
-		"message_english": "Order Quantity should be greated than 0.",
-		"message": "Order Quantity should be greater than 0."
+		"message_english": "Order Quantity should be greated than 0",
+		"message": "Order Quantity should be greater than 0"
 	},
 	"Order Partially Fulfilled and Added to Buy Book": {
 		"page": "Order Partially fulfilled and added to buy book",
