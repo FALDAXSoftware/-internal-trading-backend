@@ -70,7 +70,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                     }
                 case "Limit":
                     if (dataValue.side == "Buy" && pendingDataStatus.is_cancel == false) {
-                        tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
+                        tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, [], dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
@@ -90,14 +90,25 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             // console.log("mesages");
             console.log(err)
             console.log("Message", msg.content.toString())
+            var PendingOrderExecutionModel = require("../../models/PendingOrdersExecutuions");
             var tradeData = require("./TradeController");
             var dataValue = JSON.parse(msg.content.toString());
             var type = dataValue.order_type
+            var pendingDataStatus = await PendingOrderExecutionModel
+                .query()
+                .first("is_cancel")
+                .select()
+                .where("id", dataValue.pending_order_id)
+                .andWhere("deleted_at", null)
+                .orderBy("id", "DESC");
+
+            console.log("pendingDataStatus", pendingDataStatus)
             console.log("dataValue", dataValue)
+
             switch (type) {
                 case "Market":
-                    if (dataValue.side == "Sell") {
-                        tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency)
+                    if (dataValue.side == "Sell" && pendingDataStatus.is_cancel == false) {
+                        tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency, [], 0.0, dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
@@ -109,8 +120,8 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                         break;
                     }
                 case "Limit":
-                    if (dataValue.side == "Sell") {
-                        tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency)
+                    if (dataValue.side == "Sell" && pendingDataStatus.is_cancel == false) {
+                        tradeData.limitSellOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, [], dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)

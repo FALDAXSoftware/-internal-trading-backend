@@ -11,13 +11,14 @@ var sellUpdate = require("../../helpers/sell/update");
 var sellDelete = require("../../helpers/sell/delete-order");
 var UserNotifications = require("../../models/UserNotifications");
 var PairsModel = require("../../models/Pairs");
+var PendingOrderExecutuionModel = require("../../models/PendingOrdersExecutuions");
 var Helper = require("../../helpers/helpers");
 var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
-var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0) => {
+var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
     try {
         var pairDetails = await PairsModel
             .query()
@@ -138,6 +139,25 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             });
                             var userData = userIds;
                             var tradeData = allOrderData;
+
+                            var getPendingData = await PendingOrderExecutuionModel
+                                .query()
+                                .first()
+                                .select("is_cancel")
+                                .where("id", pending_order_id)
+                                .andWhere("deleted_at", null)
+                                .orderBy("id", "DESC");
+
+                            if (getPendingData != undefined) {
+                                var getData = await PendingOrderExecutuionModel
+                                    .query()
+                                    .where("id", pending_order_id)
+                                    .andWhere("deleted_at", null)
+                                    .patch({
+                                        is_executed: true
+                                    })
+                            }
+
                             for (var i = 0; i < userData.length; i++) {
                                 // Notification Sending for users
                                 var userNotification = await UserNotifications.getSingleData({
@@ -195,6 +215,25 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             await sellDelete.deleteSellOrder(sellBook[0].id);
                             var userData = userIds;
                             var tradeData = allOrderData;
+
+                            var getPendingData = await PendingOrderExecutuionModel
+                                .query()
+                                .first()
+                                .select("is_cancel")
+                                .where("id", pending_order_id)
+                                .andWhere("deleted_at", null)
+                                .orderBy("id", "DESC");
+
+                            if (getPendingData != undefined) {
+                                var getData = await PendingOrderExecutuionModel
+                                    .query()
+                                    .where("id", pending_order_id)
+                                    .andWhere("deleted_at", null)
+                                    .patch({
+                                        is_executed: true
+                                    })
+                            }
+
                             for (var i = 0; i < userData.length; i++) {
                                 // Notification Sending for users
                                 var userNotification = await UserNotifications.getSingleData({
@@ -245,6 +284,57 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             }
                         }
                     } else {
+
+                        var getPendingData = await PendingOrderExecutuionModel
+                            .query()
+                            .first()
+                            .select("is_cancel")
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .orderBy("id", "DESC");
+
+                        if (getPendingData != undefined) {
+                            var getData = await PendingOrderExecutuionModel
+                                .query()
+                                .where("id", pending_order_id)
+                                .andWhere("deleted_at", null)
+                                .patch({
+                                    is_executed: null
+                                })
+                        }
+
+                        if (allOrderData.length > 0) {
+                            if (user_data != undefined) {
+                                if (userNotification != undefined) {
+                                    if (userNotification.email == true || userNotification.email == "true") {
+                                        if (user_data.email != undefined) {
+                                            var allData = {
+                                                template: "emails/general_mail.ejs",
+                                                templateSlug: "trade_execute",
+                                                email: user_data.email,
+                                                user_detail: user_data,
+                                                formatData: {
+                                                    recipientName: user_data.first_name,
+                                                    side: side,
+                                                    pair: symbol,
+                                                    order_type: order_type,
+                                                    quantity: originalQuantityValue,
+                                                    allTradeData: allOrderData
+                                                }
+
+                                            }
+                                            await Helper.SendEmail(res, allData)
+                                        }
+                                    }
+                                    if (userNotification.text == true || userNotification.text == "true") {
+                                        if (user_data.phone_number != undefined) {
+                                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         var userNotification = await UserNotifications.getSingleData({
                             user_id: sellLimitOrderData.user_id,
                             deleted_at: null,
@@ -374,6 +464,25 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                         allOrderData.push(tradeHistory)
                         tradeOrder = tradeHistory;
+
+                        var getPendingData = await PendingOrderExecutuionModel
+                            .query()
+                            .first()
+                            .select("is_cancel")
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .orderBy("id", "DESC");
+
+                        if (getPendingData != undefined) {
+                            var getData = await PendingOrderExecutuionModel
+                                .query()
+                                .where("id", pending_order_id)
+                                .andWhere("deleted_at", null)
+                                .patch({
+                                    is_executed: true
+                                })
+                        }
+
                         await sellDelete.deleteSellOrder(sellBook[0].id);
 
                         //Emit data in rooms
@@ -390,7 +499,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
 
                         if (remainigQuantity > 0) {
                             console.log("++++Order executing with more books");
-                            var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue);
+                            var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
                             return responseData;
                         }
                     } else {
@@ -509,6 +618,25 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     buyLimitOrderData.added = true;
                     var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
                     console.log(JSON.stringify(addBuyBook))
+
+                    var getPendingData = await PendingOrderExecutuionModel
+                        .query()
+                        .first()
+                        .select("is_cancel")
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .orderBy("id", "DESC");
+
+                    if (getPendingData != undefined) {
+                        var getData = await PendingOrderExecutuionModel
+                            .query()
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .patch({
+                                is_executed: null
+                            })
+                    }
+
                     for (var i = 0; i < userIds.length; i++) {
                         // Notification Sending for users
                         var userNotification = await UserNotifications.getSingleData({
@@ -559,6 +687,25 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         message: 'Order Partially Fulfilled and Added to Buy Book'
                     }
                 } else {
+
+                    var getPendingData = await PendingOrderExecutuionModel
+                        .query()
+                        .first()
+                        .select("is_cancel")
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .orderBy("id", "DESC");
+
+                    if (getPendingData != undefined) {
+                        var getData = await PendingOrderExecutuionModel
+                            .query()
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .patch({
+                                is_executed: null
+                            })
+                    }
+
                     var userNotification = await UserNotifications.getSingleData({
                         user_id: sellLimitOrderData.user_id,
                         deleted_at: null,
@@ -672,6 +819,25 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 buyLimitOrderData.added = true;
                 var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
 
+                var getPendingData = await PendingOrderExecutuionModel
+                    .query()
+                    .first()
+                    .select("is_cancel")
+                    .where("id", pending_order_id)
+                    .andWhere("deleted_at", null)
+                    .orderBy("id", "DESC");
+
+                if (getPendingData != undefined) {
+                    var getData = await PendingOrderExecutuionModel
+                        .query()
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .patch({
+                            is_executed: true
+                            // reason: "Order Book Empty"
+                        })
+                }
+
                 for (var i = 0; i < userIds.length; i++) {
                     // Notification Sending for users
                     var userNotification = await UserNotifications.getSingleData({
@@ -722,6 +888,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     message: 'Order Palce Success'
                 }
             } else {
+
+                var getPendingData = await PendingOrderExecutuionModel
+                    .query()
+                    .first()
+                    .select("is_cancel")
+                    .where("id", pending_order_id)
+                    .andWhere("deleted_at", null)
+                    .orderBy("id", "DESC");
+
+                if (getPendingData != undefined) {
+                    var getData = await PendingOrderExecutuionModel
+                        .query()
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .patch({
+                            is_executed: null
+                        })
+                }
                 var userNotification = await UserNotifications.getSingleData({
                     user_id: sellLimitOrderData.user_id,
                     deleted_at: null,
@@ -763,7 +947,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             }
         }
     } catch (error) {
-        console.log(JSON.stringify(error));
+        console.log((error));
     }
 }
 
