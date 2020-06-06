@@ -1326,8 +1326,10 @@ class TradeController extends AppController {
       resultData.taker_fee = 0.0;
 
       var activity = await ActivityHelper.addActivityData(resultData);
+      console.log("activity", activity)
 
       if (quantityValue <= availableQuantity) {
+        console.log("INSIDE IF")
         if (((fillPriceValue * quantityValue).toFixed(8) <= (wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
@@ -1341,6 +1343,8 @@ class TradeController extends AppController {
           if (currentSellBookDetails.is_stop_limit == true) {
             trade_history_data.is_stop_limit = true
           }
+          console.log("currentSellBookDetails", currentSellBookDetails)
+          console.log("currentSellBookDetails.id", currentSellBookDetails.id)
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -1560,8 +1564,13 @@ class TradeController extends AppController {
           }
         }
       } else {
+        console.log("INSIDE ELSE")
         var remainingQty = quantityValue - availableQuantity;
-        if ((parseFloat(fillPriceValue * quantityValue).toFixed(8) <= parseFloat(wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
+        console.log("fillPriceValue", fillPriceValue)
+        console.log("quantityValue", quantityValue)
+        console.log("wallet.placed_balance", wallet.placed_balance)
+        console.log("fillPriceValue * quantityValue", fillPriceValue * quantityValue)
+        if ((parseFloat(fillPriceValue * quantityValue) <= parseFloat(wallet.placed_balance)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
           };
@@ -1575,6 +1584,7 @@ class TradeController extends AppController {
           if (currentSellBookDetails.is_stop_limit == true) {
             trade_history_data.is_stop_limit = true
           }
+          console.log("currentSellBookDetails", currentSellBookDetails)
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -1650,6 +1660,7 @@ class TradeController extends AppController {
           // Again call same api
           let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         } else {
+          console.log("INSIDE INSUFFICIENT")
           await logger.info({
             "module": "Market Buy Execution",
             "user_id": "user_" + user_id,
@@ -1663,9 +1674,30 @@ class TradeController extends AppController {
           })
           var user_data = await Users.getSingleData({
             deleted_at: null,
-            id: userIds[i],
+            id: user_id,
             is_active: true
           });
+
+          if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
+              .query()
+              .first()
+              .select("is_cancel")
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+              var getData = await PendingOrderExecutuionModel
+                .query()
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .patch({
+                  is_executed: true
+                })
+            }
+          }
+
           if (user_data != undefined) {
             if (userNotification != undefined) {
               if (userNotification.email == true || userNotification.email == "true") {
@@ -2268,7 +2300,7 @@ class TradeController extends AppController {
         var addBuyBook = await BuyAdd.addBuyBookData(buyLimitOrderData);
         addBuyBook.added = true;
 
-        if (pending_order_id != 0) {   
+        if (pending_order_id != 0) {
           var getPendingData = await PendingOrderExecutuionModel
             .query()
             .first()
@@ -2276,7 +2308,7 @@ class TradeController extends AppController {
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
             .orderBy("id", "DESC");
-  
+
           if (getPendingData != undefined) {
             var getData = await PendingOrderExecutuionModel
               .query()
@@ -2565,7 +2597,7 @@ class TradeController extends AppController {
           is_active: true
         });
 
-        if (pending_order_id != 0) {   
+        if (pending_order_id != 0) {
           var getPendingData = await PendingOrderExecutuionModel
             .query()
             .first()
@@ -2573,7 +2605,7 @@ class TradeController extends AppController {
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
             .orderBy("id", "DESC");
-  
+
           if (getPendingData != undefined) {
             var getData = await PendingOrderExecutuionModel
               .query()
@@ -2655,7 +2687,7 @@ class TradeController extends AppController {
           is_active: true
         });
 
-        if (pending_order_id != 0) {   
+        if (pending_order_id != 0) {
           var getPendingData = await PendingOrderExecutuionModel
             .query()
             .first()
@@ -2663,7 +2695,7 @@ class TradeController extends AppController {
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
             .orderBy("id", "DESC");
-  
+
           if (getPendingData != undefined) {
             var getData = await PendingOrderExecutuionModel
               .query()
@@ -2794,7 +2826,7 @@ class TradeController extends AppController {
         var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData, crypto_coin_id);
         addSellBook.added = true;
 
-        if (pending_order_id != 0) {   
+        if (pending_order_id != 0) {
           var getPendingData = await PendingOrderExecutuionModel
             .query()
             .first()
@@ -2802,7 +2834,7 @@ class TradeController extends AppController {
             .where("id", pending_order_id)
             .andWhere("deleted_at", null)
             .orderBy("id", "DESC");
-  
+
           if (getPendingData != undefined) {
             var getData = await PendingOrderExecutuionModel
               .query()
@@ -2879,7 +2911,7 @@ class TradeController extends AppController {
       var addSellBook = await SellAdd.SellOrderAdd(sellLimitOrderData, crypto_coin_id);
       addSellBook.added = true;
 
-      if (pending_order_id != 0) {   
+      if (pending_order_id != 0) {
         var getPendingData = await PendingOrderExecutuionModel
           .query()
           .first()
@@ -3551,7 +3583,7 @@ class TradeController extends AppController {
         .andWhere("user_id", user_id)
         .andWhere("side", "Buy")
         .andWhere("order_type", "Market")
-        .andWhere("symbol",symbol)
+        .andWhere("symbol", symbol)
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
@@ -3785,7 +3817,7 @@ class TradeController extends AppController {
         .andWhere("user_id", user_id)
         .andWhere("side", "Sell")
         .andWhere("order_type", "Market")
-        .andWhere("symbol",symbol)
+        .andWhere("symbol", symbol)
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
@@ -4037,7 +4069,7 @@ class TradeController extends AppController {
       .andWhere("user_id", user_id)
       .andWhere("side", "Buy")
       .andWhere("order_type", "Limit")
-      .andWhere("symbol",symbol)
+      .andWhere("symbol", symbol)
       .andWhere("is_executed", false)
       .orderBy("id", "DESC");
 
@@ -4259,7 +4291,7 @@ class TradeController extends AppController {
       .andWhere("user_id", user_id)
       .andWhere("side", "Sell")
       .andWhere("order_type", "Limit")
-      .andWhere("symbol",symbol)
+      .andWhere("symbol", symbol)
       .andWhere("is_executed", false)
       .orderBy("id", "DESC");
 
