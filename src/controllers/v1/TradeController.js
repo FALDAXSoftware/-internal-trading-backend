@@ -287,7 +287,7 @@ class TradeController extends AppController {
         })
         var user_data = await Users.getSingleData({
           deleted_at: null,
-          id: userIds[i],
+          id: user_id,
           is_active: true
         });
         var getPendingData = await PendingOrderExecutuionModel
@@ -374,7 +374,7 @@ class TradeController extends AppController {
         })
         var user_data = await Users.getSingleData({
           deleted_at: null,
-          id: userIds[i],
+          id: user_id,
           is_active: true
         });
 
@@ -883,23 +883,92 @@ class TradeController extends AppController {
         "type": "Success"
       }, "Order Book Empty")
 
-      var getPendingData = await PendingOrderExecutuionModel
-        .query()
-        .first()
-        .select("is_cancel")
-        .where("id", pending_order_id)
-        .andWhere("deleted_at", null)
-        .orderBy("id", "DESC");
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
 
-      if (getPendingData != undefined) {
-        var getData = await PendingOrderExecutuionModel
+      if (pending_order_id != 0) {
+        var getPendingData = await PendingOrderExecutuionModel
           .query()
-          .where("id", id)
+          .first()
+          .select("is_cancel")
+          .where("id", pending_order_id)
           .andWhere("deleted_at", null)
-          .patch({
-            is_executed: null,
-            reason: "Order Book Empty"
-          })
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
+      }
+
+      if (allOrderData.length > 0) {
+        if (user_data != undefined) {
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                var allData = {
+                  template: "emails/general_mail.ejs",
+                  templateSlug: "trade_execute",
+                  email: user_data.email,
+                  user_detail: user_data,
+                  formatData: {
+                    recipientName: user_data.first_name,
+                    side: side,
+                    pair: symbol,
+                    order_type: order_type,
+                    quantity: originalQuantityValue,
+                    allTradeData: allOrderData
+                  }
+
+                }
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              }
+            }
+          }
+        }
+      }
+
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Order Book Empty").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
       }
 
       return {
@@ -1733,23 +1802,92 @@ class TradeController extends AppController {
       let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
     } else {
 
-      var getPendingData = await PendingOrderExecutuionModel
-        .query()
-        .first()
-        .select("is_cancel")
-        .where("id", pending_order_id)
-        .andWhere("deleted_at", null)
-        .orderBy("id", "DESC");
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
 
-      if (getPendingData != undefined) {
-        var getData = await PendingOrderExecutuionModel
+      if (pending_order_id != 0) {
+        var getPendingData = await PendingOrderExecutuionModel
           .query()
-          .where("id", id)
+          .first()
+          .select("is_cancel")
+          .where("id", pending_order_id)
           .andWhere("deleted_at", null)
-          .patch({
-            is_executed: null,
-            reason: "Order Book Empty"
-          })
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
+      }
+
+      if (allOrderData.length > 0) {
+        if (user_data != undefined) {
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                var allData = {
+                  template: "emails/general_mail.ejs",
+                  templateSlug: "trade_execute",
+                  email: user_data.email,
+                  user_detail: user_data,
+                  formatData: {
+                    recipientName: user_data.first_name,
+                    side: side,
+                    pair: symbol,
+                    order_type: order_type,
+                    quantity: originalQuantityValue,
+                    allTradeData: allOrderData
+                  }
+
+                }
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              }
+            }
+          }
+        }
+      }
+
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Order Book Empty").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
       }
       await logger.info({
         "module": "Market Buy Execution",
