@@ -53,8 +53,8 @@ class DashboardController extends AppController {
             var total = 0;
             // var data = await fetSocketInfo.getSocketValueData("LTC-BTC");
             // console.log(data);
-            // var data = await latestBidPrice.getLatestVaue("LTC-BTC");
-            // console.log("data", data)
+            var data = await latestBidPrice.getLatestVaue("LTC-BTC");
+            console.log("data", data)
             var diffrenceValue = 0;
             var user_data = await UserModel
                 .query()
@@ -539,7 +539,7 @@ class DashboardController extends AppController {
             var now = new Date();
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -618,7 +618,7 @@ class DashboardController extends AppController {
                     }
 
                     for (var i = 0; i < mergedArray.length; i++) {
-                        console.log("mergedArray", mergedArray[i])
+                        console.log("mergedArray[i]", mergedArray[i])
                         // setTimeout(async () => {
                         var quantityValue = parseFloat(mergedArray[i][1]).toFixed(8);
                         var priceValue = parseFloat(mergedArray[i][0]).toFixed(8);
@@ -626,9 +626,12 @@ class DashboardController extends AppController {
                         var flagValue = false;
                         if (mergedArray[i][2] == 'Buy') {
                             bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
-                            if (bookData.length > 0) {
-                                if (priceValue >= bookData[0].price) {
-                                    flagValue == true
+                            if (bookData.data.length > 0) {
+                                console.log("priceValue", priceValue);
+                                console.log("bookData.data[0].price", bookData.data[0].price);
+                                console.log("priceValue >= bookData.data[0].price", priceValue >= bookData.data[0].price)
+                                if (priceValue >= bookData.data[0].price) {
+                                    flagValue = true
                                 } else {
                                     flagValue = false;
                                 }
@@ -636,17 +639,21 @@ class DashboardController extends AppController {
                         }
                         if (mergedArray[i][2] == 'Sell') {
                             bookData = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
-                            if (bookData.length > 0) {
-                                if (priceValue <= bookData[0].price) {
+                            if (bookData.data.length > 0) {
+                                console.log("priceValue", priceValue);
+                                console.log("bookData.data[0].price", bookData.data[0].price);
+                                console.log("priceValue <= bookData.data[0].price", priceValue <= bookData.data[0].price)
+                                if (priceValue <= bookData.data[0].price) {
                                     flagValue = true;
                                 } else {
                                     flagValue = false;
                                 }
                             }
                         }
-
+                        // console.log("bookData", bookData)
+                        console.log("flagValue", flagValue)
                         // Check if book data found
-                        if (bookData.length > 0 && flagValue == true) {
+                        if (bookData.data.length > 0 && flagValue == true) {
                             console.log("UNDER Execution");
                             // Check if quantity is greater than maximum crypto set by admin
                             // var availableQuantity = bookData[0].quantity;
