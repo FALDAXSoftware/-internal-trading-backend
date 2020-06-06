@@ -52,8 +52,8 @@ var getLatestVaue = async (symbol) => {
     var data = {
         askPrice: askPrice,
         bidPrice: bidPrice,
-        buyMaximumValue: buyMaximumValue,
-        sellMaximumValue: sellMaximumValue,
+        buyMaximumValue: sellMaximumValue,
+        sellMaximumValue: buyMaximumValue,
         lastPrice: lastPrice
     }
 
