@@ -2,11 +2,20 @@
 var constants = require("../config/constants");
 // Used for Response Output in JSON Format
 var jsonFormat = async (res, status, message, data, extra = "") => {
-  var output = {
-    "status": status,
-    "message": message,
-    "data": data
-  };
+
+  if (status == 500) {
+    var output = {
+      "status": status,
+      "err": message,
+      "data": data
+    };
+  } else {
+    var output = {
+      "status": status,
+      "message": message,
+      "data": data
+    };
+  }
   if (extra != "") {
     output.extra = extra;
   }
