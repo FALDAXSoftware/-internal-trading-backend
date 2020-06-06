@@ -813,19 +813,30 @@ class DashboardController extends AppController {
                 .first()
                 .select()
                 .where("deleted_at", null)
-                .andWhere("name", pair_name)
+                .andWhere("name", pair)
                 .orderBy("id", 'DESC')
+
+            console.log("maxValue", maxValue)
 
             if (maxValue.bot_status) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
+                console.log("now", now)
                 let { crypto, currency } = await Currency.get_currencies(pair);
+                // console.log(`UPDATE activity_table SET is_cancel = true
+                // WHERE id IN ( SELECT activity_id FROM buy_book
+                //             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //             AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
+                //         )`)
+                // console.log(`UPDATE buy_book SET deleted_at = '${today}'
+                // WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                // AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`)
                 // var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
                 //                                                             FROM buy_book
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                 //                                                             AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
                 // balanceTotalQuery = balanceTotalQuery.rows[0];
-                var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true'
+                var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = true
                                                                             WHERE id IN ( SELECT activity_id FROM buy_book
                                                                                         WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                                         AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
@@ -847,7 +858,7 @@ class DashboardController extends AppController {
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
             }
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log((error));
         }
     }
 
@@ -858,7 +869,7 @@ class DashboardController extends AppController {
                 .first()
                 .select()
                 .where("deleted_at", null)
-                .andWhere("name", pair_name)
+                .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
             if (maxValue.bot_status) {
