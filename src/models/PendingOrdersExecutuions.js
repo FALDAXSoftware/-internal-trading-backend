@@ -12,9 +12,9 @@ class PendingOrdersExecutuion extends visibilityPlugin((AppModel)) {
         super();
     }
 
-    static get hidden() {
-        return ['id'];
-    }
+    // static get hidden() {
+    //     return ['id'];
+    // }
 
     static get tableName() {
         return 'pending_orders_execution';
@@ -29,17 +29,17 @@ class PendingOrdersExecutuion extends visibilityPlugin((AppModel)) {
         return 'id';
     }
 
-    static get virtualAttributes() {
+    // static get virtualAttributes() {
 
-        return ['encript_id'];
-    }
+    //     return ['encript_id'];
+    // }
 
-    encript_id() {
+    // encript_id() {
 
-        if (this.id) {
-            return this.id;
-        }
-    }
+    //     if (this.id) {
+    //         return this.id;
+    //     }
+    // }
 
     /**
      * Decript Id
