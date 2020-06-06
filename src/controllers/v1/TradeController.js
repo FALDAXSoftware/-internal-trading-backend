@@ -61,6 +61,7 @@ var buyOrderBookSummary = require("../../helpers/buy/get-buy-book-order-summary"
 var QueueValue = require("./QueueController");
 var PendingOrderExecutuionModel = require("../../models/PendingOrdersExecutuions")
 var cancelOrderHelper = require("../../helpers/pending/cancel-pending-order")
+var getBidAskPriceHelper = require("../../helpers/get-bid-ask-latest");
 
 /**
  * Trade Controller : Used for live tradding
@@ -3574,6 +3575,13 @@ class TradeController extends AppController {
         orderQuantity,
       } = req.body;
 
+      const checkUser = Helper.checkWhichUser(user_id);
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
+      if (quantityTotal.length == 0) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      }
+
       // For checking if previous market order exist
       var getPendingDetails = await PendingOrderExecutuionModel
         .query()
@@ -3600,32 +3608,30 @@ class TradeController extends AppController {
       }
 
       // var user_id = await Helper.getUserId(req.headers, res);
-      const checkUser = Helper.checkWhichUser(user_id);
-      let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
       var userIds = [];
       userIds.push(user_id);
 
-      var pairDetails = await PairsModel
-        .query()
-        .first()
-        .select("name", "order_maximum")
-        .where("deleted_at", null)
-        .andWhere("name", symbol)
-        .orderBy("id", "DESC")
+      // var pairDetails = await PairsModel
+      //   .query()
+      //   .first()
+      //   .select("name", "order_maximum")
+      //   .where("deleted_at", null)
+      //   .andWhere("name", symbol)
+      //   .orderBy("id", "DESC")
 
-      // Fetch USD Value
-      var USDPriceValue = await CurrencyConversionModel
-        .query()
-        .first()
-        .select("quote")
-        .where("deleted_at", null)
-        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-        .orderBy("id", "DESC");
-      var usdValue = USDPriceValue.quote.USD.price
-      var maximumValue = (pairDetails.order_maximum) / (usdValue)
+      // // Fetch USD Value
+      // var USDPriceValue = await CurrencyConversionModel
+      //   .query()
+      //   .first()
+      //   .select("quote")
+      //   .where("deleted_at", null)
+      //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+      //   .orderBy("id", "DESC");
+      // var usdValue = USDPriceValue.quote.USD.price
+      var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
+      var maximumValue = (maxDataValue.buyMaximumValue)
       console.log("maximumValue", maximumValue)
 
       // For minimum and maximum order quantity checking
@@ -3807,6 +3813,16 @@ class TradeController extends AppController {
         orderQuantity,
         // user_id
       } = req.body;
+      // console.log("req.body", req.body)
+      const checkUser = Helper.checkWhichUser(user_id);
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      var quantityTotal = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+
+      console.log("quantityTotal", quantityTotal)
+
+      if (quantityTotal.length == 0) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      }
 
       // For checking if previous market order exist
       var getPendingDetails = await PendingOrderExecutuionModel
@@ -3833,27 +3849,26 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
       }
 
-      // console.log("req.body", req.body)
-      const checkUser = Helper.checkWhichUser(user_id);
-      let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      var pairDetails = await PairsModel
-        .query()
-        .first()
-        .select("name", "order_maximum")
-        .where("deleted_at", null)
-        .andWhere("name", symbol)
-        .orderBy("id", "DESC")
+      // var pairDetails = await PairsModel
+      //   .query()
+      //   .first()
+      //   .select("name", "order_maximum")
+      //   .where("deleted_at", null)
+      //   .andWhere("name", symbol)
+      //   .orderBy("id", "DESC")
 
-      var USDPriceValue = await CurrencyConversionModel
-        .query()
-        .first()
-        .select("quote")
-        .where("deleted_at", null)
-        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-        .orderBy("id", "DESC");
-      var usdValue = USDPriceValue.quote.USD.price
-      var maximumValue = (pairDetails.order_maximum) / (usdValue)
+      // var USDPriceValue = await CurrencyConversionModel
+      //   .query()
+      //   .first()
+      //   .select("quote")
+      //   .where("deleted_at", null)
+      //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+      //   .orderBy("id", "DESC");
+      // var usdValue = USDPriceValue.quote.USD.price
+      var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
+      var maximumValue = (maxDataValue.sellMaximumValue)
+      // var maximumValue = (pairDetails.order_maximum) / (usdValue)
       console.log("maximumValue", maximumValue)
       if (orderQuantity <= 0) {
         await logger.info({
@@ -4085,30 +4100,29 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
     }
 
-    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
     var userIds = [];
     userIds.push(user_id);
 
 
-    var pairDetails = await PairsModel
-      .query()
-      .first()
-      .select("name", "order_maximum")
-      .where("deleted_at", null)
-      .andWhere("name", symbol)
-      .orderBy("id", "DESC")
+    // var pairDetails = await PairsModel
+    //   .query()
+    //   .first()
+    //   .select("name", "order_maximum")
+    //   .where("deleted_at", null)
+    //   .andWhere("name", symbol)
+    //   .orderBy("id", "DESC")
 
-    var USDPriceValue = await CurrencyConversionModel
-      .query()
-      .first()
-      .select("quote")
-      .where("deleted_at", null)
-      .andWhere("symbol", "LIKE", '%' + crypto + '%')
-      .orderBy("id", "DESC");
-    var usdValue = USDPriceValue.quote.USD.price
-    var maximumValue = (pairDetails.order_maximum) / (usdValue)
-    console.log("maximumValue", maximumValue)
+    // var USDPriceValue = await CurrencyConversionModel
+    //   .query()
+    //   .first()
+    //   .select("quote")
+    //   .where("deleted_at", null)
+    //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+    //   .orderBy("id", "DESC");
+    // var usdValue = USDPriceValue.quote.USD.price
+    // var maximumValue = (pairDetails.order_maximum) / (usdValue)
+    // console.log("maximumValue", maximumValue)
     if (orderQuantity <= 0) {
       await logger.info({
         "module": "Market Buy",
@@ -4119,17 +4133,17 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
     }
 
-    if (orderQuantity > maximumValue) {
-      await logger.info({
-        "module": "Market Buy",
-        "user_id": "user_" + user_id,
-        "url": "Trade Function",
-        "type": "Entry"
-      }, i18n.__("Invalid Quantity").message);
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
-    }
+    // if (orderQuantity > maximumValue) {
+    //   await logger.info({
+    //     "module": "Market Buy",
+    //     "user_id": "user_" + user_id,
+    //     "url": "Trade Function",
+    //     "type": "Entry"
+    //   }, i18n.__("Invalid Quantity").message);
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
+    // }
 
-    // var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
+    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
     var userData = await Users
       .query()
@@ -4310,24 +4324,24 @@ class TradeController extends AppController {
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
-    var pairDetails = await PairsModel
-      .query()
-      .first()
-      .select("name", "order_maximum")
-      .where("deleted_at", null)
-      .andWhere("name", symbol)
-      .orderBy("id", "DESC")
+    // var pairDetails = await PairsModel
+    //   .query()
+    //   .first()
+    //   .select("name", "order_maximum")
+    //   .where("deleted_at", null)
+    //   .andWhere("name", symbol)
+    //   .orderBy("id", "DESC")
 
-    var USDPriceValue = await CurrencyConversionModel
-      .query()
-      .first()
-      .select("quote")
-      .where("deleted_at", null)
-      .andWhere("symbol", "LIKE", '%' + crypto + '%')
-      .orderBy("id", "DESC");
-    var usdValue = USDPriceValue.quote.USD.price
-    var maximumValue = (pairDetails.order_maximum) / (usdValue)
-    console.log("maximumValue", maximumValue)
+    // var USDPriceValue = await CurrencyConversionModel
+    //   .query()
+    //   .first()
+    //   .select("quote")
+    //   .where("deleted_at", null)
+    //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+    //   .orderBy("id", "DESC");
+    // var usdValue = USDPriceValue.quote.USD.price
+    // var maximumValue = (pairDetails.order_maximum) / (usdValue)
+    // console.log("maximumValue", maximumValue)
     if (orderQuantity <= 0) {
       await logger.info({
         "module": "Market Buy",
@@ -4338,15 +4352,15 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
     }
 
-    if (orderQuantity > maximumValue) {
-      await logger.info({
-        "module": "Market Buy",
-        "user_id": "user_" + user_id,
-        "url": "Trade Function",
-        "type": "Entry"
-      }, i18n.__("Invalid Quantity").message);
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
-    }
+    // if (orderQuantity > maximumValue) {
+    //   await logger.info({
+    //     "module": "Market Buy",
+    //     "user_id": "user_" + user_id,
+    //     "url": "Trade Function",
+    //     "type": "Entry"
+    //   }, i18n.__("Invalid Quantity").message);
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
+    // }
 
     // get user id from header
     let userIds = [];
