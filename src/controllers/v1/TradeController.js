@@ -3713,6 +3713,8 @@ class TradeController extends AppController {
         orderQuantity,
       } = req.body;
 
+      console.log("req.body",req.body)
+
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
       var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
@@ -3773,7 +3775,7 @@ class TradeController extends AppController {
       console.log("maximumValue", maximumValue)
 
       // For minimum and maximum order quantity checking
-      if (orderQuantity <= 0) {
+      if (parseFloat(orderQuantity) <= 0) {
         await logger.info({
           "module": "Market Buy",
           "user_id": "user_" + user_id,
@@ -3783,7 +3785,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
       }
 
-      if (orderQuantity > maximumValue) {
+      if (parseFloat(orderQuantity) > maximumValue) {
         await logger.info({
           "module": "Market Buy",
           "user_id": "user_" + user_id,
@@ -4008,7 +4010,7 @@ class TradeController extends AppController {
       var maximumValue = (maxDataValue.sellMaximumValue)
       // var maximumValue = (pairDetails.order_maximum) / (usdValue)
       console.log("maximumValue", maximumValue)
-      if (orderQuantity <= 0) {
+      if (parseFloat(orderQuantity) <= 0) {
         await logger.info({
           "module": "Market Buy",
           "user_id": "user_" + user_id,
@@ -4018,7 +4020,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
       }
 
-      if (orderQuantity > maximumValue) {
+      if (parseFloat(orderQuantity) > maximumValue) {
         await logger.info({
           "module": "Market Buy",
           "user_id": "user_" + user_id,
