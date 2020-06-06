@@ -61,6 +61,7 @@ var buyOrderBookSummary = require("../../helpers/buy/get-buy-book-order-summary"
 var QueueValue = require("./QueueController");
 var PendingOrderExecutuionModel = require("../../models/PendingOrdersExecutuions")
 var cancelOrderHelper = require("../../helpers/pending/cancel-pending-order")
+var getBidAskPriceHelper = require("../../helpers/get-bid-ask-latest");
 
 /**
  * Trade Controller : Used for live tradding
@@ -286,7 +287,7 @@ class TradeController extends AppController {
         })
         var user_data = await Users.getSingleData({
           deleted_at: null,
-          id: userIds[i],
+          id: user_id,
           is_active: true
         });
         var getPendingData = await PendingOrderExecutuionModel
@@ -373,7 +374,7 @@ class TradeController extends AppController {
         })
         var user_data = await Users.getSingleData({
           deleted_at: null,
-          id: userIds[i],
+          id: user_id,
           is_active: true
         });
 
@@ -882,23 +883,92 @@ class TradeController extends AppController {
         "type": "Success"
       }, "Order Book Empty")
 
-      var getPendingData = await PendingOrderExecutuionModel
-        .query()
-        .first()
-        .select("is_cancel")
-        .where("id", pending_order_id)
-        .andWhere("deleted_at", null)
-        .orderBy("id", "DESC");
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
 
-      if (getPendingData != undefined) {
-        var getData = await PendingOrderExecutuionModel
+      if (pending_order_id != 0) {
+        var getPendingData = await PendingOrderExecutuionModel
           .query()
-          .where("id", id)
+          .first()
+          .select("is_cancel")
+          .where("id", pending_order_id)
           .andWhere("deleted_at", null)
-          .patch({
-            is_executed: null,
-            reason: "Order Book Empty"
-          })
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
+      }
+
+      if (allOrderData.length > 0) {
+        if (user_data != undefined) {
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                var allData = {
+                  template: "emails/general_mail.ejs",
+                  templateSlug: "trade_execute",
+                  email: user_data.email,
+                  user_detail: user_data,
+                  formatData: {
+                    recipientName: user_data.first_name,
+                    side: side,
+                    pair: symbol,
+                    order_type: order_type,
+                    quantity: originalQuantityValue,
+                    allTradeData: allOrderData
+                  }
+
+                }
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              }
+            }
+          }
+        }
+      }
+
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Order Book Empty").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
       }
 
       return {
@@ -1732,23 +1802,92 @@ class TradeController extends AppController {
       let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
     } else {
 
-      var getPendingData = await PendingOrderExecutuionModel
-        .query()
-        .first()
-        .select("is_cancel")
-        .where("id", pending_order_id)
-        .andWhere("deleted_at", null)
-        .orderBy("id", "DESC");
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
 
-      if (getPendingData != undefined) {
-        var getData = await PendingOrderExecutuionModel
+      if (pending_order_id != 0) {
+        var getPendingData = await PendingOrderExecutuionModel
           .query()
-          .where("id", id)
+          .first()
+          .select("is_cancel")
+          .where("id", pending_order_id)
           .andWhere("deleted_at", null)
-          .patch({
-            is_executed: null,
-            reason: "Order Book Empty"
-          })
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
+      }
+
+      if (allOrderData.length > 0) {
+        if (user_data != undefined) {
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                var allData = {
+                  template: "emails/general_mail.ejs",
+                  templateSlug: "trade_execute",
+                  email: user_data.email,
+                  user_detail: user_data,
+                  formatData: {
+                    recipientName: user_data.first_name,
+                    side: side,
+                    pair: symbol,
+                    order_type: order_type,
+                    quantity: originalQuantityValue,
+                    allTradeData: allOrderData
+                  }
+
+                }
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              }
+            }
+          }
+        }
+      }
+
+      if (user_data != undefined) {
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              var allData = {
+                template: "emails/general_mail.ejs",
+                templateSlug: "order_failed",
+                email: user_data.email,
+                user_detail: user_data,
+                formatData: {
+                  recipientName: user_data.first_name,
+                  reason: i18n.__("Order Book Empty").message
+                }
+              }
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              // await sails.helpers.notification.send.text("trade_execute", user_data)
+            }
+          }
+        }
       }
       await logger.info({
         "module": "Market Buy Execution",
@@ -3574,6 +3713,13 @@ class TradeController extends AppController {
         orderQuantity,
       } = req.body;
 
+      const checkUser = Helper.checkWhichUser(user_id);
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
+      if (quantityTotal.length == 0) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      }
+
       // For checking if previous market order exist
       var getPendingDetails = await PendingOrderExecutuionModel
         .query()
@@ -3600,32 +3746,30 @@ class TradeController extends AppController {
       }
 
       // var user_id = await Helper.getUserId(req.headers, res);
-      const checkUser = Helper.checkWhichUser(user_id);
-      let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
       var userIds = [];
       userIds.push(user_id);
 
-      var pairDetails = await PairsModel
-        .query()
-        .first()
-        .select("name", "order_maximum")
-        .where("deleted_at", null)
-        .andWhere("name", symbol)
-        .orderBy("id", "DESC")
+      // var pairDetails = await PairsModel
+      //   .query()
+      //   .first()
+      //   .select("name", "order_maximum")
+      //   .where("deleted_at", null)
+      //   .andWhere("name", symbol)
+      //   .orderBy("id", "DESC")
 
-      // Fetch USD Value
-      var USDPriceValue = await CurrencyConversionModel
-        .query()
-        .first()
-        .select("quote")
-        .where("deleted_at", null)
-        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-        .orderBy("id", "DESC");
-      var usdValue = USDPriceValue.quote.USD.price
-      var maximumValue = (pairDetails.order_maximum) / (usdValue)
+      // // Fetch USD Value
+      // var USDPriceValue = await CurrencyConversionModel
+      //   .query()
+      //   .first()
+      //   .select("quote")
+      //   .where("deleted_at", null)
+      //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+      //   .orderBy("id", "DESC");
+      // var usdValue = USDPriceValue.quote.USD.price
+      var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
+      var maximumValue = (maxDataValue.buyMaximumValue)
       console.log("maximumValue", maximumValue)
 
       // For minimum and maximum order quantity checking
@@ -3807,6 +3951,16 @@ class TradeController extends AppController {
         orderQuantity,
         // user_id
       } = req.body;
+      // console.log("req.body", req.body)
+      const checkUser = Helper.checkWhichUser(user_id);
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+      var quantityTotal = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+
+      console.log("quantityTotal", quantityTotal)
+
+      if (quantityTotal.length == 0) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      }
 
       // For checking if previous market order exist
       var getPendingDetails = await PendingOrderExecutuionModel
@@ -3833,27 +3987,26 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
       }
 
-      // console.log("req.body", req.body)
-      const checkUser = Helper.checkWhichUser(user_id);
-      let { crypto, currency } = await Currency.get_currencies(symbol);
 
-      var pairDetails = await PairsModel
-        .query()
-        .first()
-        .select("name", "order_maximum")
-        .where("deleted_at", null)
-        .andWhere("name", symbol)
-        .orderBy("id", "DESC")
+      // var pairDetails = await PairsModel
+      //   .query()
+      //   .first()
+      //   .select("name", "order_maximum")
+      //   .where("deleted_at", null)
+      //   .andWhere("name", symbol)
+      //   .orderBy("id", "DESC")
 
-      var USDPriceValue = await CurrencyConversionModel
-        .query()
-        .first()
-        .select("quote")
-        .where("deleted_at", null)
-        .andWhere("symbol", "LIKE", '%' + crypto + '%')
-        .orderBy("id", "DESC");
-      var usdValue = USDPriceValue.quote.USD.price
-      var maximumValue = (pairDetails.order_maximum) / (usdValue)
+      // var USDPriceValue = await CurrencyConversionModel
+      //   .query()
+      //   .first()
+      //   .select("quote")
+      //   .where("deleted_at", null)
+      //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+      //   .orderBy("id", "DESC");
+      // var usdValue = USDPriceValue.quote.USD.price
+      var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
+      var maximumValue = (maxDataValue.sellMaximumValue)
+      // var maximumValue = (pairDetails.order_maximum) / (usdValue)
       console.log("maximumValue", maximumValue)
       if (orderQuantity <= 0) {
         await logger.info({
@@ -4085,30 +4238,29 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
     }
 
-    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
     var userIds = [];
     userIds.push(user_id);
 
 
-    var pairDetails = await PairsModel
-      .query()
-      .first()
-      .select("name", "order_maximum")
-      .where("deleted_at", null)
-      .andWhere("name", symbol)
-      .orderBy("id", "DESC")
+    // var pairDetails = await PairsModel
+    //   .query()
+    //   .first()
+    //   .select("name", "order_maximum")
+    //   .where("deleted_at", null)
+    //   .andWhere("name", symbol)
+    //   .orderBy("id", "DESC")
 
-    var USDPriceValue = await CurrencyConversionModel
-      .query()
-      .first()
-      .select("quote")
-      .where("deleted_at", null)
-      .andWhere("symbol", "LIKE", '%' + crypto + '%')
-      .orderBy("id", "DESC");
-    var usdValue = USDPriceValue.quote.USD.price
-    var maximumValue = (pairDetails.order_maximum) / (usdValue)
-    console.log("maximumValue", maximumValue)
+    // var USDPriceValue = await CurrencyConversionModel
+    //   .query()
+    //   .first()
+    //   .select("quote")
+    //   .where("deleted_at", null)
+    //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+    //   .orderBy("id", "DESC");
+    // var usdValue = USDPriceValue.quote.USD.price
+    // var maximumValue = (pairDetails.order_maximum) / (usdValue)
+    // console.log("maximumValue", maximumValue)
     if (orderQuantity <= 0) {
       await logger.info({
         "module": "Market Buy",
@@ -4119,17 +4271,17 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
     }
 
-    if (orderQuantity > maximumValue) {
-      await logger.info({
-        "module": "Market Buy",
-        "user_id": "user_" + user_id,
-        "url": "Trade Function",
-        "type": "Entry"
-      }, i18n.__("Invalid Quantity").message);
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
-    }
+    // if (orderQuantity > maximumValue) {
+    //   await logger.info({
+    //     "module": "Market Buy",
+    //     "user_id": "user_" + user_id,
+    //     "url": "Trade Function",
+    //     "type": "Entry"
+    //   }, i18n.__("Invalid Quantity").message);
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
+    // }
 
-    // var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
+    var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
 
     var userData = await Users
       .query()
@@ -4310,24 +4462,24 @@ class TradeController extends AppController {
     const checkUser = Helper.checkWhichUser(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
 
-    var pairDetails = await PairsModel
-      .query()
-      .first()
-      .select("name", "order_maximum")
-      .where("deleted_at", null)
-      .andWhere("name", symbol)
-      .orderBy("id", "DESC")
+    // var pairDetails = await PairsModel
+    //   .query()
+    //   .first()
+    //   .select("name", "order_maximum")
+    //   .where("deleted_at", null)
+    //   .andWhere("name", symbol)
+    //   .orderBy("id", "DESC")
 
-    var USDPriceValue = await CurrencyConversionModel
-      .query()
-      .first()
-      .select("quote")
-      .where("deleted_at", null)
-      .andWhere("symbol", "LIKE", '%' + crypto + '%')
-      .orderBy("id", "DESC");
-    var usdValue = USDPriceValue.quote.USD.price
-    var maximumValue = (pairDetails.order_maximum) / (usdValue)
-    console.log("maximumValue", maximumValue)
+    // var USDPriceValue = await CurrencyConversionModel
+    //   .query()
+    //   .first()
+    //   .select("quote")
+    //   .where("deleted_at", null)
+    //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
+    //   .orderBy("id", "DESC");
+    // var usdValue = USDPriceValue.quote.USD.price
+    // var maximumValue = (pairDetails.order_maximum) / (usdValue)
+    // console.log("maximumValue", maximumValue)
     if (orderQuantity <= 0) {
       await logger.info({
         "module": "Market Buy",
@@ -4338,15 +4490,15 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
     }
 
-    if (orderQuantity > maximumValue) {
-      await logger.info({
-        "module": "Market Buy",
-        "user_id": "user_" + user_id,
-        "url": "Trade Function",
-        "type": "Entry"
-      }, i18n.__("Invalid Quantity").message);
-      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
-    }
+    // if (orderQuantity > maximumValue) {
+    //   await logger.info({
+    //     "module": "Market Buy",
+    //     "user_id": "user_" + user_id,
+    //     "url": "Trade Function",
+    //     "type": "Entry"
+    //   }, i18n.__("Invalid Quantity").message);
+    //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
+    // }
 
     // get user id from header
     let userIds = [];

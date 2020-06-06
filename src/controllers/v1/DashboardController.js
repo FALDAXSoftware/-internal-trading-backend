@@ -820,11 +820,11 @@ class DashboardController extends AppController {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 let { crypto, currency } = await Currency.get_currencies(pair);
-                var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
-                                                                            FROM buy_book
-                                                                            WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
-                                                                            AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
-                balanceTotalQuery = balanceTotalQuery.rows[0];
+                // var balanceTotalQuery = await BuyBookModel.knex().raw(`SELECT SUM(limit_price * quantity) as total
+                //                                                             FROM buy_book
+                //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //                                                             AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+                // balanceTotalQuery = balanceTotalQuery.rows[0];
                 var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true'
                                                                             WHERE id IN ( SELECT activity_id FROM buy_book
                                                                                         WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
@@ -833,18 +833,18 @@ class DashboardController extends AppController {
                 var buyBookUpdate = await BuyBookModel.knex().raw(`UPDATE buy_book SET deleted_at = '${today}'
                                                                         WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                         AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
-                var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
-                                                                        FROM wallets
-                                                                        LEFT JOIN coins
-                                                                        ON coins.id = wallets.coin_id
-                                                                        WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL
-                                                                        AND coins.coin= '${currency}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
-                walletBalance = walletBalance.rows[0];
-                var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
-                var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balance);
-                var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
-                var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
-                                                                            WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
+                // var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
+                //                                                         FROM wallets
+                //                                                         LEFT JOIN coins
+                //                                                         ON coins.id = wallets.coin_id
+                //                                                         WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL
+                //                                                         AND coins.coin= '${currency}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
+                // walletBalance = walletBalance.rows[0];
+                // var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
+                // var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balance);
+                // var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
+                // var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
+                //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
             }
         } catch (error) {
             console.log(JSON.stringify(error));
@@ -865,11 +865,11 @@ class DashboardController extends AppController {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 let { crypto, currency } = await Currency.get_currencies(pair);
-                var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
-                                                                    FROM sell_book
-                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
-                                                                    AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
-                balanceTotalQuery = balanceTotalQuery.rows[0];
+                // var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
+                //                                                     FROM sell_book
+                //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+                // balanceTotalQuery = balanceTotalQuery.rows[0];
 
                 var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true'
                                                                     WHERE id IN ( SELECT activity_id FROM sell_book
@@ -881,20 +881,20 @@ class DashboardController extends AppController {
                                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
 
-                var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
-                                                                FROM wallets
-                                                                LEFT JOIN coins
-                                                                ON coins.id = wallets.coin_id
-                                                                WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL
-                                                                AND coins.coin= '${crypto}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
+                // var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
+                //                                                 FROM wallets
+                //                                                 LEFT JOIN coins
+                //                                                 ON coins.id = wallets.coin_id
+                //                                                 WHERE wallets.deleted_at IS NULL AND coins.deleted_at IS NULL
+                //                                                 AND coins.coin= '${crypto}' AND wallets.user_id = ${process.env.TRADEDESK_USER_ID}`)
 
-                walletBalance = walletBalance.rows[0];
-                var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
-                var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balance);
-                var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
+                // walletBalance = walletBalance.rows[0];
+                // var balance = (balanceTotalQuery.total == null) ? (0.0) : (balanceTotalQuery.total);
+                // var updatedBalance = parseFloat(walletBalance.balance) + parseFloat(balance);
+                // var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
 
-                var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
-                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
+                // var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
+                //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
             }
         } catch (error) {
             console.log(JSON.stringify(error));
