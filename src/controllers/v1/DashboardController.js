@@ -762,6 +762,7 @@ class DashboardController extends AppController {
                             // delete sellAddedData.activity_id;
 
                             var activity = await ActivityHelper.addActivityData(limitOrderData);
+                            limitOrderData.activity_id = activity.id
 
                             if (mergedArray[i][2] == 'Buy') {
                                 // console.log("INSIDE BUY ADD")
