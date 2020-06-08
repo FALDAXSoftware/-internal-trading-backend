@@ -52,8 +52,8 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
     var totalQuantityFill = 0.0;
     for (let index = 0; index < buyBookOrders.length; index++) {
         const element = buyBookOrders[index];
-        totalQuantity = totalQuantity + element.quantity;
-        totalQuantityFill = totalQuantityFill + (element.quantity * element.fill_price)
+        totalQuantity = parseFloat(totalQuantity) + parseFloat(element.quantity);
+        totalQuantityFill = parseFloat(totalQuantityFill) + parseFloat(element.quantity * element.price)
     }
 
     // var totalSql = `SELECT SUM(price * quantity) as total
