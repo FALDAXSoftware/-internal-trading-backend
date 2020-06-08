@@ -3,8 +3,30 @@ let CONN_URL = process.env.QUEUE_URL;
 const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
 let ch = null;
 amqp.connect(CONN_URL, opt, (err, conn) => {
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
     console.log("conn", conn)
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
     console.log("err", err)
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
+    console.log("---------------------------------");
     conn.createChannel(function (err, channel) {
         // ch.chequeQueue(queueName);
         channel.assertQueue(process.env.PENDING_QUEUE_NAME)

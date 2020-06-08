@@ -28,15 +28,15 @@ var sellOrderBookSummary = async (crypto, currency) => {
     //     .andWhere('currency', currency)
     //     .limit(100)
 
-    console.log("sellBookOrder", sellBookOrder)
+    // console.log("sellBookOrder", sellBookOrder)
 
     var totalQuantity = 0.0;
     for (let index = 0; index < sellBookOrder.length; index++) {
         const element = sellBookOrder[index];
-        console.log("element", element);
-        console.log("element.quantity", element.quantity)
+        // console.log("element", element);
+        // console.log("element.quantity", element.quantity)
         totalQuantity = parseFloat(totalQuantity) + parseFloat(element.quantity);
-        console.log("totalQuantity", totalQuantity)
+        // console.log("totalQuantity", totalQuantity)
     }
 
     // var totalSql = `SELECT SUM(quantity) as total
