@@ -16,18 +16,24 @@ var sellOrderBookSummary = async (crypto, currency) => {
         .orderBy('price', 'ASC')
         .limit(100);
 
-    var totalSql = await SellBookModel
-        .query()
-        // .select(raw('SUM(quantity) as total'), 'id')
-        .sum('quantity as total')
-        // .sum({ total: raw('(quantity * price)') })
-        .where('deleted_at', null)
-        .andWhere('quantity', '>', 0)
-        .andWhere('limit_price', '>', 0)
-        .andWhere('settle_currency', crypto)
-        .andWhere('currency', currency)
-        .limit(100)
+    // var totalSql = await SellBookModel
+    //     .query()
+    //     // .select(raw('SUM(quantity) as total'), 'id')
+    //     .sum('quantity as total')
+    //     // .sum({ total: raw('(quantity * price)') })
+    //     .where('deleted_at', null)
+    //     .andWhere('quantity', '>', 0)
+    //     .andWhere('limit_price', '>', 0)
+    //     .andWhere('settle_currency', crypto)
+    //     .andWhere('currency', currency)
+    //     .limit(100)
 
+
+    var totalQuantity = 0.0;
+    for (let index = 0; index < sellBookOrder.length; index++) {
+        const element = sellBookOrder[index];
+        totalQuantity = totalQuantity * element.quantity;
+    }
 
     // var totalSql = `SELECT SUM(quantity) as total
     //                     FROM sell_book WHERE settle_currency='${crypto}' AND currency='${currency}'
@@ -39,7 +45,7 @@ var sellOrderBookSummary = async (crypto, currency) => {
 
     var sellTotal = {
         "data": sellBookOrder,
-        "total": totalSql[0].total
+        "total": totalQuantity
     }
 
 
