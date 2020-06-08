@@ -557,7 +557,7 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC');
 
-                console.log("maxValue", maxValue)
+                console.log("maxValue", maxValue.bot_status)
 
                 if (maxValue.bot_status == true) {
 
