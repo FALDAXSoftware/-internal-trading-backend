@@ -17,7 +17,7 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         .orderBy('price', 'DESC')
         .limit(100);
 
-    console.log("BUY BOK", buyBookOrders)
+    // console.log("BUY BOK", buyBookOrders)
 
     // var buyBookOrdersObjection = await BuyBookModel
     //     .query()
