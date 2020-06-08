@@ -43,7 +43,7 @@ var getLatestVaue = async (symbol) => {
     //     .orderBy("id", "DESC");
     // var usdValue = USDPriceValue.quote.USD.price
 
-    var buyValue = ((bidValue.total) * ((getPairDetails.order_maximum) / 100));
+    var buyValue = ((bidValue.total_quantity) * ((getPairDetails.order_maximum) / 100));
     var buyMaximumValue = (bidValue.data.length == 0) ? (0.0) : parseFloat(buyValue).toFixed(8)
 
     var sellValue = ((askValue.total) * ((getPairDetails.order_maximum) / 100));
