@@ -31,10 +31,10 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         // ch.chequeQueue(queueName);
         channel.assertQueue(process.env.PENDING_QUEUE_NAME)
         channel.assertQueue(process.env.QUEUE_NAME + '-' + 'Buy', {
-            maxPriority: null
+            maxPriority: 2
         });
         channel.assertQueue(process.env.QUEUE_NAME + '-' + 'Sell', {
-            maxPriority: 10
+            maxPriority: 2
         });
         channel.prefetch(1)
         ch = channel;
@@ -232,7 +232,7 @@ var cronPublishToQueue = async (queueName, data) => {
             data
         });
         var dataValue = ch.assertQueue(queueName, {
-            maxPriority: 10
+            maxPriority: 2
         });
         var priorityValue = 1;
         if (data.order_type == "Limit" && data.user_id == process.env.TRADEDESK_USER_ID) {
