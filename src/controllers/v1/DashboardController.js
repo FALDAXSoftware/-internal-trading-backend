@@ -705,12 +705,12 @@ class DashboardController extends AppController {
                         } else {
                             // console.log("Book is empty under addittion ......");
                             // let bookData;
-                            if (mergedArray[i][2] == 'Buy') {
-                                bookData = await BuyBookHelperAdd.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
-                            }
-                            if (mergedArray[i][2] == 'Sell') {
-                                bookData = await SellBookHelperAdd.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
-                            }
+                            // if (mergedArray[i][2] == 'Buy') {
+                            //     bookData = await BuyBookHelperAdd.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                            // }
+                            // if (mergedArray[i][2] == 'Sell') {
+                            //     bookData = await SellBookHelperAdd.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
+                            // }
 
                             // console.log("bookData", bookData.length)
 
@@ -726,7 +726,7 @@ class DashboardController extends AppController {
                             // } else {
                             //     flag = true;
                             // }
-                            console.log("flag", flag)
+                            // console.log("flag", flag)
                             // if (flag == true) {
                             var limitOrderData = {
                                 'user_id': process.env.TRADEDESK_USER_ID,
@@ -836,14 +836,42 @@ class DashboardController extends AppController {
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
                 //                                                             AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
                 // balanceTotalQuery = balanceTotalQuery.rows[0];
-                var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = true
-                                                                            WHERE id IN ( SELECT activity_id FROM buy_book
-                                                                                        WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
-                                                                                        AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
-                                                                                    )`);
-                var buyBookUpdate = await BuyBookModel.knex().raw(`UPDATE buy_book SET deleted_at = '${today}'
-                                                                        WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
-                                                                        AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+                var activityUpdate = await ActivityModel
+                    .query()
+                    .whereIn('id', function () {
+                        this.select('activity_id')
+                            .from('buy_book')
+                            .where('deleted_at', null)
+                            .andWhere('user_id', process.env.TRADEDESK_USER_ID)
+                            .andWhere('symbol', 'LIKE', '%' + pair + '%')
+                            .andWhere('placed_by', process.env.TRADEDESK_BOT)
+                            .andWhere('created_at', '<=', now)
+                    })
+                    .patch({
+                        'is_cancel': true
+                    })
+
+                // console.log("activityUpdate", activityUpdate)
+
+                // var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = true
+                // WHERE id IN ( SELECT activity_id FROM buy_book
+                //     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
+                //     )`);
+
+                var buyBookUpdate = await BuyBookModel
+                    .query()
+                    .where('deleted_at', null)
+                    .andWhere('user_id', process.env.TRADEDESK_USER_ID)
+                    .andWhere('symbol', 'LIKE', '%' + pair + '%')
+                    .andWhere('placed_by', process.env.TRADEDESK_BOT)
+                    .andWhere('created_at', '<=', now)
+                    .patch({
+                        deleted_at: today
+                    })
+                // var buyBookUpdate = await BuyBookModel.knex().raw(`UPDATE buy_book SET deleted_at = '${today}'
+                //                                                         WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //                                                         AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
                 // var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
                 //                                                         FROM wallets
                 //                                                         LEFT JOIN coins
@@ -882,15 +910,41 @@ class DashboardController extends AppController {
                 //                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
                 // balanceTotalQuery = balanceTotalQuery.rows[0];
 
-                var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true'
-                                                                    WHERE id IN ( SELECT activity_id FROM sell_book
-                                                                        WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
-                                                                        AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
-                                                                        )`);
+                var activityUpdate = await ActivityModel
+                    .query()
+                    .whereIn('id', function () {
+                        this.select('activity_id')
+                            .from('sell_book')
+                            .where('deleted_at', null)
+                            .andWhere('user_id', process.env.TRADEDESK_USER_ID)
+                            .andWhere('symbol', 'LIKE', '%' + pair + '%')
+                            .andWhere('placed_by', process.env.TRADEDESK_BOT)
+                            .andWhere('created_at', '<=', now)
+                    })
+                    .patch({
+                        'is_cancel': true
+                    })
 
-                var buyBookUpdate = await SellBookModel.knex().raw(`UPDATE sell_book SET deleted_at = '${today}'
-                                                                    WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
-                                                                    AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
+                // var activityUpdate = await ActivityModel.knex().raw(`UPDATE activity_table SET is_cancel = 'true'
+                //                                                     WHERE id IN ( SELECT activity_id FROM sell_book
+                //                                                         WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //                                                         AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'
+                //                                                         )`);
+
+                var buyBookUpdate = await SellBookModel
+                    .query()
+                    .where('deleted_at', null)
+                    .andWhere('user_id', process.env.TRADEDESK_USER_ID)
+                    .andWhere('symbol', 'LIKE', '%' + pair + '%')
+                    .andWhere('placed_by', process.env.TRADEDESK_BOT)
+                    .andWhere('created_at', '<=', now)
+                    .patch({
+                        deleted_at: today
+                    })
+
+                // var buyBookUpdate = await SellBookModel.knex().raw(`UPDATE sell_book SET deleted_at = '${today}'
+                //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
+                //                                                     AND placed_by = '${process.env.TRADEDESK_BOT}' AND created_at <= '${now}'`);
 
                 // var walletBalance = await WalletModel.knex().raw(`SELECT balance, placed_balance, coins.id
                 //                                                 FROM wallets
