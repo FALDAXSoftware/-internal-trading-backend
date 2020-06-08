@@ -6,7 +6,8 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
 
     var buyBookOrders = await BuyBookModel
         .query()
-        .select('price', raw('SUM(quantity) as quantity'))
+        .select('price')
+        .sum('quantity as quantity')
         .where('deleted_at', null)
         .andWhere('quantity', '>', 0)
         .andWhere('limit_price', '>', 0)
@@ -16,9 +17,28 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         .orderBy('price', 'DESC')
         .limit(100);
 
+    console.log("BUY BOK", buyBookOrders)
+
+    // var buyBookOrdersObjection = await BuyBookModel
+    //     .query()
+    //     .select('price')
+    //     .sum('quantity as quantity')
+    //     .where('deleted_at', null)
+    //     .andWhere('quantity', '>', 0)
+    //     .andWhere('limit_price', '>', 0)
+    //     .andWhere('settle_currency', crypto)
+    //     .andWhere('currency', currency)
+    //     .groupBy('price')
+    //     .orderBy('price', 'DESC')
+    //     .limit(100);
+
+    // console.log("BUY BOK FUNCTION", buyBookOrdersObjection)
+
     var totalSql = await BuyBookModel
         .query()
-        .select(raw('SUM(quantity) as total_value'), raw('SUM(quantity * price) as total'))
+        // .select(raw('SUM(quantity) as total_value_1'), raw('SUM(quantity * price) as total_1'))
+        .sum('quantity as total_value')
+        .sum({ total: raw('(quantity * price)') })
         .where('deleted_at', null)
         .andWhere('quantity', '>', 0)
         .andWhere('limit_price', '>', 0)
