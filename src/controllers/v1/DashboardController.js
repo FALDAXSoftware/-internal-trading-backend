@@ -557,7 +557,9 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC');
 
-                if (maxValue.bot_status) {
+                console.log("maxValue", maxValue)
+
+                if (maxValue.bot_status == true) {
 
                     var getCryptoValue = await CurrencyConversionModel
                         .query()
@@ -818,7 +820,7 @@ class DashboardController extends AppController {
 
             console.log("maxValue", maxValue)
 
-            if (maxValue.bot_status) {
+            if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 console.log("now", now)
@@ -900,7 +902,7 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            if (maxValue.bot_status) {
+            if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 let { crypto, currency } = await Currency.get_currencies(pair);
