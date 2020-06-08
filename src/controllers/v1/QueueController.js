@@ -3,7 +3,7 @@ let CONN_URL = process.env.QUEUE_URL;
 const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
 let ch = null;
 amqp.connect(CONN_URL, opt, (err, conn) => {
-    // console.log("conn", conn)
+    console.log("conn", conn)
     console.log("err", err)
     conn.createChannel(function (err, channel) {
         // ch.chequeQueue(queueName);
@@ -16,15 +16,18 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         });
         channel.prefetch(1)
         ch = channel;
+        console.log("ch", ch)
         console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
         ch.consume(process.env.PENDING_QUEUE_NAME, async (msg, err) => {
+            console.log("msg", msg)
+            console.log("err", err)
             var PendingOrderExecutionModel = require("../../models/PendingOrdersExecutuions");
             var dataValue = JSON.parse(msg.content.toString());
             console.log("dataValue", dataValue)
             var pendingDataStatus = await PendingOrderExecutionModel
                 .query()
-                .first("is_cancel")
-                .select()
+                .first()
+                .select("is_cancel")
                 .where("id", dataValue.pending_order_id)
                 .andWhere("deleted_at", null)
                 .orderBy("id", "DESC");
