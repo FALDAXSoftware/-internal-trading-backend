@@ -539,7 +539,7 @@ class DashboardController extends AppController {
             var now = new Date();
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -597,7 +597,7 @@ class DashboardController extends AppController {
                     // console.log("mergedArray", mergedArray)
 
                     var mergedArray = await module.exports.shuffle(mergedArray)
-                    console.log("mergedArray", mergedArray)
+                    // console.log("mergedArray", mergedArray)
 
                     let requestedWallets = await CoinsModel
                         .query()
@@ -652,11 +652,11 @@ class DashboardController extends AppController {
                                 }
                             }
                         }
-                        console.log("bookData", bookData)
+                        // console.log("bookData", bookData)
                         console.log("flagValue", flagValue)
                         // Check if book data found
                         if (bookData.data.length > 0 && flagValue == true) {
-                            console.log("UNDER Execution");
+                            console.log("UNDER Execution----------------------------------------------------------------------");
                             // Check if quantity is greater than maximum crypto set by admin
                             // var availableQuantity = bookData[0].quantity;
                             // console.log('availableQuantity < max', availableQuantity < max);
@@ -689,7 +689,7 @@ class DashboardController extends AppController {
                             var flag = true;
 
                             var queueName = process.env.QUEUE_NAME + "-" + mergedArray[i][2]
-                            console.log("queueName", queueName)
+                            console.log("queueName for execution--------------", queueName)
                             var queueData = {
                                 "symbol": pair_name,
                                 user_id: process.env.TRADEDESK_USER_ID,
@@ -765,7 +765,7 @@ class DashboardController extends AppController {
 
                             var activity = await ActivityHelper.addActivityData(limitOrderData);
                             limitOrderData.activity_id = activity.id
-
+                            console.log("Addittion mergedArray[i][2]", mergedArray[i][2])
                             if (mergedArray[i][2] == 'Buy') {
                                 // console.log("INSIDE BUY ADD")
                                 await BuyAdd.addBuyBookData(limitOrderData);
