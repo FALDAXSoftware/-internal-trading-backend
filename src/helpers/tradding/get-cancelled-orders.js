@@ -1,5 +1,6 @@
 var moment = require('moment');
 var ActivityModel = require("../../models/Activity");
+var PendingOrdersExecutionModel = require("../../models/PendingOrdersExecutuions");
 const {
     raw
 } = require('objection');
@@ -36,6 +37,26 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) 
         .orderBy('id', 'DESC')
         .limit(limit);
     console.log("cancelDetails", cancelDetails)
+
+    // var pendingCancelDetails = await PendingOrdersExecutionModel
+    //     .query()
+    //     .select('id',
+    //         'quantity',
+    //         'side',
+    //         'order_type',
+    //         'symbol',
+    //         'created_at',
+    //         'deleted_at',
+    //         'limit_price',
+    //         "placed_by")
+    //     .where('deleted_at', null)
+    //     .andWhere('is_cancel', true)
+    //     .andWhere('settle_currency', crypto)
+    //     .andWhere('currency', currency)
+    //     .andWhere('created_at', ">=", yesterday)
+    //     .andWhere("user_id", user_id)
+    //     .orderBy('id', 'DESC')
+    //     .limit(limit);
 
     return (cancelDetails);
 
