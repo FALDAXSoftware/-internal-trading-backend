@@ -539,7 +539,7 @@ class DashboardController extends AppController {
             var now = new Date();
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
