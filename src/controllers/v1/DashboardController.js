@@ -548,6 +548,8 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
                 var askValue = body.asks;
+                console.log("bidValue", bidValue)
+                console.log("askValue", askValue)
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -653,7 +655,9 @@ class DashboardController extends AppController {
                             }
                         }
                         // console.log("bookData", bookData)
-                        // console.log("flagValue", flagValue)
+                        console.log("flagValue", flagValue)
+                        console.log("bookData.data.length", bookData.data.length)
+                        console.log("bookData.data.length > 0 && flagValue == true", bookData.data.length > 0 && flagValue == true)
                         // Check if book data found
                         if (bookData.data.length > 0 && flagValue == true) {
                             console.log("UNDER Execution----------------------------------------------------------------------");
@@ -705,7 +709,7 @@ class DashboardController extends AppController {
                             QueueValue.cronPublishToQueue(queueName, queueData)
                             // }
                         } else {
-                            console.log("Book is empty under addittion ......");
+                            // console.log("Book is empty under addittion ......");
                             let bookData;
                             // if (mergedArray[i][2] == 'Buy') {
                             //     bookData = await BuyBookHelperAdd.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
@@ -765,7 +769,7 @@ class DashboardController extends AppController {
 
                             var activity = await ActivityHelper.addActivityData(limitOrderData);
                             limitOrderData.activity_id = activity.id
-                            console.log("Addittion mergedArray[i][2]", mergedArray[i][2])
+                            // console.log("Addittion mergedArray[i][2]", mergedArray[i][2])
                             if (mergedArray[i][2] == 'Buy') {
                                 // console.log("INSIDE BUY ADD")
                                 await BuyAdd.addBuyBookData(limitOrderData);
