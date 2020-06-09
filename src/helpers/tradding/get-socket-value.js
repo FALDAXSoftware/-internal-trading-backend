@@ -44,6 +44,14 @@ var getSocketValueData = async (pair) => {
                                                             FROM trade_history
                                                             WHERE deleted_at IS NULL AND symbol LIKE '%${pair}%'
                                                             AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
+
+    // var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high,
+    //                                                         min(fill_price) as low,
+    //                                                         SUM(quantity * fill_price) as volume
+    //                                                         FROM trade_history
+    //                                                         WHERE deleted_at IS NULL
+    //                                                         AND symbol = '${pair}'
+    //                                                         AND created_at between '${yesterday}' and '${now}'`)
     priceValue = priceValue.rows[0]
 
     var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon, trade_history.side
