@@ -31,52 +31,54 @@ var tradeStatus = async (user_id) => {
         var msg;
 
         if (userKYC) {
-            if (userKYC.direct_response == null && userKYC.webhook_response == null) {
+            if (userKYC.direct_response != "ACCEPT" && userKYC.webhook_response != "ACCEPT") {
                 response = false;
                 msg = "Your KYC is under process. Please wait until KYC is approved";
-            }
+            } else {
 
-            countryData = await CountryModel
-                .query()
-                .select("legality")
-                .where('deleted_at', null)
-                .andWhere('name', userKYC.country)
-                .orderBy('id', 'DESC');
+                countryData = await CountryModel
+                    .query()
+                    .select("legality")
+                    .where('deleted_at', null)
+                    .andWhere('name', userKYC.country)
+                    .orderBy('id', 'DESC');
 
-            console.log("countryData", JSON.stringify(countryData))
+                console.log("countryData", JSON.stringify(countryData))
 
-            if (countryData != undefined && countryData.length > 0) {
-                if (countryData[0].legality == 1) {
-                    response = true;
-                } else if (countryData[0].legality == 4) {
-                    stateData = await StateModel
-                        .query()
-                        .select("legality")
-                        .first()
-                        .where('deleted_at', null)
-                        .andWhere('name', userKYC.state)
-                        .orderBy('id', 'DESC');
+                if (countryData != undefined && countryData.length > 0) {
+                    if (countryData[0].legality == 1) {
+                        response = true;
+                    } else if (countryData[0].legality == 4) {
+                        stateData = await StateModel
+                            .query()
+                            .select("legality")
+                            .first()
+                            .where('deleted_at', null)
+                            .andWhere('name', userKYC.state)
+                            .orderBy('id', 'DESC');
 
-                    if (stateData != undefined) {
-                        if (stateData.legality == 1) {
-                            response = true;
-                            msg = "You are allowed to trade";
+                        if (stateData != undefined) {
+                            if (stateData.legality == 1) {
+                                response = true;
+                                msg = "You are allowed to trade";
+                            } else {
+                                response = false;
+                                msg = "You are not allowed to trade in this regoin as your state is illegal";
+                            }
                         } else {
                             response = false;
-                            msg = "You are not allowed to trade in this regoin as your state is illegal";
+                            msg = "You are not allowed to trade in this regoin";
                         }
                     } else {
                         response = false;
-                        msg = "You are not allowed to trade in this regoin";
+                        msg = "You are not allowed to trade in this regoin as your country is illegal";
                     }
                 } else {
                     response = false;
-                    msg = "You are not allowed to trade in this regoin as your country is illegal";
+                    msg = "You need to complete your KYC to trade in FALDAX";
                 }
-            } else {
-                response = false;
-                msg = "You need to complete your KYC to trade in FALDAX";
             }
+
 
         } else {
             response = false;
