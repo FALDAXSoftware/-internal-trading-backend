@@ -4023,6 +4023,7 @@ class TradeController extends AppController {
         .orderBy("id", "DESC");
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+      console.log("tradeDataChecking",tradeDataChecking)
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
