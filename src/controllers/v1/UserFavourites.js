@@ -9,6 +9,9 @@ const constants = require('../../config/constants');
 var Helper = require("../../helpers/helpers");
 var UserFavouriteModel = require("../../models/UserFavourites");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var UsersModel = require("../../models/UsersModel");
+var KYCModel = require("../../models/KYC");
+
 var Currency = require("../../helpers/currency");
 var { map, sortBy } = require('lodash');
 
@@ -318,6 +321,48 @@ class UserFavourites extends AppController {
         } catch (error) {
             console.log(JSON.stringify(error))
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+    }
+
+    async updateUserTier(req, res) {
+        var getUser = await UsersModel
+            .query()
+            .select("id", "account_tier")
+            .where("deleted_at", null)
+            .andWhere("is_active", true)
+            .orderBy("id", "DESC");
+
+        if (getUser != undefined) {
+            for (let index = 0; index < getUser.length; index++) {
+                const element = getUser[index];
+                var getValueKYC = await KYCModel
+                    .query()
+                    .first()
+                    .select("user_id", "direct_response", "webhook_response")
+                    .where("user_id", element.id)
+                    .andWhere("deleted_at", null)
+                    .orderBy("id", "DESC")
+
+                if (getValueKYC.length != undefined && getValueKYC.direct_response == "ACCEPT" && getValueKYC.webhook_response == "ACCEPT") {
+                    var updateUserTier = await UsersModel
+                        .query()
+                        .where("deleted_at", null)
+                        .andWhere("is_active", true)
+                        .andWhere("id", element.id)
+                        .patch({
+                            account_tier: 1
+                        })
+                } else {
+                    var updateUserTier = await UsersModel
+                        .query()
+                        .where("deleted_at", null)
+                        .andWhere("is_active", true)
+                        .andWhere("id", element.id)
+                        .patch({
+                            account_tier: 0
+                        })
+                }
+            }
         }
     }
 }
