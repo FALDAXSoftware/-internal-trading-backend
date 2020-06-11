@@ -823,10 +823,12 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     // buyAddedData.side = "Buy";
                 }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);
+                console.log("activity", activity)
                 buyAddedData.is_partially_fulfilled = true;
                 buyLimitOrderData.is_filled = false;
                 buyAddedData.activity_id = activity.id;
                 buyLimitOrderData.added = true;
+                console.log("buyAddedData", buyAddedData)
                 var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
 
                 if (pending_order_id != 0) {
