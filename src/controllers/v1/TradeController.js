@@ -372,7 +372,7 @@ class TradeController extends AppController {
           message: 'Insufficient balance to place order'
         }
 
-      } else if (walletData.crypto.placed_balance < orderQuantity) {
+      } else if (parseFloat(walletData.crypto.placed_balance) < parseFloat(orderQuantity)) {
         var userNotification = await UserNotifications.getSingleData({
           user_id: user_id,
           deleted_at: null,
@@ -465,10 +465,10 @@ class TradeController extends AppController {
           message: 'Insufficient balance to place order'
         }
       }
-      return {
-        status: 2,
-        message: 'Insufficient balance to place order'
-      }
+      // return {
+      //   status: 2,
+      //   message: 'Insufficient balance to place order'
+      // }
     }
 
     var pairDetails = await PairsModel
@@ -1005,6 +1005,7 @@ class TradeController extends AppController {
       message: ''
     }
   }
+
   // Used for Buy Market order
   async marketBuy(req, res) {
 
@@ -4022,6 +4023,7 @@ class TradeController extends AppController {
         .orderBy("id", "DESC");
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
+      console.log("tradeDataChecking",tradeDataChecking)
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
