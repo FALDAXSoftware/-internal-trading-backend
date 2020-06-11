@@ -367,6 +367,11 @@ class TradeController extends AppController {
           }
         }
 
+        return {
+          status: 2,
+          message: 'Insufficient balance to place order'
+        }
+
       } else if (walletData.crypto.placed_balance < orderQuantity) {
         var userNotification = await UserNotifications.getSingleData({
           user_id: user_id,
@@ -455,6 +460,14 @@ class TradeController extends AppController {
             }
           }
         }
+        return {
+          status: 2,
+          message: 'Insufficient balance to place order'
+        }
+      }
+      return {
+        status: 2,
+        message: 'Insufficient balance to place order'
       }
     }
 
@@ -1166,8 +1179,11 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     console.log("crypto, currency", JSON.stringify({ crypto, currency }))
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+    console.log("wallet", wallet)
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
-
+    console.log("sellBook[0]", sellBook[0].user_id);
+    console.log("parseFloat(sellBook[0].price)", parseFloat(sellBook[0].price))
+    console.log("parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity))", parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity)))
     if (sellBook.length > 0) {
       if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
       } else {
@@ -1179,7 +1195,7 @@ class TradeController extends AppController {
           })
           var user_data = await Users.getSingleData({
             deleted_at: null,
-            id: userIds[i],
+            id: user_id,
             is_active: true
           });
           if (pending_order_id != 0) {
@@ -1258,7 +1274,11 @@ class TradeController extends AppController {
               }
             }
           }
-        } else if (wallet.placed_balance < (sellBook[0].price * sellBook[0].quantity)) {
+          return {
+            status: 2,
+            message: 'Insufficient balance to place order'
+          }
+        } else if (parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(orderQuantity))) {
           var userNotification = await UserNotifications.getSingleData({
             user_id: user_id,
             deleted_at: null,
@@ -1266,7 +1286,7 @@ class TradeController extends AppController {
           })
           var user_data = await Users.getSingleData({
             deleted_at: null,
-            id: userIds[i],
+            id: user_id,
             is_active: true
           });
 
@@ -1345,6 +1365,11 @@ class TradeController extends AppController {
                 }
               }
             }
+          }
+
+          return {
+            status: 2,
+            message: 'Insufficient balance to place order'
           }
         }
       }
@@ -2188,7 +2213,12 @@ class TradeController extends AppController {
               }
             }
           }
-        } else if (wallet.placed_balance < (sellBook[0].price * sellBook[0].quantity)) {
+
+          return {
+            status: 2,
+            message: 'Insufficient balance to place order'
+          }
+        } else if (wallet.placed_balance < (sellBook[0].price * orderQuantity)) {
           var userNotification = await UserNotifications.getSingleData({
             user_id: user_id,
             deleted_at: null,
@@ -2273,6 +2303,10 @@ class TradeController extends AppController {
                 }
               }
             }
+          }
+          return {
+            status: 2,
+            message: 'Insufficient balance to place order'
           }
         }
       }
@@ -2424,6 +2458,97 @@ class TradeController extends AppController {
             "url": "Trade Function",
             "type": "Succes"
           }, "Insufficient balance to place order")
+
+          var userNotification = await UserNotifications.getSingleData({
+            user_id: user_id,
+            deleted_at: null,
+            slug: 'trade_execute'
+          })
+          var user_data = await Users.getSingleData({
+            deleted_at: null,
+            id: userIds[i],
+            is_active: true
+          });
+
+          var getPendingData = await PendingOrderExecutuionModel
+            .query()
+            .first()
+            .select("is_cancel")
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
+
+          if (allOrderData.length > 0) {
+            if (user_data != undefined) {
+              if (userNotification != undefined) {
+                if (userNotification.email == true || userNotification.email == "true") {
+                  if (user_data.email != undefined) {
+                    var allData = {
+                      template: "emails/general_mail.ejs",
+                      templateSlug: "trade_execute",
+                      email: user_data.email,
+                      user_detail: user_data,
+                      formatData: {
+                        recipientName: user_data.first_name,
+                        side: side,
+                        pair: symbol,
+                        order_type: order_type,
+                        quantity: originalQuantityValue,
+                        allTradeData: allOrderData
+                      }
+
+                    }
+                    await Helper.SendEmail(res, allData)
+                  }
+                }
+                if (userNotification.text == true || userNotification.text == "true") {
+                  if (user_data.phone_number != undefined) {
+                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                  }
+                }
+              }
+            }
+          }
+
+          if (user_data != undefined) {
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  var allData = {
+                    template: "emails/general_mail.ejs",
+                    templateSlug: "order_failed",
+                    email: user_data.email,
+                    user_detail: user_data,
+                    formatData: {
+                      recipientName: user_data.first_name,
+                      reason: i18n.__("Insufficient balance to place order").message
+                    }
+                  }
+                  await Helper.SendEmail(res, allData)
+                }
+              }
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  // await sails.helpers.notification.send.text("trade_execute", user_data)
+                }
+              }
+            }
+          }
+          // return {
+          //   status: 2,
+          //   message: 'Insufficient balance to place order'
+          // }
+
           return {
             status: 3,
             message: 'Insufficient balance to place order'
@@ -2524,6 +2649,97 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Succes"
         }, "Insufficient balance to place order")
+
+        var userNotification = await UserNotifications.getSingleData({
+          user_id: user_id,
+          deleted_at: null,
+          slug: 'trade_execute'
+        })
+        var user_data = await Users.getSingleData({
+          deleted_at: null,
+          id: userIds[i],
+          is_active: true
+        });
+
+        var getPendingData = await PendingOrderExecutuionModel
+          .query()
+          .first()
+          .select("is_cancel")
+          .where("id", pending_order_id)
+          .andWhere("deleted_at", null)
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
+
+        if (allOrderData.length > 0) {
+          if (user_data != undefined) {
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  var allData = {
+                    template: "emails/general_mail.ejs",
+                    templateSlug: "trade_execute",
+                    email: user_data.email,
+                    user_detail: user_data,
+                    formatData: {
+                      recipientName: user_data.first_name,
+                      side: side,
+                      pair: symbol,
+                      order_type: order_type,
+                      quantity: originalQuantityValue,
+                      allTradeData: allOrderData
+                    }
+
+                  }
+                  await Helper.SendEmail(res, allData)
+                }
+              }
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  // await sails.helpers.notification.send.text("trade_execute", user_data)
+                }
+              }
+            }
+          }
+        }
+
+        if (user_data != undefined) {
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                var allData = {
+                  template: "emails/general_mail.ejs",
+                  templateSlug: "order_failed",
+                  email: user_data.email,
+                  user_detail: user_data,
+                  formatData: {
+                    recipientName: user_data.first_name,
+                    reason: i18n.__("Insufficient balance to place order").message
+                  }
+                }
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                // await sails.helpers.notification.send.text("trade_execute", user_data)
+              }
+            }
+          }
+        }
+        // return {
+        //   status: 2,
+        //   message: 'Insufficient balance to place order'
+        // }
+
         return {
           status: 3,
           message: 'Insufficient balance to place order'
@@ -3714,7 +3930,7 @@ class TradeController extends AppController {
         orderQuantity,
       } = req.body;
 
-      console.log("req.body",req.body)
+      console.log("req.body", req.body)
 
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
