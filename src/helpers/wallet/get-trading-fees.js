@@ -49,30 +49,39 @@ var getTraddingFees = async (inputs) => {
             .subtract(1, 'months')
             .format();
         let userTradeHistorySum = {}
-        let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                    FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                    WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                    FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-                                                                    WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-                                                                    ON a1.user_coin = a2.requested_coin`)
+        if (user_id != process.env.TRADEDESK_USER_ID) {
+            let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+                                                                        FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                        WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                        WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                        ON a1.user_coin = a2.requested_coin`)
 
-        // console.log("userTradesum", userTradesum.rows.length)
-        for (let index = 0; index < userTradesum.rows.length; index++) {
-            const element = userTradesum.rows[index];
-            userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+            // console.log("userTradesum", userTradesum.rows.length)
+            for (let index = 0; index < userTradesum.rows.length; index++) {
+                const element = userTradesum.rows[index];
+                userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+            }
         }
 
         let requestedTradeHistorySum = {}
-        let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                        FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                        WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-                                                                        WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-                                                                        ON a1.user_coin = a2.requested_coin`)
-        for (let index = 0; index < requestedTradesum.rows.length; index++) {
-            const element = requestedTradesum.rows[index];
-            requestedTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+        if (requested_user_id != process.env.TRADEDESK_USER_ID) {
+            let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+                                                                            FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                            WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                            FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                            WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                            ON a1.user_coin = a2.requested_coin`)
+            for (let index = 0; index < requestedTradesum.rows.length; index++) {
+                const element = requestedTradesum.rows[index];
+                requestedTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+            }
         }
+
+        console.log("requestedTradeHistorySum", requestedTradeHistorySum)
+        console.log("userTradeHistorySum", userTradeHistorySum);
+        console.log("Object.keys(userTradeHistorySum).length", Object.keys(userTradeHistorySum).length);
+        console.log("Object.keys(requestedTradeHistorySum).length != 0", Object.keys(requestedTradeHistorySum).length != 0)
 
         // console.log("requestedTradeHistorySum", requestedTradeHistorySum)
 
@@ -86,13 +95,24 @@ var getTraddingFees = async (inputs) => {
             if (element.coin_id == request.currency_coin_id) {
                 getCurrencyPriceData = element
             }
-            if (userTradeHistorySum[element.symbol]) {
-                userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
+            if (Object.keys(userTradeHistorySum).length != 0) {
+                if (userTradeHistorySum[element.symbol]) {
+                    userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
+                }
+            } else {
+                userTotalUSDSum = 0.0;
             }
-            if (requestedTradeHistorySum[element.symbol]) {
-                requestedTotalUSDSum += (requestedTradeHistorySum[element.symbol] * element.quote.USD.price)
+            if (Object.keys(requestedTradeHistorySum).length != 0) {
+                if (requestedTradeHistorySum[element.symbol]) {
+                    requestedTotalUSDSum += (requestedTradeHistorySum[element.symbol] * element.quote.USD.price)
+                }
+            } else {
+                requestedTotalUSDSum = 0.0
             }
         }
+
+        console.log("userTotalUSDSum", userTotalUSDSum);
+        console.log("requestedTotalUSDSum", requestedTotalUSDSum)
 
         var totalCurrencyAmount = userTotalUSDSum;
         var totalCryptoAmount = requestedTotalUSDSum;

@@ -4023,7 +4023,7 @@ class TradeController extends AppController {
         .orderBy("id", "DESC");
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
-      console.log("tradeDataChecking",tradeDataChecking)
+      console.log("tradeDataChecking", tradeDataChecking)
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
@@ -4403,7 +4403,7 @@ class TradeController extends AppController {
 
 
     } catch (err) {
-      console.log("err", JSON.stringify(err));
+      console.log("err", (err));
       await logger.error({
         "module": "Market Sell",
         "user_id": "user_" + user_id,
