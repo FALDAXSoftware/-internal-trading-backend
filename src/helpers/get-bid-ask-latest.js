@@ -22,7 +22,8 @@ var getLatestVaue = async (symbol) => {
         .where("deleted_at", null)
         .andWhere("settle_currency", crypto)
         .andWhere("currency", currency)
-        .orderBy("id", "DESC");
+        .orderBy("id", "DESC")
+        .limit(1);
 
     lastPrice = (getTradeData != undefined) ? (getTradeData.fill_price) : (0.0);
 
