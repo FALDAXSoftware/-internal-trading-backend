@@ -49,7 +49,9 @@ var getTraddingFees = async (inputs) => {
             .subtract(1, 'months')
             .format();
         let userTradeHistorySum = {}
+        console.log("user_id", user_id)
         if (user_id != process.env.TRADEDESK_USER_ID) {
+            console.log("INSIDE IF USEr")
             let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
                                                                         FROM(SELECT user_coin, sum(quantity) FROM trade_history
                                                                         WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
@@ -65,7 +67,9 @@ var getTraddingFees = async (inputs) => {
         }
 
         let requestedTradeHistorySum = {}
+        console.log("requested_user_id", requested_user_id)
         if (requested_user_id != process.env.TRADEDESK_USER_ID) {
+            console.log("INSIDE IF Requested")
             let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
                                                                             FROM(SELECT user_coin, sum(quantity) FROM trade_history
                                                                             WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
