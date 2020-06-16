@@ -1,7 +1,17 @@
 
-exports.up = function (knex) {
+exports.up = async function (knex) {
     // console.log("postgresql://" + (process.env.DB_USERNAME) + ":" + (process.env.DB_PASSWORD) + "@" + (process.env.DB_HOST) + "/" + (process.env.DB_DATABASE))
     // console.log("knex", knex)
+    // Data types
+    await knex.raw(`DROP TYPE IF EXISTS language_lists; CREATE TYPE language_lists AS ENUM ('en', 'ja', 'es', 'uk', 'ru', 'zh')`);
+    await knex.raw(`DROP TYPE IF EXISTS order_placed_by; CREATE TYPE order_placed_by AS ENUM ('user','third_party','bot','tradedesk_manual')`);
+    await knex.raw(`DROP TYPE IF EXISTS order_status; CREATE TYPE order_status AS ENUM ('open','filled','partially_filled','cancelled')`);
+    await knex.raw(`DROP TYPE IF EXISTS order_type; CREATE TYPE order_type AS ENUM ('StopLimit','Limit','Market')`);
+    await knex.raw(`DROP TYPE IF EXISTS side; CREATE TYPE side AS ENUM ('Buy','Sell')`);
+    await knex.raw(`DROP TYPE IF EXISTS transaction_from; CREATE TYPE transaction_from AS ENUM ('Warmwallet to Send','Send to Destination','Receiver to Warmwallet','Receive to Destination','Receive to Warmwallet','Residual Receive to Warmwallet','Residual Send to Warmwallet','Destination To Receive')`);
+    await knex.raw(`DROP TYPE IF EXISTS transaction_type; CREATE TYPE transaction_type AS ENUM ('send','receive','deposit','withdraw')`);
+
+    // Tables
     return knex.schema
         .createTableIfNotExists("account_class", tbl => {
             tbl.increments('id').primary();
@@ -418,7 +428,6 @@ exports.up = function (knex) {
             tbl.specificType("back_doc", "character varying");
             tbl.specificType("ssn", "character varying");
             tbl.specificType("result", "character varying");
-            tbl.specificType("user_id", "bigint");
             tbl.specificType("steps", "integer")
             tbl.specificType("direct_response", "character varying");
             tbl.specificType("webhook_response", "character varying");
