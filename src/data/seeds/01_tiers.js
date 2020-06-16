@@ -4,7 +4,7 @@ exports.seed = function (knex) {
   // return knex('table_name').del()
   //   .then(function () {
   // Inserts seed entries
-  return knex('table_name').insert([
+  return knex('tiers').insert([
     {
       // id: 1,
       tier_step: '3',

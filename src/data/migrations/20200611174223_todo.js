@@ -264,7 +264,7 @@ exports.up = function (knex) {
             tbl.specificType('deleted_at', 'timestamp without time zone')
             tbl.specificType('updated_at', 'timestamp without time zone')
         })
-        .createTableIfNotExists("email_template12", tbl => {
+        .createTableIfNotExists("email_template_21", tbl => {
             tbl.increments('id').primary();
             tbl.specificType('name', "character varying");
             tbl.specificType('content', "character varying");
@@ -976,7 +976,7 @@ exports.up = function (knex) {
         })
         .createTableIfNotExists("users", tbl => {
             tbl.increments('id').primary();
-            tbl.specificType('email', "character varying(1000)");
+            tbl.specificType('email', "character varying");
             tbl.specificType('password', "character varying(100)");
             tbl.specificType('phone_number', "character varying(30)");
             tbl.specificType('full_name', "character varying(10000)");
@@ -994,7 +994,7 @@ exports.up = function (knex) {
             tbl.boolean("is_verified").defaultTo(false);
             tbl.specificType("email_verify_token", "character varying(20)")
             tbl.specificType("reset_token", "character varying");
-            tbl.specificType("dob", "character varying(30")
+            tbl.specificType("dob", "character varying(30)")
             tbl.boolean("is_twofactor").defaultTo(false);
             tbl.specificType('twofactor_secret', "character varying(50)");
             tbl.specificType('auth_code', "character varying(50)");
