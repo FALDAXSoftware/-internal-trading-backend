@@ -2,5 +2,5 @@ exports.seed = function (knex) {
   // Inserts seed entries
 
   return knex.schema
-    .raw(`CREATE INDEX indexpairs ON public.pairs USING btree (name, symbol)`)
+    .raw(`CREATE INDEX kyc_id ON public.kyc USING btree (user_id)`)
 };
