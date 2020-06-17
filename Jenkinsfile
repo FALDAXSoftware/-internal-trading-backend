@@ -7,6 +7,8 @@ def sshagent_name = "internal-trading"
 def service_name = "internal-trading-backend"
 def artifact_name = "${service_name}#${env.BRANCH_NAME}#${env.BUILD_NUMBER}"
 
+def myRepo = null
+
 podTemplate(label: label, nodeSelector: 'env=jenkins' , containers: [
     containerTemplate(
         name: 'node', 
@@ -41,7 +43,8 @@ timeout(9){
 
         stage('Download Environment Files'){
             container('node'){
-                def myRepo = checkout scm
+                echo 'Stage: Download Environment Files'
+                myRepo = checkout scm
                 gitCommit = myRepo.GIT_COMMIT
                 shortGitCommit = "${gitCommit[0..10]}${env.BUILD_NUMBER}"
                 imageTag = shortGitCommit
