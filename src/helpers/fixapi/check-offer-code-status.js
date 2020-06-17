@@ -10,7 +10,7 @@ var current_date = formatTime();
 var error_message = i18n.__("Campaign Offer invalid").message;
 
 var offerCodeStatus = async (body) => {
-    console.log("body", JSON.stringify(body));
+    // console.log("body", JSON.stringify(body));
     var offer_code = body.offer_code;
     var user_id = body.user_id;
     var check_only = body.check_only;
@@ -22,7 +22,7 @@ var offerCodeStatus = async (body) => {
     var response = {};
     // Get Compaign offer code
     var get_campaign_offer_data = await CampaignsOffersModel.getSingleData(offer_object);
-    console.log("get_campaign_offer_data", JSON.stringify(get_campaign_offer_data));
+    // console.log("get_campaign_offer_data", JSON.stringify(get_campaign_offer_data));
     if (get_campaign_offer_data.length == 0) {
         response.status = false;
         response.message = error_message;
@@ -67,7 +67,7 @@ var offerCodeStatus = async (body) => {
 
     // Check type of Campaign
     if (get_campaign_data.usage == 1) {
-        console.log(1, user_id, campaign_id, campaign_offer_id, store_offercode_history, JSON.stringify(get_campaign_offer_data), check_only)
+        // console.log(1, user_id, campaign_id, campaign_offer_id, store_offercode_history, JSON.stringify(get_campaign_offer_data), check_only)
         // Get Conversion history to check Offercode applied or not // Function
         let check_offercode_in_transactions = await getPastTransactions(user_id, campaign_id, campaign_offer_id);
         let check_offercode_same_campaign = await checkOffercodeCampaign(1, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only);
@@ -242,7 +242,7 @@ async function checkTotalFeesDeducted(get_campaign_offer_data, check_offercode_i
 
 // To check if offercode is not of Same Campaign
 async function checkOffercodeCampaign(usage, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only) {
-    console.log("Entered......", usage, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only);
+    // console.log("Entered......", usage, user_id, campaign_id, campaign_offer_id, store_offercode_history, get_campaign_offer_data, check_only);
     let get_data_object = {
         campaign_id: campaign_id,
         or: [{ order_status: 'filled' }, { order_status: 'partially_filled' }]

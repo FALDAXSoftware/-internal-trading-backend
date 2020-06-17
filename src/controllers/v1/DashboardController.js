@@ -54,7 +54,7 @@ class DashboardController extends AppController {
             // var data = await fetSocketInfo.getSocketValueData("LTC-BTC");
             // console.log(data);
             var data = await latestBidPrice.getLatestVaue("LTC-BTC");
-            console.log("data", data)
+            // console.log("data", data)
             var diffrenceValue = 0;
             var user_data = await UserModel
                 .query()
@@ -352,7 +352,7 @@ class DashboardController extends AppController {
                         //     currency_coin_id.id);
                         // await module.exports.sleep(1000);
                         var queueName = process.env.QUEUE_NAME
-                        console.log("queueName", queueName)
+                        // console.log("queueName", queueName)
                         var queueData = {
                             "symbol": pair_name,
                             user_id: process.env.TRADEDESK_USER_ID,
@@ -394,7 +394,7 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
 
                 var askValue = body.asks;
-                console.log("askValue", askValue.length);
+                // console.log("askValue", askValue.length);
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -416,10 +416,10 @@ class DashboardController extends AppController {
                     var usdValue = getCryptoValue.quote.USD.price
                     var min = (maxValue.crypto_minimum) / (usdValue);
                     var max = (maxValue.crypto_maximum) / (usdValue);
-                    console.log("min", min);
-                    console.log("max", max);
-                    console.log("askValue.length", askValue.length)
-                    console.log("pair", pair)
+                    // console.log("min", min);
+                    // console.log("max", max);
+                    // console.log("askValue.length", askValue.length)
+                    // console.log("pair", pair)
 
                     for (var i = 0; i < askValue.length; i++) {
                         if (askValue[i][1] > max) {
@@ -452,7 +452,7 @@ class DashboardController extends AppController {
                     }
 
                     for (var i = 0; i < askValue.length; i++) {
-                        console.log("askValue", askValue[i])
+                        // console.log("askValue", askValue[i])
                         // setTimeout(async () => {
                         var quantityValue = parseFloat(askValue[i][1]).toFixed(8);
                         var priceValue = parseFloat(askValue[i][0]).toFixed(8);
@@ -496,7 +496,7 @@ class DashboardController extends AppController {
 
                         // await module.exports.sleep(1000);
                         var queueName = process.env.QUEUE_NAME
-                        console.log("queueName", queueName)
+                        // console.log("queueName", queueName)
                         var queueData = {
                             "symbol": pair_name,
                             user_id: process.env.TRADEDESK_USER_ID,
@@ -548,8 +548,8 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
                 var askValue = body.asks;
-                console.log("bidValue", bidValue)
-                console.log("askValue", askValue)
+                // console.log("bidValue", bidValue)
+                // console.log("askValue", askValue)
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -559,7 +559,7 @@ class DashboardController extends AppController {
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC');
 
-                console.log("maxValue", maxValue.bot_status)
+                // console.log("maxValue", maxValue.bot_status)
 
                 if (maxValue.bot_status == true) {
 
@@ -622,7 +622,7 @@ class DashboardController extends AppController {
                     }
 
                     for (var i = 0; i < mergedArray.length; i++) {
-                        console.log("mergedArray[i]", mergedArray[i])
+                        // console.log("mergedArray[i]", mergedArray[i])
                         // setTimeout(async () => {
                         var quantityValue = parseFloat(mergedArray[i][1]).toFixed(8);
                         var priceValue = parseFloat(mergedArray[i][0]).toFixed(8);
@@ -631,9 +631,9 @@ class DashboardController extends AppController {
                         if (mergedArray[i][2] == 'Buy') {
                             bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
                             if (bookData.data.length > 0) {
-                                console.log("priceValue", priceValue);
-                                console.log("bookData.data[0].price", bookData.data[0].price);
-                                console.log("priceValue >= bookData.data[0].price", priceValue >= bookData.data[0].price)
+                                // console.log("priceValue", priceValue);
+                                // console.log("bookData.data[0].price", bookData.data[0].price);
+                                // console.log("priceValue >= bookData.data[0].price", priceValue >= bookData.data[0].price)
                                 if (priceValue >= bookData.data[0].price) {
                                     flagValue = true
                                 } else {
@@ -644,9 +644,9 @@ class DashboardController extends AppController {
                         if (mergedArray[i][2] == 'Sell') {
                             bookData = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
                             if (bookData.data.length > 0) {
-                                console.log("priceValue", priceValue);
-                                console.log("bookData.data[0].price", bookData.data[0].price);
-                                console.log("priceValue <= bookData.data[0].price", priceValue <= bookData.data[0].price)
+                                // console.log("priceValue", priceValue);
+                                // console.log("bookData.data[0].price", bookData.data[0].price);
+                                // console.log("priceValue <= bookData.data[0].price", priceValue <= bookData.data[0].price)
                                 if (priceValue <= bookData.data[0].price) {
                                     flagValue = true;
                                 } else {
@@ -655,12 +655,12 @@ class DashboardController extends AppController {
                             }
                         }
                         // console.log("bookData", bookData)
-                        console.log("flagValue", flagValue)
-                        console.log("bookData.data.length", bookData.data.length)
-                        console.log("bookData.data.length > 0 && flagValue == true", bookData.data.length > 0 && flagValue == true)
+                        // console.log("flagValue", flagValue)
+                        // console.log("bookData.data.length", bookData.data.length)
+                        // console.log("bookData.data.length > 0 && flagValue == true", bookData.data.length > 0 && flagValue == true)
                         // Check if book data found
                         if (bookData.data.length > 0 && flagValue == true) {
-                            console.log("UNDER Execution----------------------------------------------------------------------");
+                            // console.log("UNDER Execution----------------------------------------------------------------------");
                             // Check if quantity is greater than maximum crypto set by admin
                             // var availableQuantity = bookData[0].quantity;
                             // console.log('availableQuantity < max', availableQuantity < max);
@@ -693,7 +693,7 @@ class DashboardController extends AppController {
                             //     var flag = true;
 
                             var queueName = process.env.QUEUE_NAME + "-" + mergedArray[i][2]
-                            console.log("queueName for execution--------------", queueName)
+                            // console.log("queueName for execution--------------", queueName)
                             var queueData = {
                                 "symbol": pair_name,
                                 user_id: process.env.TRADEDESK_USER_ID,
@@ -822,12 +822,12 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            console.log("maxValue", maxValue)
+            // console.log("maxValue", maxValue)
 
             if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
-                console.log("now", now)
+                // console.log("now", now)
                 let { crypto, currency } = await Currency.get_currencies(pair);
                 // console.log(`UPDATE activity_table SET is_cancel = true
                 // WHERE id IN ( SELECT activity_id FROM buy_book
@@ -892,7 +892,7 @@ class DashboardController extends AppController {
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
             }
         } catch (error) {
-            console.log((error));
+            console.log(JSON.stringify(error));
         }
     }
 

@@ -320,5 +320,19 @@
 		"message_type": "error",
 		"message_english": "No Pending Orders have been found",
 		"message": "No Pending Orders have been found"
+	},
+	"system_health_ok": {
+		"page": "Check system health",
+		"context": "System Health is Good",
+		"message_type": "success",
+		"message_english": "System Health is Good.",
+		"message": "System Health is Good."
+	},
+	"system_health_not_ok": {
+		"page": "Check system health",
+		"context": "System Health is Not Good",
+		"message_type": "error",
+		"message_english": "System Health is Not Good.",
+		"message": "System Health is Not Good."
 	}
 }

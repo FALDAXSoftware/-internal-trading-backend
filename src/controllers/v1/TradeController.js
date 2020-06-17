@@ -52,6 +52,7 @@ var PairsModel = require("../../models/Pairs");
 var StopLimitAdd = require("../../helpers/stop-limit-sell-add-pending");
 var StopLimitBuyAdd = require("../../helpers/stop-limit-buy-add-pending");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var AdminSettingModel = require("../../models/AdminSetting");
 var CurrencyConversionModel = require("../../models/CurrencyConversion");
 var TradeStatusChecking = require("../../helpers/user-trade-checking");
 var cancelPendingHelper = require("../../helpers/pending/cancel-pending-data");
@@ -164,7 +165,7 @@ class TradeController extends AppController {
         const checkUser = Helper.checkWhichUser(user_id);
 
         // Check balance sufficient or not
-        console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
+        // console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
         if ((parseFloat(walletData.crypto.placed_balance) <= orderQuantity) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
@@ -185,11 +186,11 @@ class TradeController extends AppController {
           crypto_wallet_data: walletData.crypto,
           userIds: userIds
         };
-        console.log(JSON.stringify(walletData))
+        // console.log(JSON.stringify(walletData))
 
-        console.log("walletData.crypto.coin_id", JSON.stringify(walletData.crypto.coin_id))
+        // console.log("walletData.crypto.coin_id", JSON.stringify(walletData.crypto.coin_id))
         let market_sell_order = await module.exports.makeMarketSellOrder(res, object, walletData.crypto.coin_id, walletData.currency.coin_id);
-        console.log("market_sell_order", JSON.stringify(market_sell_order))
+        // console.log("market_sell_order", JSON.stringify(market_sell_order))
 
         // await logger.info({
         //   "module": "Market Sell",
@@ -265,7 +266,7 @@ class TradeController extends AppController {
       currency_wallet_data,
       userIds
     } = alldata;
-    console.log("alldata", alldata)
+    // console.log("alldata", alldata)
     const checkUser = Helper.checkWhichUser(user_id);
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
@@ -276,7 +277,7 @@ class TradeController extends AppController {
     // Get and check Crypto Wallet details
     let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
 
-    console.log("walletData", walletData)
+    // console.log("walletData", walletData)
 
     if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
     } else {
@@ -479,15 +480,15 @@ class TradeController extends AppController {
       .andWhere("name", symbol)
       .orderBy("id", "DESC")
 
-    console.log("buy_book_data", buy_book_data)
+    // console.log("buy_book_data", buy_book_data)
 
     // let maker_taker_fees = await MakerTakerFees.getFeesValue(crypto, currency);
-    console.log("orderQuantity", orderQuantity)
+    // console.log("orderQuantity", orderQuantity)
     var quantityValue = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision)
     var tradeOrder;
     if (buy_book_data && buy_book_data.length > 0) {
       var availableQty = buy_book_data[0].quantity;
-      console.log("availableQty", availableQty)
+      // console.log("availableQty", availableQty)
       var currentBuyBookDetails = buy_book_data[0];
       var priceValue = parseFloat(currentBuyBookDetails.price).toFixed(pairDetails.price_precision);
       // console.log("priceValue", priceValue)
@@ -521,15 +522,15 @@ class TradeController extends AppController {
       resultData.taker_fee = 0;
       // Log this in Activity
       await ActivityAdd.addActivityData(resultData);
-      console.log("quantityValue <= availableQty", quantityValue <= availableQty)
+      // console.log("quantityValue <= availableQty", quantityValue <= availableQty)
       var buyBookValue = await BuyBookHelper.getBuyBookOrder(crypto, currency);
       availableQty = buyBookValue[0].quantity
-      console.log("INSIDE ELSe", quantityValue)
-      console.log("availableQty", availableQty)
+      // console.log("INSIDE ELSe", quantityValue)
+      // console.log("availableQty", availableQty)
       if (quantityValue <= availableQty) {
         // console.log("buyBookValue", buyBookValue)
         let remainigQuantity = buyBookValue[0].quantity - quantityValue;
-        console.log("remainigQuantity", remainigQuantity)
+        // console.log("remainigQuantity", remainigQuantity)
         if (remainigQuantity > 0) {
           let updatedBuyBook = await OrderUpdate.updateBuyBook(buyBookValue[0].id, {
             quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
@@ -572,7 +573,7 @@ class TradeController extends AppController {
             var tradingFees = await TradingFees.getTraddingFees(request)
           }
 
-          console.log("tradingFees", tradingFees)
+          // console.log("tradingFees", tradingFees)
 
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -581,7 +582,7 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = tradingFees.maker_fee;
           trade_history_data.taker_fee = tradingFees.taker_fee;
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-          console.log("trade_history_data", JSON.stringify(trade_history_data))
+          // console.log("trade_history_data", JSON.stringify(trade_history_data))
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           allOrderData.push(tradeHistory);
@@ -610,7 +611,7 @@ class TradeController extends AppController {
           var userData = userIds;
           var tradeData = allOrderData;
           // var tradeQuantity = tradeData.reduce( (current, next)=>current+next.quantity, 0 );
-          console.log("tradeData", JSON.stringify(tradeData));
+          // console.log("tradeData", JSON.stringify(tradeData));
           for (var i = 0; i < userData.length; i++) {
             // Notification Sending for users
             var userNotification = await UserNotifications.getSingleData({
@@ -627,7 +628,7 @@ class TradeController extends AppController {
               if (userNotification != undefined) {
                 if (userNotification.email == true || userNotification.email == "true") {
                   if (user_data.email != undefined) {
-                    console.log("originalQuantityValue", originalQuantityValue)
+                    // console.log("originalQuantityValue", originalQuantityValue)
                     var allData = {
                       template: "emails/general_mail.ejs",
                       templateSlug: "trade_execute",
@@ -700,7 +701,7 @@ class TradeController extends AppController {
             var tradingFees = await TradingFees.getTraddingFees(request)
           }
 
-          console.log("tradingFees", tradingFees)
+          // console.log("tradingFees", tradingFees)
 
 
           trade_history_data.user_fee = (tradingFees.userFee);
@@ -710,7 +711,7 @@ class TradeController extends AppController {
           trade_history_data.maker_fee = tradingFees.maker_fee;
           trade_history_data.taker_fee = tradingFees.taker_fee;
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
-          console.log("trade_history_data", JSON.stringify(trade_history_data))
+          // console.log("trade_history_data", JSON.stringify(trade_history_data))
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
           allOrderData.push(tradeHistory);
@@ -782,12 +783,12 @@ class TradeController extends AppController {
           }
         }
       } else {
-        console.log("INSIDE ELSe", quantityValue)
-        console.log("availableQty", availableQty)
+        // console.log("INSIDE ELSe", quantityValue)
+        // console.log("availableQty", availableQty)
         var remainingQty = quantityValue - availableQty;
-        console.log("remainingQty", remainingQty);
-        console.log("quantityValue", quantityValue);
-        console.log("availableQty", availableQty)
+        // console.log("remainingQty", remainingQty);
+        // console.log("quantityValue", quantityValue);
+        // console.log("availableQty", availableQty)
         var trade_history_data = {
           ...orderData
         };
@@ -819,7 +820,7 @@ class TradeController extends AppController {
           currency_coin_id
         }
 
-        console.log("request", JSON.stringify(request))
+        // console.log("request", JSON.stringify(request))
 
         if (buy_book_data[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
           var tradingFees = {
@@ -832,7 +833,7 @@ class TradeController extends AppController {
           var tradingFees = await TradingFees.getTraddingFees(request)
         }
 
-        console.log("tradingFees", tradingFees)
+        // console.log("tradingFees", tradingFees)
 
         // console.log("tradingFees", JSON.stringify(tradingFees))
         trade_history_data.user_fee = (tradingFees.userFee);
@@ -878,7 +879,7 @@ class TradeController extends AppController {
           crypto_wallet_data: crypto_wallet_data,
           userIds: userIds
         };
-        console.log("object", object)
+        // console.log("object", object)
         await logger.info({
           "module": "Market Sell Execution",
           "user_id": "user_" + alldata.user_id,
@@ -993,7 +994,7 @@ class TradeController extends AppController {
 
     //Emit data in rooms
     let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-    console.log("FINALLLY");
+    // console.log("FINALLLY");
     await logger.info({
       "module": "Market Sell Execution",
       "user_id": "user_" + alldata.user_id,
@@ -1046,7 +1047,7 @@ class TradeController extends AppController {
         .orderBy("id", "DESC");
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
-      console.log("tradeDataChecking", JSON.stringify(tradeDataChecking))
+      // console.log("tradeDataChecking", JSON.stringify(tradeDataChecking))
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
         orderQuantity = parseFloat(orderQuantity);
@@ -1156,13 +1157,13 @@ class TradeController extends AppController {
   // Used for function to make Market Buy order
   async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0) {
     const checkUser = Helper.checkWhichUser(user_id);
-    console.log("checkUser", JSON.stringify(checkUser))
-    console.log(JSON.stringify({
-      "module": "Market Buy Execution",
-      "user_id": "user_" + user_id,
-      "url": "Trade Function",
-      "type": "Entry"
-    }))
+    // console.log("checkUser", JSON.stringify(checkUser))
+    // console.log(JSON.stringify({
+    //   "module": "Market Buy Execution",
+    //   "user_id": "user_" + user_id,
+    //   "url": "Trade Function",
+    //   "type": "Entry"
+    // }))
     await logger.info({
       "module": "Market Buy Execution",
       "user_id": "user_" + user_id,
@@ -1172,19 +1173,19 @@ class TradeController extends AppController {
     var userIds = [];
     userIds.push(user_id);
     if (allOrderData.length == 0) {
-      console.log("INSIDE ELSE")
+      // console.log("INSIDE ELSE")
       var originalQuantityValue;
       originalQuantityValue = orderQuantity;
     }
-    console.log("userIds", JSON.stringify(userIds))
+    // console.log("userIds", JSON.stringify(userIds))
     let { crypto, currency } = await Currency.get_currencies(symbol);
-    console.log("crypto, currency", JSON.stringify({ crypto, currency }))
+    // console.log("crypto, currency", JSON.stringify({ crypto, currency }))
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-    console.log("wallet", wallet)
+    // console.log("wallet", wallet)
     let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
-    console.log("sellBook[0]", sellBook[0].user_id);
-    console.log("parseFloat(sellBook[0].price)", parseFloat(sellBook[0].price))
-    console.log("parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity))", parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity)))
+    // console.log("sellBook[0]", sellBook[0].user_id);
+    // console.log("parseFloat(sellBook[0].price)", parseFloat(sellBook[0].price))
+    // console.log("parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity))", parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity)))
     if (sellBook.length > 0) {
       if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
       } else {
@@ -1389,7 +1390,7 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(quantityFixed).toFixed(pairDetails.quantity_precision);
     var tradeOrder;
     if (sellBook && sellBook.length > 0) {
-      console.log("sellBook[0]", JSON.stringify(sellBook[0]))
+      // console.log("sellBook[0]", JSON.stringify(sellBook[0]))
       var availableQuantity = sellBook[0].quantity;
       var currentSellBookDetails = sellBook[0];
       var fillPriceValue = parseFloat(currentSellBookDetails.price).toFixed(pairDetails.price_precision);
@@ -1423,10 +1424,10 @@ class TradeController extends AppController {
       resultData.taker_fee = 0.0;
 
       var activity = await ActivityHelper.addActivityData(resultData);
-      console.log("activity", activity)
+      // console.log("activity", activity)
 
       if (quantityValue <= availableQuantity) {
-        console.log("INSIDE IF")
+        // console.log("INSIDE IF")
         if (((fillPriceValue * quantityValue).toFixed(8) <= (wallet.placed_balance).toFixed(8)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
@@ -1440,8 +1441,8 @@ class TradeController extends AppController {
           if (currentSellBookDetails.is_stop_limit == true) {
             trade_history_data.is_stop_limit = true
           }
-          console.log("currentSellBookDetails", currentSellBookDetails)
-          console.log("currentSellBookDetails.id", currentSellBookDetails.id)
+          // console.log("currentSellBookDetails", currentSellBookDetails)
+          // console.log("currentSellBookDetails.id", currentSellBookDetails.id)
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -1468,7 +1469,7 @@ class TradeController extends AppController {
           } else {
             var tradingFees = await TradingFees.getTraddingFees(request);
           }
-          console.log("tradingFees", tradingFees)
+          // console.log("tradingFees", tradingFees)
           var usd_value = resultData * (request.fill_price * request.quantity);
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -1479,8 +1480,8 @@ class TradeController extends AppController {
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
           // trade_history_data.txn_group_id = txnGroupId;
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-          console.log("tradeHistory", tradeHistory)
-          console.log("allOrderData", allOrderData)
+          // console.log("tradeHistory", tradeHistory)
+          // console.log("allOrderData", allOrderData)
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
           if (pending_order_id != 0) {
@@ -1510,7 +1511,7 @@ class TradeController extends AppController {
 
             var userData = userIds;
             var tradeData = allOrderData;
-            console.log("allOrderData.length", allOrderData.length)
+            // console.log("allOrderData.length", allOrderData.length)
             for (var i = 0; i < userData.length; i++) {
               // Notification Sending for users
               var userNotification = await UserNotifications.getSingleData({
@@ -1527,7 +1528,7 @@ class TradeController extends AppController {
                 if (userNotification != undefined) {
                   if (userNotification.email == true || userNotification.email == "true") {
                     if (user_data.email != undefined) {
-                      console.log("originalQuantityValue", originalQuantityValue)
+                      // console.log("originalQuantityValue", originalQuantityValue)
                       var allData = {
                         template: "emails/general_mail.ejs",
                         templateSlug: "trade_execute",
@@ -1563,7 +1564,7 @@ class TradeController extends AppController {
           } else {
             await sellDelete.deleteSellOrder(currentSellBookDetails.id);
             var userData = userIds;
-            console.log("allOrderData.length", allOrderData.length)
+            // console.log("allOrderData.length", allOrderData.length)
             var tradeData = allOrderData;
             for (var i = 0; i < userData.length; i++) {
               // Notification Sending for users
@@ -1661,12 +1662,12 @@ class TradeController extends AppController {
           }
         }
       } else {
-        console.log("INSIDE ELSE")
+        // console.log("INSIDE ELSE")
         var remainingQty = quantityValue - availableQuantity;
-        console.log("fillPriceValue", fillPriceValue)
-        console.log("quantityValue", quantityValue)
-        console.log("wallet.placed_balance", wallet.placed_balance)
-        console.log("fillPriceValue * quantityValue", fillPriceValue * quantityValue)
+        // console.log("fillPriceValue", fillPriceValue)
+        // console.log("quantityValue", quantityValue)
+        // console.log("wallet.placed_balance", wallet.placed_balance)
+        // console.log("fillPriceValue * quantityValue", fillPriceValue * quantityValue)
         if ((parseFloat(fillPriceValue * quantityValue) <= parseFloat(wallet.placed_balance)) || orderData.placed_by == process.env.TRADEDESK_MANUAL) {
           var trade_history_data = {
             ...orderData
@@ -1677,11 +1678,11 @@ class TradeController extends AppController {
           trade_history_data.requested_user_id = currentSellBookDetails.user_id;
           trade_history_data.created_at = now;
           trade_history_data.fix_quantity = quantityValue;
-          console.log(JSON.stringify(trade_history_data));
+          // console.log(JSON.stringify(trade_history_data));
           if (currentSellBookDetails.is_stop_limit == true) {
             trade_history_data.is_stop_limit = true
           }
-          console.log("currentSellBookDetails", currentSellBookDetails)
+          // console.log("currentSellBookDetails", currentSellBookDetails)
           let updatedActivity = await ActivityUpdateHelper.updateActivityData(currentSellBookDetails.activity_id, trade_history_data);
 
           userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -1706,7 +1707,7 @@ class TradeController extends AppController {
           } else {
             var tradingFees = await TradingFees.getTraddingFees(request);
           }
-          console.log("tradingFees", tradingFees)
+          // console.log("tradingFees", tradingFees)
           trade_history_data.user_fee = (tradingFees.userFee);
           trade_history_data.requested_fee = (tradingFees.requestedFee);
           trade_history_data.user_coin = crypto;
@@ -1757,7 +1758,7 @@ class TradeController extends AppController {
           // Again call same api
           let response = await module.exports.makeMarketBuyOrder(requestData.symbol, requestData.side, requestData.order_type, requestData.orderQuantity, requestData.user_id, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         } else {
-          console.log("INSIDE INSUFFICIENT")
+          // console.log("INSIDE INSUFFICIENT")
           await logger.info({
             "module": "Market Buy Execution",
             "user_id": "user_" + user_id,
@@ -1930,7 +1931,7 @@ class TradeController extends AppController {
 
     //Emit data in rooms
     let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-    console.log("FINALLLY");
+    // console.log("FINALLLY");
     await logger.info({
       "module": "Market Buy Execution",
       "user_id": "user_" + user_id,
@@ -2037,7 +2038,7 @@ class TradeController extends AppController {
         walletData.currency.coin_id,
         // txnGroupId
       );
-      console.log("responseData", responseData);
+      // console.log("responseData", responseData);
       if (responseData.status > 2) {
         await logger.info({
           "module": "Limit Buy",
@@ -2113,8 +2114,8 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
     var priceValue = parseFloat(limit_price).toFixed(pairDetails.price_precision);
     var placedBy = "";
-    console.log("checkUser", checkUser)
-    console.log("flag", flag)
+    // console.log("checkUser", checkUser)
+    // console.log("flag", flag)
     if (checkUser == true && flag == true) {
       placedBy = process.env.TRADEDESK_BOT
     } else if (checkUser == true) {
@@ -2343,8 +2344,8 @@ class TradeController extends AppController {
     var activity = await ActivityHelper.addActivityData(resultData);
     resultData.maker_fee = 0.0;
     resultData.taker_fee = 0.0;
-    console.log(JSON.stringify(resultData));
-    console.log("sellBook.length", JSON.stringify(sellBook))
+    // console.log(JSON.stringify(resultData));
+    // console.log("sellBook.length", JSON.stringify(sellBook))
     // var txnGroupId = Helper.generateTxGroup(user_id);
     // var originalQuantityValue = orderQuantity
     if (sellBook && sellBook.length > 0) {
@@ -2365,7 +2366,7 @@ class TradeController extends AppController {
         // Send Notification to users
         // Emit Socket Event
       } else {
-        console.log("INSIDE ELSE??????")
+        // console.log("INSIDE ELSE??????")
         buyLimitOrderData.activity_id = activity.id;
         var total_price = buyLimitOrderData.quantity * buyLimitOrderData.limit_price;
         if (total_price <= wallet.placed_balance || placedBy == process.env.TRADEDESK_BOT || placedBy == process.env.TRADEDESK_MANUAL) {
@@ -2412,7 +2413,7 @@ class TradeController extends AppController {
               if (userNotification != undefined) {
                 if (userNotification.email == true || userNotification.email == "true") {
                   if (user_data.email != undefined) {
-                    console.log("======Order placed");
+                    // console.log("======Order placed");
                     var allData = {
                       template: "emails/general_mail.ejs",
                       templateSlug: "trade_place",
@@ -2603,7 +2604,7 @@ class TradeController extends AppController {
             if (userNotification != undefined) {
               if (userNotification.email == true || userNotification.email == "true") {
                 if (user_data.email != undefined) {
-                  console.log("========Order placed");
+                  // console.log("========Order placed");
                   var allData = {
                     template: "emails/general_mail.ejs",
                     templateSlug: "trade_place",
@@ -2929,8 +2930,8 @@ class TradeController extends AppController {
     var quantityValue = parseFloat(orderQuantity).toFixed(pairDetails.quantity_precision);
     var priceValue = parseFloat(limit_price).toFixed(pairDetails.price_precision);
     var placedBy = "";
-    console.log("checkUser", checkUser)
-    console.log("flag", flag)
+    // console.log("checkUser", checkUser)
+    // console.log("flag", flag)
     if (checkUser == true && flag == true) {
       placedBy = process.env.TRADEDESK_BOT
     } else if (checkUser == true) {
@@ -3155,13 +3156,13 @@ class TradeController extends AppController {
     var activity = await ActivityHelper.addActivityData(resultData);
     resultData.maker_fee = 0.0;
     resultData.taker_fee = 0.0;
-    console.log(JSON.stringify(resultData));
+    // console.log(JSON.stringify(resultData));
 
     if (buyBook && buyBook.length > 0) {
       var currentPrice = buyBook[0].price;
       if (priceValue <= currentPrice) {
-        console.log("INSIDE IF")
-        console.log("pending_order_id", pending_order_id)
+        // console.log("INSIDE IF")
+        // console.log("pending_order_id", pending_order_id)
         var limitSellMatchData = await limitSellMatch.limitSellData(sellLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
         await logger.info({
           "module": "Limit Sell Execution",
@@ -3379,7 +3380,7 @@ class TradeController extends AppController {
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-        console.log(JSON.stringify(req.body))
+        // console.log(JSON.stringify(req.body))
 
         if (orderQuantity <= 0) {
           await logger.info({
@@ -3452,7 +3453,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCurrency", JSON.stringify(walletCurrency))
+        // console.log("walletCurrency", JSON.stringify(walletCurrency))
 
         if (walletCurrency == undefined) {
           await logger.info({
@@ -3482,7 +3483,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCrypto", JSON.stringify(walletCrypto))
+        // console.log("walletCrypto", JSON.stringify(walletCrypto))
 
         if (walletCrypto == undefined) {
           await logger.info({
@@ -3496,7 +3497,7 @@ class TradeController extends AppController {
 
         // Add Geofencing over here
         var stop_limit_sell_response = await StopLimitBuyAdd.stopBuyAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
-        console.log("stop_limit_sell_response", JSON.stringify(stop_limit_sell_response))
+        // console.log("stop_limit_sell_response", JSON.stringify(stop_limit_sell_response))
         if (stop_limit_sell_response.status > 1) {
           await logger.info({
             "module": "Stop Limit Buy",
@@ -3574,7 +3575,7 @@ class TradeController extends AppController {
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
-        console.log("req.body", JSON.stringify(req.body))
+        // console.log("req.body", JSON.stringify(req.body))
 
         if (orderQuantity <= 0) {
           await logger.info({
@@ -3647,7 +3648,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCurrency", JSON.stringify(walletCurrency))
+        // console.log("walletCurrency", JSON.stringify(walletCurrency))
 
         if (walletCurrency == undefined) {
           await logger.info({
@@ -3677,7 +3678,7 @@ class TradeController extends AppController {
           .andWhere('user_id', user_id)
           .orderBy('id', 'DESC');
 
-        console.log("walletCrypto", JSON.stringify(walletCrypto))
+        // console.log("walletCrypto", JSON.stringify(walletCrypto))
 
         if (walletCrypto == undefined) {
           await logger.info({
@@ -3692,7 +3693,7 @@ class TradeController extends AppController {
         // Add Geofencing over here
         var stop_limit_buy_response = await StopLimitAdd.stopSellAdd(symbol, user_id, side, order_type, orderQuantity, limit_price, stop_price, res);
 
-        console.log("stop_limit_buy_response", JSON.stringify(stop_limit_buy_response))
+        // console.log("stop_limit_buy_response", JSON.stringify(stop_limit_buy_response))
 
         if (stop_limit_buy_response.status > 1) {
           await logger.info({
@@ -3745,7 +3746,7 @@ class TradeController extends AppController {
     var now = moment();
     // console.log(now);
     var pendingData = await getPendingOrderDetails.getPendingOrderDetails();
-    console.log(pendingData.length)
+    // console.log(pendingData.length)
     for (var i = 0; i < pendingData.length; i++) {
       var {
         order_type,
@@ -3784,14 +3785,14 @@ class TradeController extends AppController {
         'activity_id': activity_id
       }
 
-      console.log("pendingOrderBook", JSON.stringify(pendingOrderBook))
+      // console.log("pendingOrderBook", JSON.stringify(pendingOrderBook))
 
       if (pendingData.length > 0) {
         if (order_type == "StopLimit" && side == "Buy") {
-          console.log("INSIDE BUY")
+          // console.log("INSIDE BUY")
           var pendigBuy = await StopLimitBuyExecute.stopLimitBuy(now, pendingOrderBook);
         } else if (order_type == "StopLimit" && side == "Sell") {
-          console.log("INSIDE SELL", JSON.stringify(pendingOrderBook))
+          // console.log("INSIDE SELL", JSON.stringify(pendingOrderBook))
           var pendingSell = await StopLimitSellExecute.stopLimitSell(now, pendingOrderBook);
         }
       }
@@ -3807,13 +3808,13 @@ class TradeController extends AppController {
         "type": "Entry"
       }, "Entered the function")
       var { side, id, order_type, user_id, flag } = req.body;
-      console.log(JSON.stringify(req.body));
+      // console.log(JSON.stringify(req.body));
       if (flag == undefined || Boolean(flag) == false) {
         var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
       } else if (Boolean(flag) == true) {
         var cancel_pending_data = await cancelOrderHelper.cancelData(id);
       }
-      console.log("cancel_pending_data", JSON.stringify(cancel_pending_data))
+      // console.log("cancel_pending_data", JSON.stringify(cancel_pending_data))
       if (cancel_pending_data == 0) {
         await logger.info({
           "module": "Cancel PEnding Order",
@@ -3894,7 +3895,7 @@ class TradeController extends AppController {
   // Get Users Completed Orders details
   async getUserOrdersData(req, res, next) {
     var user_id = await Helper.getUserId(req.headers, res);
-    console.log('params', req.query);
+    // console.log('params', req.query);
     let { pair, limit, page, month, action, fromDate, toDate } = req.query;
     pair = (pair).split("-");
     var crypto = pair[0];
@@ -3931,7 +3932,7 @@ class TradeController extends AppController {
         orderQuantity,
       } = req.body;
 
-      console.log("req.body", req.body)
+      // console.log("req.body", req.body)
 
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -3953,7 +3954,7 @@ class TradeController extends AppController {
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
-      console.log("getPendingDetails", getPendingDetails)
+      // console.log("getPendingDetails", getPendingDetails)
 
       if (getPendingDetails != undefined) {
         await logger.info({
@@ -3990,7 +3991,7 @@ class TradeController extends AppController {
       // var usdValue = USDPriceValue.quote.USD.price
       var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
       var maximumValue = (maxDataValue.buyMaximumValue)
-      console.log("maximumValue", maximumValue)
+      // console.log("maximumValue", maximumValue)
 
       // For minimum and maximum order quantity checking
       if (parseFloat(orderQuantity) <= 0) {
@@ -4023,7 +4024,7 @@ class TradeController extends AppController {
         .orderBy("id", "DESC");
 
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
-      console.log("tradeDataChecking", tradeDataChecking)
+      // console.log("tradeDataChecking", tradeDataChecking)
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
@@ -4090,8 +4091,8 @@ class TradeController extends AppController {
             is_executed: false
           });
 
-        console.log("pendingAdd", pendingAdd)
-        console.log("pendingAdd.id", pendingAdd.id)
+        // console.log("pendingAdd", pendingAdd)
+        // console.log("pendingAdd.id", pendingAdd.id)
 
         var queueName = process.env.PENDING_QUEUE_NAME
         var queueData = {
@@ -4177,7 +4178,7 @@ class TradeController extends AppController {
       let { crypto, currency } = await Currency.get_currencies(symbol);
       var quantityTotal = await BuyBookHelper.getBuyBookOrder(crypto, currency);
 
-      console.log("quantityTotal", quantityTotal)
+      // console.log("quantityTotal", quantityTotal)
 
       if (quantityTotal.length == 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
@@ -4196,7 +4197,7 @@ class TradeController extends AppController {
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
-      console.log("getPendingDetails", getPendingDetails)
+      // console.log("getPendingDetails", getPendingDetails)
 
       if (getPendingDetails != undefined) {
         await logger.info({
@@ -4228,7 +4229,7 @@ class TradeController extends AppController {
       var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
       var maximumValue = (maxDataValue.sellMaximumValue)
       // var maximumValue = (pairDetails.order_maximum) / (usdValue)
-      console.log("maximumValue", maximumValue)
+      // console.log("maximumValue", maximumValue)
       if (parseFloat(orderQuantity) <= 0) {
         await logger.info({
           "module": "Market Buy",
@@ -4265,7 +4266,7 @@ class TradeController extends AppController {
       // Check user user is allowed to trade or not
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
 
-      console.log("tradeDataChecking", tradeDataChecking)
+      // console.log("tradeDataChecking", tradeDataChecking)
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
         // console.log("INSIDE IF")
@@ -4305,7 +4306,7 @@ class TradeController extends AppController {
         // const checkUser = Helper.checkWhichUser(user_id);
 
         // Check balance sufficient or not
-        console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
+        // console.log("crypto_wallet_data.placed_balance", JSON.stringify(walletData.crypto.placed_balance))
         if ((parseFloat(walletData.crypto.placed_balance) < orderQuantity) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
@@ -4335,8 +4336,8 @@ class TradeController extends AppController {
             is_executed: false
           });
 
-        console.log("pendingAdd", pendingAdd)
-        console.log("pendingAdd.id", pendingAdd.id)
+        // console.log("pendingAdd", pendingAdd)
+        // console.log("pendingAdd.id", pendingAdd.id)
 
         let object = {
           crypto: crypto,
@@ -4350,7 +4351,7 @@ class TradeController extends AppController {
           userIds: userIds
         };
 
-        console.log("object", object)
+        // console.log("object", object)
 
         var queueName = process.env.PENDING_QUEUE_NAME
         var queueData = {
@@ -4363,7 +4364,7 @@ class TradeController extends AppController {
           currency: walletData.currency.coin_id,
           pending_order_id: pendingAdd.id
         }
-        console.log("queueData", queueData)
+        // console.log("queueData", queueData)
         var responseValue = await QueueValue.publishToQueue(queueName, queueData)
 
         if (responseValue == 0) {
@@ -4403,7 +4404,7 @@ class TradeController extends AppController {
 
 
     } catch (err) {
-      console.log("err", (err));
+      console.log("err", JSON.stringify(err));
       await logger.error({
         "module": "Market Sell",
         "user_id": "user_" + user_id,
@@ -4447,7 +4448,7 @@ class TradeController extends AppController {
       .andWhere("is_executed", false)
       .orderBy("id", "DESC");
 
-    console.log("getPendingDetails", getPendingDetails)
+    // console.log("getPendingDetails", getPendingDetails)
 
     if (getPendingDetails != undefined) {
       await logger.info({
@@ -4550,7 +4551,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
       }
 
-      console.log("quantityTotal", quantityTotal)
+      // console.log("quantityTotal", quantityTotal)
       if (quantityTotal.length > 0) {
         if ((walletData.currency.placed_balance < quantityTotal[0].price) && checkUser != true) {
           await logger.info({
@@ -4582,8 +4583,8 @@ class TradeController extends AppController {
           is_executed: false
         });
 
-      console.log("pendingAdd", pendingAdd)
-      console.log("pendingAdd.id", pendingAdd.id)
+      // console.log("pendingAdd", pendingAdd)
+      // console.log("pendingAdd.id", pendingAdd.id)
 
       var queueName = process.env.PENDING_QUEUE_NAME
       var queueData = {
@@ -4668,7 +4669,7 @@ class TradeController extends AppController {
       .andWhere("is_executed", false)
       .orderBy("id", "DESC");
 
-    console.log("getPendingDetails", getPendingDetails)
+    // console.log("getPendingDetails", getPendingDetails)
 
     if (getPendingDetails != undefined) {
       await logger.info({
@@ -4802,8 +4803,8 @@ class TradeController extends AppController {
           is_executed: false
         });
 
-      console.log("pendingAdd", pendingAdd)
-      console.log("pendingAdd.id", pendingAdd.id)
+      // console.log("pendingAdd", pendingAdd)
+      // console.log("pendingAdd.id", pendingAdd.id)
 
       var queueName = process.env.PENDING_QUEUE_NAME
       var queueData = {
@@ -4857,6 +4858,27 @@ class TradeController extends AppController {
         "type": "Succes"
       }, i18n.__(tradeDataChecking.msg).message)
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
+    }
+  }
+
+  // Health Check
+  async getHealthCheck(req, res) {
+    try {
+      var system_health = await AdminSettingModel
+        .query()
+        .first()
+        .select()
+        .where("deleted_at", null)
+        .andWhere("slug", "system_health")
+        .orderBy("id", "DESC");
+
+      if (system_health && system_health.value == "ok_from_db") {
+        return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("system_health_ok").message, []);
+      }
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("system_health_not_ok").message, []);
+    } catch (error) {
+      console.log(error);
+      return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("system_health_not_ok").message, []);
     }
   }
 }
