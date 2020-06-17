@@ -4,6 +4,7 @@ var AdminSettingModel = require("../models/AdminSetting");
 
 var feesValue = async (coin, quantity = null, price = null) => {
     var value;
+    // console.log("coin", coin)
     if (coin == 'susu') {
         coin = 'SUSU';
     }
@@ -14,11 +15,10 @@ var feesValue = async (coin, quantity = null, price = null) => {
         .select()
         .where('deleted_at', null)
         .andWhere("is_active", true)
-        .andWhere(builder => {
-            builder.where('coin_code', coin)
-                .orWhere('coin', coin)
-        })
+        .andWhere('coin', coin.toUpperCase())
         .orderBy('id', 'DESC')
+
+    // console.log("coinData", JSON.stringify(coinData))
 
     if (coinData != undefined) {
         if (coin == "btc" || coin == "tbtc") {
@@ -27,8 +27,9 @@ var feesValue = async (coin, quantity = null, price = null) => {
                 .first()
                 .select()
                 .where("deleted_at", null)
-                .andWhere('slug', "btc_fee")
+                .andWhere("slug", "btc_fee")
                 .orderBy('id', 'DESC');
+            // console.log("data", JSON.stringify(data))
             value = (((quantity) / (25) * data.value));
         } else if (coin == 'bch' || coin == 'tbch') {
             var data = await AdminSettingModel
@@ -73,7 +74,7 @@ var feesValue = async (coin, quantity = null, price = null) => {
         } else if (coin == 'SUSU') {
             value = 0.01
         }
-
+        // console.log("FEES>>>>>>", value)
         return value;
     } else {
         // Coin not Found

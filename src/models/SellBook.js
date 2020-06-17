@@ -37,7 +37,7 @@ class SellBook extends visibilityPlugin((AppModel)) {
   encript_id() {
 
     if (this.id) {
-      return cryptr.encrypt(this.id);
+      return this.id;
     }
   }
 

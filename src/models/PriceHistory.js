@@ -69,6 +69,54 @@ class PriceHistory extends visibilityPlugin((AppModel)) {
             properties: {}
         };
     }
+
+    // Insert Data
+    static async create( data ){
+        var add_data = await PriceHistory
+            .query()
+            .insertAndFetch( data );
+        if( add_data ){
+            return 1;
+        }else{
+            return 0;
+        }
+    }
+
+    // Update User data based on criteria
+    static async update(filter, updateData) {
+        var getData = await PriceHistory
+            .query()
+            .where(filter)
+            .first();
+
+        if (getData != undefined) {
+            var updateData = await getData
+                .$query()
+                .patch(updateData);
+            return 1;
+        } else {
+            return 0;
+        }
+
+    }
+
+
+    // Get User Data
+    static async getSingleData(filter, select = "") {
+        if (select != "") {
+            select = select;
+        } else {
+            select = "*";
+        }
+        var getData = await PriceHistory
+            .query()
+            .select(select)
+            .where(filter)
+            .orderBy("id","desc")
+            .first();
+
+        return getData;
+    }
 }
 
 module.exports = PriceHistory;

@@ -9,12 +9,136 @@ const constants = require('../../config/constants');
 var Helper = require("../../helpers/helpers");
 var UserFavouriteModel = require("../../models/UserFavourites");
 var TradeHistoryModel = require("../../models/TradeHistory");
-var {map, sortBy} = require('lodash');
+var UsersModel = require("../../models/UsersModel");
+var KYCModel = require("../../models/KYC");
+
+var Currency = require("../../helpers/currency");
+var { map, sortBy } = require('lodash');
 
 class UserFavourites extends AppController {
 
     constructor() {
         super();
+    }
+
+    async getFavouritesData(req, res) {
+        // return new Promise(async (resolve, reject) => {
+        try {
+            var socket_headers = req.headers;
+            // console.log(JSON.stringify(socket_headers))
+            var authentication = require("../../config/authorization")(socket_headers);
+            let user_id = authentication.user_id;
+            var symbol = req.query.symbol;
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+            var cardData = [];
+
+            var yesterday = moment()
+                .subtract(1, 'days')
+                .format('YYYY-MM-DD HH:mm:ss.SSS');
+            var today = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+
+            var total_price = 0;
+            var average_price = 0;
+            var flag = true;
+
+            var price = await TradeHistoryModel
+                .query()
+                .select()
+                .where('settle_currency', crypto)
+                .andWhere('currency', currency)
+                .andWhere('created_at', '>=', yesterday)
+                .orderBy('id', 'DESC')
+
+            if (price.length == 0) {
+                average_price = 0;
+            } else {
+                map(price, p => {
+                    total_price = total_price + (p.fill_price / p.quantity);
+                });
+                average_price = total_price / (price.length);
+            }
+
+            // var current_price = await TradeHistoryModel
+            //     .query()
+            //     .first()
+            //     .where('settle_currency', crypto)
+            //     .andWhere('currency', currency)
+            //     .andWhere('created_at', '<=', today)
+            //     .andWhere('created_at', '>=', yesterday)
+            //     .orderBy('id', 'DESC')
+
+            var current_price = 0.0
+            if (price.length == 0) {
+                current_price = 0;
+            } else {
+                current_price = price[0]['fill_price'];
+            }
+
+            // var previous_price = await TradeHistoryModel
+            //     .query()
+            //     .first()
+            //     .where('settle_currency', crypto)
+            //     .andWhere('currency', currency)
+            //     .andWhere('created_at', '<=', today)
+            //     .andWhere('created_at', '>=', yesterday)
+            //     .orderBy('id', 'ASC')
+
+            var previous_price = 0.0
+            if (price.length == 0) {
+                previous_price = 0;
+            } else {
+                previous_price = price[price.length - 1]['fill_price'];
+            }
+
+            var diffrence = current_price - previous_price;
+            var percentchange = (diffrence * 100 / previous_price);
+
+            if (percentchange == NaN || percentchange == "-Infinity") {
+                percentchange = 0;
+            } else {
+                percentchange = percentchange;
+            }
+
+            if (diffrence <= 0) {
+                flag = false;
+            } else {
+                flag = true;
+            }
+
+            // console.log(today)
+            // console.log(yesterday)
+            var tradeorderdetails = await TradeHistoryModel
+                .query()
+                .where('settle_currency', crypto)
+                .andWhere('currency', currency)
+                .andWhere('created_at', '<=', today)
+                .andWhere('created_at', '>=', yesterday)
+                .orderBy('created_at', 'ASC')
+
+            var card_data = {
+                "pair_from": crypto,
+                "pair_to": currency,
+                "average_price": average_price,
+                "diffrence": diffrence,
+                "percentchange": percentchange,
+                "flag": flag,
+                "tradeChartDetails": tradeorderdetails
+                // "socket_id": socket_id
+            }
+
+            cardData.push(card_data);
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": "Favourites List",
+                    "data": cardData
+                });
+        } catch (error) {
+            console.log("err", JSON.stringify(error));
+            return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+        // })
     }
 
     async getFavourites(user_id, socket_id) {
@@ -130,7 +254,7 @@ class UserFavourites extends AppController {
                     "data": cardData
                 });
             } catch (error) {
-                console.log("err", error);
+                console.log("err", JSON.stringify(error));
                 // return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
             }
         })
@@ -195,8 +319,50 @@ class UserFavourites extends AppController {
 
 
         } catch (error) {
-            console.log(error)
+            console.log(JSON.stringify(error))
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+    }
+
+    async updateUserTier(req, res) {
+        var getUser = await UsersModel
+            .query()
+            .select("id", "account_tier")
+            .where("deleted_at", null)
+            .andWhere("is_active", true)
+            .orderBy("id", "DESC");
+
+        if (getUser != undefined) {
+            for (let index = 0; index < getUser.length; index++) {
+                const element = getUser[index];
+                var getValueKYC = await KYCModel
+                    .query()
+                    .first()
+                    .select("user_id", "direct_response", "webhook_response")
+                    .where("user_id", element.id)
+                    .andWhere("deleted_at", null)
+                    .orderBy("id", "DESC")
+
+                if (getValueKYC.length != undefined && getValueKYC.direct_response == "ACCEPT" && getValueKYC.webhook_response == "ACCEPT") {
+                    var updateUserTier = await UsersModel
+                        .query()
+                        .where("deleted_at", null)
+                        .andWhere("is_active", true)
+                        .andWhere("id", element.id)
+                        .patch({
+                            account_tier: 1
+                        })
+                } else {
+                    var updateUserTier = await UsersModel
+                        .query()
+                        .where("deleted_at", null)
+                        .andWhere("is_active", true)
+                        .andWhere("id", element.id)
+                        .patch({
+                            account_tier: 0
+                        })
+                }
+            }
         }
     }
 }
