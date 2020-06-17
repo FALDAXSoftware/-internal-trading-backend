@@ -283,7 +283,7 @@ exports.seed = function (knex) {
       "content": "<html>\n<head>\n\t<title></title>\n</head>\n<body>\n<p>Hi&nbsp;{{recipientName}},</p>\n\n<p>Your password has been updated.<br />\n<br />\n<strong>Date &amp; Time:</strong> {{datetime}}<br />\n<strong>Browser:</strong> {{browser}}<br />\n<strong>IP Address (Location):</strong> {{ip}}<br />\n<br />\nPlease contact an Admin to retrieve your credentials.</p>\n\n<p>Warm Regards,<br />\nThe FALDAX Team</p>\n</body>\n</html>",
       "note": "<p>\n\tyou can use any of the following tags for make this template dynamic<br/>\n\t{{recipientName}} - For Employee''s Firstname<br/>\n{{ip}} - For IP Address<br/>\n{{datetime}} - For Date & Time of Activity<br/>\n{{browser}} - Fro Browser details of Activity<br/>\n<p>",
       "created_at": "2019-05-22 09:44:55.875"
-        },
+    },
     {
       "slug": "new_email_verification",
       "name": "New Email verification",
