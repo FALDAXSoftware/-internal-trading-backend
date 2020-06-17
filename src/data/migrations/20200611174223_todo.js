@@ -274,17 +274,6 @@ exports.up = async function (knex) {
             tbl.specificType('deleted_at', 'timestamp without time zone')
             tbl.specificType('updated_at', 'timestamp without time zone')
         })
-        .createTableIfNotExists("email_template_21", tbl => {
-            tbl.increments('id').primary();
-            tbl.specificType('name', "character varying");
-            tbl.specificType('content', "character varying");
-            tbl.specificType('slug', "character varying");
-            tbl.specificType("note", "character varying")
-            tbl.specificType("all_content", "json").defaultTo('{}');
-            tbl.specificType('created_at', 'timestamp without time zone')
-            tbl.specificType('deleted_at', 'timestamp without time zone')
-            tbl.specificType('updated_at', 'timestamp without time zone')
-        })
         .createTableIfNotExists("fees", tbl => {
             tbl.increments('id').primary();
             tbl.specificType('trade_volume', "character varying");
