@@ -22,7 +22,7 @@ ingress:
     alb.ingress.kubernetes.io/scheme: internet-facing
     kubernetes.io/ingress.class: alb
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  path: /
+  path: /*
 
   hosts:
     - mainnet-trading.faldax.com
