@@ -7,6 +7,8 @@ def sshagent_name = "internal-trading"
 def service_name = "internal-trading-backend"
 def artifact_name = "${service_name}#${env.BRANCH_NAME}#${env.BUILD_NUMBER}"
 
+def myRepo = null
+
 podTemplate(label: label, nodeSelector: 'env=jenkins' , containers: [
     containerTemplate(
         name: 'node', 
@@ -41,13 +43,12 @@ timeout(9){
 
         stage('Download Environment Files'){
             container('node'){
-                if ( "${myRepo.GIT_BRANCH}" == "preprod" && namespace ){
-                def myRepo = checkout scm
+                echo 'Stage: Download Environment Files'
+                myRepo = checkout scm
                 gitCommit = myRepo.GIT_COMMIT
                 shortGitCommit = "${gitCommit[0..10]}${env.BUILD_NUMBER}"
                 imageTag = shortGitCommit
                 namespace = getNamespace(myRepo.GIT_BRANCH);
-                }
             }
         }
 
@@ -83,13 +84,8 @@ timeout(9){
 
         stage('Docker - mainnet'){
             container('build-container'){
-                def myRepo = checkout scm
-                gitCommit = myRepo.GIT_COMMIT
-                shortGitCommit = "${gitCommit[0..10]}${env.BUILD_NUMBER}"
-                imageTag = shortGitCommit
-                namespace = getNamespace(myRepo.GIT_BRANCH);
-                echo "Deploying ${myRepo.GIT_BRANCH} on Kubernetes."
                 if ( "${myRepo.GIT_BRANCH}" == "mainnet" && namespace ){
+                    echo "Deploying ${myRepo.GIT_BRANCH} on Kubernetes."
                     withAWS(credentials:'jenkins_s3_upload') {
                         s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
                     }

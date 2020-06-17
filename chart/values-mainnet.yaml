@@ -60,7 +60,7 @@ controller:
 health:
   enable: true
   livenessProbe:
-    path: /health-check
+    path: /api/v1/tradding/system-health-check
     port: 3011
     initialDelaySeconds: 120
     periodSeconds: 30
@@ -68,7 +68,7 @@ health:
     successThreshold: 1
     timeoutSeconds: 5
   readinessProbe:
-    path: /health-check
+    path: /api/v1/tradding/system-health-check
     port: 3011
     initialDelaySeconds: 60
     periodSeconds: 10
