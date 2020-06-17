@@ -15,7 +15,7 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
                                     UNION ALL
                                     SELECT id, is_stop_limit ,user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true'
                             ) as pending_orders ORDER BY created_at DESC LIMIT ${limit}`
-        console.log("pendingSql", pendingSql)
+        // console.log("pendingSql", pendingSql)
         tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
         tradePendingDetails = tradePendingDetails.rows;
 
@@ -53,10 +53,10 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
                                     UNION ALL
                                     SELECT id, is_stop_limit,user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${yesterday}'
                             ) as pending_orders WHERE created_at >= '${yesterday}' ORDER BY created_at DESC LIMIT ${limit}`
-        console.log("pendingSql", pendingSql)
+        // console.log("pendingSql", pendingSql)
         tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
         tradePendingDetails = tradePendingDetails.rows;
-        console.log("tradePendingDetails", tradePendingDetails)
+        // console.log("tradePendingDetails", tradePendingDetails)
         var getPendingDetails = await PendngOrderExecutionModels
             .query()
             .select("id", "user_id", "order_type", "limit_price", "quantity", "currency", "settle_currency", "side", "placed_by", "is_cancel", "is_under_execution")
@@ -80,7 +80,7 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
             tradePendingDetails = getPendingDetails;
         }
     }
-    console.log("tradePendingDetails", tradePendingDetails)
+    // console.log("tradePendingDetails", tradePendingDetails)
     return tradePendingDetails;
 
 }
@@ -91,9 +91,9 @@ var getUserPendingOrders = async (user_id, crypto, currency, limit = 2000, page,
     //     .utc()
     //     .subtract(month, 'months')
     //     .format();
-    console.log(fromDate, toDate)
+    // console.log(fromDate, toDate)
     if (fromDate != undefined && toDate != undefined) {
-        console.log(1)
+        // console.log(1)
         var pendingSql = `SELECT pending_orders.* FROM (
                                     SELECT id, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}' 
                                     UNION ALL
@@ -102,7 +102,7 @@ var getUserPendingOrders = async (user_id, crypto, currency, limit = 2000, page,
                                     SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${fromDate}' AND created_at <= '${toDate}'
                             ) as pending_orders WHERE created_at >= '${fromDate}' AND created_at <= '${toDate}' ORDER BY created_at DESC LIMIT ${limit} OFFSET ((${limit})*${page - 1})`
     } else if (fromDate != undefined && toDate == undefined) {
-        console.log(2)
+        // console.log(2)
         var pendingSql = `SELECT pending_orders.* FROM (
             SELECT id, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}' AND created_at >= '${fromDate}'
             UNION ALL
@@ -111,7 +111,7 @@ var getUserPendingOrders = async (user_id, crypto, currency, limit = 2000, page,
             SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' AND created_at >= '${fromDate}'
     ) as pending_orders WHERE created_at >= '${fromDate}' ORDER BY created_at DESC LIMIT ${limit} OFFSET ((${limit})*${page - 1})`
     } else if (fromDate == undefined && toDate != undefined) {
-        console.log(3)
+        // console.log(3)
         var pendingSql = `SELECT pending_orders.* FROM (
                     SELECT id, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}' AND created_at <= '${toDate}'
                     UNION ALL
@@ -121,7 +121,7 @@ var getUserPendingOrders = async (user_id, crypto, currency, limit = 2000, page,
             ) as pending_orders WHERE AND created_at <= '${toDate}' ORDER BY created_at DESC LIMIT ${limit} OFFSET ((${limit})*${page - 1})`
 
     } else if (fromDate == undefined && toDate == undefined) {
-        console.log(4)
+        // console.log(4)
         var pendingSql = `SELECT pending_orders.* FROM (
             SELECT id, CAST(user_id AS int) as user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM pending_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id='${user_id}' 
             UNION ALL
@@ -130,7 +130,7 @@ var getUserPendingOrders = async (user_id, crypto, currency, limit = 2000, page,
             SELECT id, user_id,order_type, fill_price, limit_price, stop_price, quantity, currency, settle_currency, side, created_at, placed_by FROM sell_book WHERE deleted_at IS NULL AND settle_currency='${crypto}' AND currency='${currency}' AND user_id=${user_id} AND is_partially_fulfilled='true' 
     ) as pending_orders ORDER BY created_at DESC LIMIT ${limit} OFFSET ((${limit})*${page - 1})`
     }
-    console.log(pendingSql)
+    // console.log(pendingSql)
     tradePendingDetails = await PendingBookModel.knex().raw(pendingSql);
     tradePendingDetails = tradePendingDetails.rows;
 

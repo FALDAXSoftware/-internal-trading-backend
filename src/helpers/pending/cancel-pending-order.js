@@ -12,7 +12,7 @@ var cancelData = async (id) => {
             .andWhere("deleted_at", null)
             .orderBy("id", "DESC");
 
-        console.log("getPendingData", getPendingData)
+        // console.log("getPendingData", getPendingData)
 
         if (getPendingData.length > 0) {
             if (getPendingData[0].is_under_execution == false) {
@@ -20,14 +20,14 @@ var cancelData = async (id) => {
                 if (getPendingData[0].order_type == "Market") {
                     return (8);
                 }
-                console.log("id", id)
+                // console.log("id", id)
                 var updateSql = `UPDATE pending_orders_execution
                                 SET is_cancel = true
                                 WHERE id = ${id} AND deleted_at IS NULL AND is_cancel = false
                                 RETURNING *`
                 var deletePending = await PendingOrderExecutionModel.knex().raw(updateSql);
                 deletePending = deletePending.rows;
-                console.log("deletePending", deletePending)
+                // console.log("deletePending", deletePending)
                 if (deletePending) {
                     var userId = [];
                     userId.push(deletePending[0].user_id)

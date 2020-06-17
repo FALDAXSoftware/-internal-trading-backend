@@ -7,16 +7,16 @@ var CurrencyConversionModel = require("../models/CurrencyConversion");
 
 var getLatestVaue = async (symbol) => {
     try {
-        console.log("symbol", symbol)
+        // console.log("symbol", symbol)
         var bidPrice = 0.0;
         var askPrice = 0.0;
         var lastPrice = 0.0;
         let { crypto, currency } = await Currency.get_currencies(symbol);
         var bidValue = await buyBookHelper.getBuyBookOrderSummary(crypto, currency);
-        console.log("bidValue", bidValue)
+        // console.log("bidValue", bidValue)
         bidPrice = (bidValue.data.length == 0) ? (0.0) : (bidValue.data[0].price)
         var askValue = await sellBookHelper.sellOrderBookSummary(crypto, currency);
-        console.log("askValue", askValue)
+        // console.log("askValue", askValue)
         askPrice = (askValue.data.length == 0) ? (0.0) : (askValue.data[0].price);
 
         var getTradeData = await TradeHistoryModel
@@ -29,7 +29,7 @@ var getLatestVaue = async (symbol) => {
             .orderBy("id", "DESC")
             .limit(1);
 
-        console.log("getTradeData", getTradeData)
+        // console.log("getTradeData", getTradeData)
 
         lastPrice = (getTradeData != undefined) ? (getTradeData.fill_price) : (0.0);
 
@@ -41,7 +41,7 @@ var getLatestVaue = async (symbol) => {
             .andWhere("name", symbol)
             .orderBy("id", "DESC");
 
-        console.log("getPairDetails", getPairDetails)
+        // console.log("getPairDetails", getPairDetails)
 
         // var USDPriceValue = await CurrencyConversionModel
         //     .query()
@@ -66,7 +66,7 @@ var getLatestVaue = async (symbol) => {
             lastPrice: lastPrice
         }
 
-        console.log("data", data)
+        // console.log("data", data)
 
         return (data);
     } catch (err) {

@@ -121,7 +121,7 @@ var SendEmail = async (res, requestedData) => {
 var formatEmail = async (emailContent, data) => {
   let rex = /{{([^}]+)}}/g;
   let key;
-  console.log("data", JSON.stringify(data));
+  // console.log("data", JSON.stringify(data));
   if ("object" in data) {
     data = data.object;
   }
@@ -145,9 +145,9 @@ var formatEmail = async (emailContent, data) => {
 // Get User ID
 var getUserId = async function (headers, res) {
   var authorization = headers;
-  console.log("authorization", JSON.stringify(authorization));
+  // console.log("authorization", JSON.stringify(authorization));
   var authentication = await require("../config/authorization")(authorization);
-  console.log("authentication", JSON.stringify(authentication))
+  // console.log("authentication", JSON.stringify(authentication))
   if (authentication.status != constants.SUCCESS_CODE) {
     return res.status(authentication.status).json(authentication);
   }
