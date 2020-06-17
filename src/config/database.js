@@ -10,7 +10,8 @@ const knex = Knex({
         user: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_DATABASE
-    }
+    },
+    pool: { min: 1, max: 30 }
 });
 
 // Give the knex object to objection.

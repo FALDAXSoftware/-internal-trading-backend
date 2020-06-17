@@ -15,6 +15,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
     var userIds = [];
     userIds.push(user_id);
     let { crypto, currency } = await Currency.get_currencies(symbol);
+    const checkUser = Helper.checkWhichUser(user_id);
     var now = new Date();
     var limitSellOrder = ({
         'user_id': user_id,
@@ -31,7 +32,8 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
         'quantity': orderQuantity,
         'settle_currency': crypto,
         'order_status': "open",
-        'currency': currency
+        'currency': currency,
+        'placed_by': (checkUser ? process.env.TRADEDESK_MANUAL : process.env.TRADEDESK_USER)
     });
 
     let wallet = await SellWalletBalanceHelper.getSellWalletBalance(crypto, currency, user_id);
@@ -53,7 +55,7 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
 
         limitSellOrder.activity_id = result.id;
         var data = await PendingAdd.addPendingBook(limitSellOrder);
-        console.log("data", data);
+        // console.log("data", data);
         // Send Notification to users
         for (var i = 0; i < userIds.length; i++) {
             // Notification Sending for users
@@ -73,11 +75,17 @@ var stopSellAdd = async (symbol, user_id, side, order_type, orderQuantity, limit
                         if (user_data.email != undefined) {
                             var allData = {
                                 template: "emails/general_mail.ejs",
-                                templateSlug: "trade_execute",
+                                templateSlug: "trade_stoplimit_pending",
                                 email: user_data.email,
                                 user_detail: user_data,
                                 formatData: {
-                                    recipientName: user_data.first_name
+                                    recipientName: user_data.first_name,
+                                    side: side,
+                                    pair: symbol,
+                                    order_type: order_type,
+                                    quantity: orderQuantity,
+                                    price: limit_price,
+                                    stop_price: stop_price,
                                 }
                             }
                             await Helper.SendEmail(res, allData)

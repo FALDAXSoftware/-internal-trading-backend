@@ -1,31 +1,31 @@
 var PairsModel = require("../../models/Pairs");
 var CoinsModel = require("../../models/Coins");
 
-var getFeesValue = async (crypto, currency) => {
+var getFeesValue = async (crypto_id, currency_id) => {
     var makerTakerFees = {};
-    var coin1 = await CoinsModel
-        .query()
-        .first()
-        .select("id")
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', crypto);
+    // var coin1 = await CoinsModel
+    //     .query()
+    //     .first()
+    //     .select("id")
+    //     .where('is_active', true)
+    //     .andWhere('deleted_at', null)
+    //     .andWhere('coin', crypto);
 
-    var coin2 = await CoinsModel
-        .query()
-        .first()
-        .select("id")
-        .where('is_active', true)
-        .andWhere('deleted_at', null)
-        .andWhere('coin', currency);
+    // var coin2 = await CoinsModel
+    //     .query()
+    //     .first()
+    //     .select("id")
+    //     .where('is_active', true)
+    //     .andWhere('deleted_at', null)
+    //     .andWhere('coin', currency);
 
-    if (coin1 && coin2) {
+    if (crypto_id && currency_id) {
         var pairData = await PairsModel
             .query()
             .select()
             .first()
-            .where('coin_code1', coin1.id)
-            .andWhere('coin_code2', coin2.id)
+            .where('coin_code1', crypto_id)
+            .andWhere('coin_code2', currency_id)
             .andWhere('deleted_at', null)
             .orderBy('id', 'DESC')
         if (pairData) {

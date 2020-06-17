@@ -35,7 +35,7 @@ class TradeHistory extends visibilityPlugin((AppModel)) {
   encript_id() {
 
     if (this.id) {
-      return cryptr.encrypt(this.id);
+      return this.id;
     }
   }
 
@@ -47,9 +47,9 @@ class TradeHistory extends visibilityPlugin((AppModel)) {
      *
      * @returns string decripted id
      */
-  static decript_id(id) {
-    return cryptr.decrypt(id);
-  }
+  // static decript_id(id) {
+  //   return cryptr.decrypt(id);
+  // }
 
   /** Optional JSON schema. This is not the database schema!
      *   Nothing is generated based on this. This is only used
@@ -64,6 +64,16 @@ class TradeHistory extends visibilityPlugin((AppModel)) {
       required: [],
       properties: {}
     };
+  }
+  // Add transaction id before add
+  $beforeInsert(options, context) {
+    var result = '';
+    let length = 32;
+    let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+    var current_date = new Date();
+    current_date = current_date.getTime();
+    this.transaction_id = ("tx_"+current_date+result).toLocaleLowerCase();
   }
 }
 

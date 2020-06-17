@@ -20,7 +20,7 @@ configs.streams.push({
 configs.streams.push({
     type: 'stream',
     stream: process.stderr,
-    // level: 'error'
+    //level: 'error'
     level: 61 // To disable logs
 })
 
