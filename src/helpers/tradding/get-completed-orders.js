@@ -46,8 +46,8 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 2000) 
 }
 
 var getUserCompletedOrders = async (user_id, crypto, currency, limit = 2000, page, fromDate = '', toDate = '') => {
-    console.log("fromDate", fromDate);
-    console.log("toDate", toDate);
+    // console.log("fromDate", fromDate);
+    // console.log("toDate", toDate);
     var tradeData = await TradeHistoryModel
         .query()
         .select(

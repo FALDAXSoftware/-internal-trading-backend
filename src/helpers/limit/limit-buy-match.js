@@ -27,7 +27,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             .where("deleted_at", null)
             .andWhere("name", buyLimitOrderData.symbol)
             .orderBy("id", "DESC");
-        console.log("pairDetails", pairDetails)
+        // console.log("pairDetails", pairDetails)
 
         var quantityValue = parseFloat(buyLimitOrderData.quantity).toFixed(pairDetails.quantity_precision);
         if (allOrderData.length == 0) {
@@ -56,15 +56,15 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         }
         if (sellBook && sellBook.length > 0) {
             if ((buyLimitOrderData.order_type == "Limit") ? (sellBook[0].price <= buyLimitOrderData.limit_price) : (sellBook[0].price <= buyLimitOrderData.stop_price && sellBook[0].price <= buyLimitOrderData.limit_price)) {
-                console.log("INSIDE IF")
+                // console.log("INSIDE IF")
                 if (sellBook[0].quantity >= buyLimitOrderData.quantity) {
-                    console.log("INSIDE SECOND IF")
+                    // console.log("INSIDE SECOND IF")
                     var availableQuantity = parseFloat(sellBook[0].quantity).toFixed(pairDetails.quantity_precision);
                     buyLimitOrderData.fill_price = parseFloat(sellBook[0].price).toFixed(pairDetails.price_precision);
                     delete buyLimitOrderData.id;
-                    console.log((buyLimitOrderData.fill_price * buyLimitOrderData.quantity).toFixed(8) <= (wallet.placed_balance).toFixed(8))
+                    // console.log((buyLimitOrderData.fill_price * buyLimitOrderData.quantity).toFixed(8) <= (wallet.placed_balance).toFixed(8))
                     if (((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
-                        console.log("buyLimitOrderData", JSON.stringify(buyLimitOrderData))
+                        // console.log("buyLimitOrderData", JSON.stringify(buyLimitOrderData))
                         var buyAddedData = {
                             ...buyLimitOrderData
                         }
@@ -73,10 +73,10 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             ...buyLimitOrderData
                         }
                         trade_history_data.fix_quantity = quantityValue;
-                        console.log(JSON.stringify(trade_history_data))
-                        console.log("buyLimitOrderData.quantity >= sellBook[0].quantity", buyLimitOrderData.quantity >= sellBook[0].quantity)
+                        // console.log(JSON.stringify(trade_history_data))
+                        // console.log("buyLimitOrderData.quantity >= sellBook[0].quantity", buyLimitOrderData.quantity >= sellBook[0].quantity)
 
-                        console.log("trade_history_data", JSON.stringify(trade_history_data))
+                        // console.log("trade_history_data", JSON.stringify(trade_history_data))
                         trade_history_data.maker_fee = 0.0;
                         trade_history_data.taker_fee = 0.0;
                         trade_history_data.requested_user_id = sellBook[0].user_id;
@@ -85,7 +85,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (sellBook[0].is_stop_limit == true) {
                             trade_history_data.is_stop_limit = true;
                         }
-                        console.log("trade_history_data", JSON.stringify(trade_history_data))
+                        // console.log("trade_history_data", JSON.stringify(trade_history_data))
                         let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
 
                         userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -112,7 +112,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             var tradingFees = await TradingFees.getTraddingFees(request);
                         }
 
-                        console.log(tradingFees);
+                        // console.log(tradingFees);
 
                         trade_history_data.user_fee = tradingFees.userFee;
                         trade_history_data.requested_fee = tradingFees.requestedFee;
@@ -125,13 +125,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (trade_history_data.activity_id) {
                             delete trade_history_data.activity_id;
                         }
-                        console.log("BELOW DELETED")
+                        // console.log("BELOW DELETED")
                         // tradeHistory.txn_group_id = txnGroupId;
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
-                        console.log("tradeHistory", tradeHistory)
+                        // console.log("tradeHistory", tradeHistory)
                         allOrderData.push(tradeHistory)
                         tradeOrder = tradeHistory;
-                        console.log("tradeOrder", tradeOrder)
+                        // console.log("tradeOrder", tradeOrder)
                         var remainigQuantity = availableQuantity - quantityValue;
                         if (remainigQuantity > 0) {
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
@@ -381,14 +381,14 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     }
                 } else {
-                    console.log("=>If Order can be filled from different book");
-                    console.log("INSIDE ELSE")
+                    // console.log("=>If Order can be filled from different book");
+                    // console.log("INSIDE ELSE")
                     var remainigQuantity = buyLimitOrderData.quantity - sellBook[0].quantity;
                     remainigQuantity = parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision);
-                    console.log("remainigQuantity", remainigQuantity)
+                    // console.log("remainigQuantity", remainigQuantity)
                     // var feeResult = await MakerTakerFees.getFeesValue(buyLimitOrderData.settle_currency, buyLimitOrderData.currency);
                     if (((buyLimitOrderData.fill_price * buyLimitOrderData.quantity) <= (wallet.placed_balance)) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
-                        console.log("INSIDE IF WALLET CHECKING");
+                        // console.log("INSIDE IF WALLET CHECKING");
                         var buyAddedData = {
                             ...buyLimitOrderData
                         }
@@ -423,7 +423,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         trade_history_data.flag = true;
 
                         var activityResult = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
-                        console.log("activityResult", JSON.stringify(activityResult))
+                        // console.log("activityResult", JSON.stringify(activityResult))
                         var request = {
                             requested_user_id: trade_history_data.requested_user_id,
                             user_id: trade_history_data.user_id,
@@ -447,7 +447,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             var tradingFees = await TradingFees.getTraddingFees(request);
                         }
 
-                        console.log(tradingFees);
+                        // console.log(tradingFees);
 
                         trade_history_data.user_fee = (tradingFees.userFee);
                         trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -465,7 +465,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             delete trade_history_data.flag
                         }
 
-                        console.log("trade_history_data", JSON.stringify(trade_history_data))
+                        // console.log("trade_history_data", JSON.stringify(trade_history_data))
                         // tradeHistory.txn_group_id = txnGroupId;
                         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                         allOrderData.push(tradeHistory)
@@ -502,11 +502,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         resendDataLimit.quantity = remainigQuantity;
                         resendDataLimit.activity_id = activityResult.id;
 
-                        console.log("resendDataLimit", JSON.stringify(resendDataLimit));
-                        console.log("resendDataLimit, resendData.settle_currency, resendData.currency, activityResult", resendDataLimit, resendData.settle_currency, resendData.currency, activityResult)
+                        // console.log("resendDataLimit", JSON.stringify(resendDataLimit));
+                        // console.log("resendDataLimit, resendData.settle_currency, resendData.currency, activityResult", resendDataLimit, resendData.settle_currency, resendData.currency, activityResult)
 
                         if (remainigQuantity > 0) {
-                            console.log("++++Order executing with more books");
+                            // console.log("++++Order executing with more books");
                             var responseData = await module.exports.limitData(resendDataLimit, resendData.settle_currency, resendData.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
                             return responseData;
                         }
@@ -600,7 +600,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     }
                 }
-                console.log("INSIDE ELSE", JSON.stringify(buyLimitOrderData))
+                // console.log("INSIDE ELSE", JSON.stringify(buyLimitOrderData))
                 if ((buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8) <= (wallet.placed_balance).toFixed(8) || buyLimitOrderData.placed_by == process.env.TRADEDESK_BOT || buyLimitOrderData.placed_by == process.env.TRADEDESK_MANUAL) {
                     var buyAddedData = {
                         ...buyLimitOrderData
@@ -617,15 +617,15 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     delete buyAddedData.side;
                     delete buyAddedData.activity_id;
                     buyAddedData.side = "Buy";
-                    console.log("buyAddedData", JSON.stringify(buyAddedData))
+                    // console.log("buyAddedData", JSON.stringify(buyAddedData))
                     var activity = await ActivityHelper.addActivityData(buyAddedData);
-                    console.log("activity", JSON.stringify(activity))
+                    // console.log("activity", JSON.stringify(activity))
                     buyAddedData.is_partially_fulfilled = true;
                     buyLimitOrderData.is_filled = false;
                     buyAddedData.activity_id = activity.id;
                     buyLimitOrderData.added = true;
                     var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
-                    console.log(JSON.stringify(addBuyBook))
+                    // console.log(JSON.stringify(addBuyBook))
 
                     if (pending_order_id != 0) {
                         var getPendingData = await PendingOrderExecutuionModel
@@ -663,7 +663,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             if (userNotification != undefined) {
                                 if (userNotification.email == true || userNotification.email == "true") {
                                     if (user_data.email != undefined) {
-                                        console.log("++++Order executed partially..");
+                                        // console.log("++++Order executed partially..");
                                         var allData = {
                                             template: "emails/general_mail.ejs",
                                             templateSlug: "trade_place",
@@ -823,12 +823,12 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     // buyAddedData.side = "Buy";
                 }
                 var activity = await ActivityHelper.addActivityData(buyAddedData);
-                console.log("activity", activity)
+                // console.log("activity", activity)
                 buyAddedData.is_partially_fulfilled = true;
                 buyLimitOrderData.is_filled = false;
                 buyAddedData.activity_id = activity.id;
                 buyLimitOrderData.added = true;
-                console.log("buyAddedData", buyAddedData)
+                // console.log("buyAddedData", buyAddedData)
                 var addBuyBook = await BuyAdd.addBuyBookData(buyAddedData);
 
                 if (pending_order_id != 0) {
@@ -867,7 +867,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (userNotification != undefined) {
                             if (userNotification.email == true || userNotification.email == "true") {
                                 if (user_data.email != undefined) {
-                                    console.log("++++Order placed");
+                                    // console.log("++++Order placed");
                                     var allData = {
                                         template: "emails/general_mail.ejs",
                                         templateSlug: "trade_place",
@@ -960,7 +960,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             }
         }
     } catch (error) {
-        console.log((error));
+        console.log(JSON.stringify(error));
     }
 }
 

@@ -24,7 +24,7 @@ var coinData = async () => {
 
     if (activePairList && activePairList.length != undefined) {
         for (var i = 0; i < activePairList.length; i++) {
-            console.log("activePairList", JSON.stringify(activePairList));
+            // console.log("activePairList", JSON.stringify(activePairList));
             let { crypto, currency } = await Currency.get_currencies(activePairList[i].symbol);
             var lastPriceData = await lastPrice.getLastPrice(crypto, currency);
             activePairList[i].last_price = lastPriceData[0].fill_price;

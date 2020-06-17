@@ -128,7 +128,7 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
                         }
                     }
                 }
-                console.log("response_data", JSON.stringify(response_data));
+                // console.log("response_data", JSON.stringify(response_data));
                 resolve(response_data)
             } catch (error) {
                 console.log("error", JSON.stringify(error));

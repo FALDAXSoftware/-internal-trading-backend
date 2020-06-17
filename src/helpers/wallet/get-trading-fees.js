@@ -12,7 +12,7 @@ var getTraddingFees = async (inputs) => {
     var makerTakerFees = {};
     try {
         var request = inputs;
-        console.log("inputs", (inputs))
+        // console.log("inputs", (inputs))
         var user_id = parseInt(inputs.user_id);
         var requested_user_id = parseInt(inputs.requested_user_id);
         // inputs.makerFee = 0.21
@@ -39,7 +39,7 @@ var getTraddingFees = async (inputs) => {
             })
             .orderBy("id", "DESC");
 
-        console.log("conversionData", conversionData)
+        // console.log("conversionData", conversionData)
 
         // console.log("conversionData", conversionData.rows)
 
@@ -49,9 +49,9 @@ var getTraddingFees = async (inputs) => {
             .subtract(1, 'months')
             .format();
         let userTradeHistorySum = {}
-        console.log("user_id", user_id)
+        // console.log("user_id", user_id)
         if (user_id != process.env.TRADEDESK_USER_ID) {
-            console.log("INSIDE IF USEr")
+            // console.log("INSIDE IF USEr")
             let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
                                                                         FROM(SELECT user_coin, sum(quantity) FROM trade_history
                                                                         WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
@@ -67,9 +67,9 @@ var getTraddingFees = async (inputs) => {
         }
 
         let requestedTradeHistorySum = {}
-        console.log("requested_user_id", requested_user_id)
+        // console.log("requested_user_id", requested_user_id)
         if (requested_user_id != process.env.TRADEDESK_USER_ID) {
-            console.log("INSIDE IF Requested")
+            // console.log("INSIDE IF Requested")
             let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
                                                                             FROM(SELECT user_coin, sum(quantity) FROM trade_history
                                                                             WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
@@ -82,10 +82,10 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
-        console.log("requestedTradeHistorySum", requestedTradeHistorySum)
-        console.log("userTradeHistorySum", userTradeHistorySum);
-        console.log("Object.keys(userTradeHistorySum).length", Object.keys(userTradeHistorySum).length);
-        console.log("Object.keys(requestedTradeHistorySum).length != 0", Object.keys(requestedTradeHistorySum).length != 0)
+        // console.log("requestedTradeHistorySum", requestedTradeHistorySum)
+        // console.log("userTradeHistorySum", userTradeHistorySum);
+        // console.log("Object.keys(userTradeHistorySum).length", Object.keys(userTradeHistorySum).length);
+        // console.log("Object.keys(requestedTradeHistorySum).length != 0", Object.keys(requestedTradeHistorySum).length != 0)
 
         // console.log("requestedTradeHistorySum", requestedTradeHistorySum)
 
@@ -115,8 +115,8 @@ var getTraddingFees = async (inputs) => {
             }
         }
 
-        console.log("userTotalUSDSum", userTotalUSDSum);
-        console.log("requestedTotalUSDSum", requestedTotalUSDSum)
+        // console.log("userTotalUSDSum", userTotalUSDSum);
+        // console.log("requestedTotalUSDSum", requestedTotalUSDSum)
 
         var totalCurrencyAmount = userTotalUSDSum;
         var totalCryptoAmount = requestedTotalUSDSum;
@@ -232,7 +232,7 @@ var getTraddingFees = async (inputs) => {
         // console.log("inputs.takerFee", inputs.takerFee)
         // Calculating fees value on basis of the side and order executed
         if (inputs.side == "Buy") {
-            console.log("cryptouserbalance", cryptoWalletUser);
+            // console.log("cryptouserbalance", cryptoWalletUser);
             // console.log("cryptouserPlacedbalance", cryptouserPlacedbalance)
             // ---------------------------crypto-------------------------------------- //
             var cryptouserbalance = cryptoWalletUser.balance + ((inputs.quantity) - ((inputs.quantity * inputs.takerFee / 100)));
@@ -245,13 +245,13 @@ var getTraddingFees = async (inputs) => {
                                                         WHERE id = ${cryptoWalletUser.id}
                                                         RETURNING *`)
             var a = updateSql.rows[0]
-            console.log("a", a)
+            // console.log("a", a)
             var cryptorequestedbalance;
             var cryptorequestedplacedbalance;
             if (user_id == requested_user_id) {
-                console.log("INSIDE IF")
+                // console.log("INSIDE IF")
                 if (requested_user_id == process.env.TRADEDESK_USER_ID) {
-                    console.log("INSIDE BOTH IF")
+                    // console.log("INSIDE BOTH IF")
                     cryptorequestedbalance = a.balance - ((inputs.quantity));
                     cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8);
                     cryptorequestedplacedbalance = a.balance - ((inputs.quantity));
@@ -264,7 +264,7 @@ var getTraddingFees = async (inputs) => {
                             placed_balance: cryptorequestedplacedbalance
                         });
                 } else {
-                    console.log("INSIDE IF ELSE");
+                    // console.log("INSIDE IF ELSE");
                     cryptorequestedbalance = a.balance - ((inputs.quantity));
                     cryptorequestedbalance = parseFloat(cryptorequestedbalance.toFixed(8));
                     var a = await Wallet
@@ -375,10 +375,10 @@ var getTraddingFees = async (inputs) => {
 
         } else if (inputs.side == "Sell") {
             // --------------------------------------crypto--------------------------- //
-            console.log("cryptoWalletRequested", cryptoWalletRequested);
-            console.log("cryptoWalletUser", cryptoWalletUser)
-            console.log("cryptoWalletUser.balance", cryptoWalletUser.balance);
-            console.log("cryptoWalletUser.placed_balance", cryptoWalletUser.placed_balance)
+            // console.log("cryptoWalletRequested", cryptoWalletRequested);
+            // console.log("cryptoWalletUser", cryptoWalletUser)
+            // console.log("cryptoWalletUser.balance", cryptoWalletUser.balance);
+            // console.log("cryptoWalletUser.placed_balance", cryptoWalletUser.placed_balance)
             var cryptouserbalance = parseFloat(cryptoWalletUser.balance).toFixed(8) - parseFloat((inputs.quantity)).toFixed(8);
             var cryptouserbalance = parseFloat(cryptouserbalance.toFixed(8))
             var cryptouserPlacedbalance = parseFloat(cryptoWalletUser.placed_balance).toFixed(8) - parseFloat(inputs.quantity).toFixed(8);
@@ -391,9 +391,9 @@ var getTraddingFees = async (inputs) => {
             var a = updateSql.rows[0]
             var cryptorequestedbalance;
             var cryptorequestedplacedbalance
-            console.log("cryptoWalletRequested.balance", cryptoWalletRequested.balance);
-            console.log("cryptoWalletRequested.placed_balance", cryptoWalletRequested.placed_balance)
-            console.log("inputs.makerFee", inputs.makerFee)
+            // console.log("cryptoWalletRequested.balance", cryptoWalletRequested.balance);
+            // console.log("cryptoWalletRequested.placed_balance", cryptoWalletRequested.placed_balance)
+            // console.log("inputs.makerFee", inputs.makerFee)
             if (user_id == requested_user_id) {
                 cryptorequestedbalance = parseFloat(a.balance) + parseFloat(inputs.quantity) - ((inputs.quantity) * (inputs.makerFee / 100));
                 cryptorequestedbalance = parseFloat(cryptorequestedbalance).toFixed(8)
@@ -490,7 +490,7 @@ var getTraddingFees = async (inputs) => {
             var requestedFee = (((inputs.quantity)) * ((inputs.makerFee / 100)).toFixed(8))
             var userFee = ((((inputs.quantity) * inputs.fill_price) * ((inputs.takerFee / 100)))).toFixed(8);
 
-            console.log("adminWalletCrypto", adminWalletCrypto)
+            // console.log("adminWalletCrypto", adminWalletCrypto)
             var adminBalance = parseFloat(adminWalletCrypto.balance) + parseFloat(requestedFee)
             var adminPlacedBalance = parseFloat(adminWalletCrypto.placed_balance) + parseFloat(requestedFee)
 
@@ -537,7 +537,7 @@ var getTraddingFees = async (inputs) => {
             "taker_fee": inputs.takerFee
         })
     } catch (err) {
-        console.log("fees Error", (err));
+        console.log("fees Error", JSON.stringify(err));
         return (1);
     }
 }

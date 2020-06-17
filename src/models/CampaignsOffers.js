@@ -70,7 +70,7 @@ class CampaignsOffers extends AppModel {
 	// Get User Data
 	static async getSingleData(filter, select = "") {
 		try {
-			console.log("filter", JSON.stringify(filter));
+			// console.log("filter", JSON.stringify(filter));
 			if (select != "") {
 				select = select;
 			} else {

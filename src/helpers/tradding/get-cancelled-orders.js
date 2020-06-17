@@ -36,7 +36,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) 
         })
         .orderBy('id', 'DESC')
         .limit(limit);
-    console.log("cancelDetails", cancelDetails)
+    // console.log("cancelDetails", cancelDetails)
 
     var pendingCancelDetails = await PendingOrdersExecutionModel
         .query()
@@ -58,7 +58,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) 
         .orderBy('id', 'DESC')
         .limit(limit);
 
-    console.log("pendingCancelDetails", pendingCancelDetails)
+    // console.log("pendingCancelDetails", pendingCancelDetails)
 
     if (cancelDetails != undefined) {
         cancelDetails = cancelDetails.concat(pendingCancelDetails);
