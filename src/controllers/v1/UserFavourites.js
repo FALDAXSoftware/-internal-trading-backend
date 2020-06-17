@@ -25,7 +25,7 @@ class UserFavourites extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var socket_headers = req.headers;
-            console.log(JSON.stringify(socket_headers))
+            // console.log(JSON.stringify(socket_headers))
             var authentication = require("../../config/authorization")(socket_headers);
             let user_id = authentication.user_id;
             var symbol = req.query.symbol;
@@ -105,8 +105,8 @@ class UserFavourites extends AppController {
                 flag = true;
             }
 
-            console.log(today)
-            console.log(yesterday)
+            // console.log(today)
+            // console.log(yesterday)
             var tradeorderdetails = await TradeHistoryModel
                 .query()
                 .where('settle_currency', crypto)

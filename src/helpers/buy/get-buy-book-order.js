@@ -21,7 +21,7 @@ var getBuyBookOrder = async (crypto, currency) => {
     //                                                     LIMIT 1
     //                                                     FOR UPDATE`)
     // buyBookOrders = buyBookOrders.rows;
-    console.log("buyBookOrders", buyBookOrders)
+    // console.log("buyBookOrders", buyBookOrders)
     return (buyBookOrders)
 }
 
