@@ -36,10 +36,10 @@
 	},
 	"Order Book Empty": {
 		"page": "Internal tradding",
-		"context": "When Buy/Sell any asset, if no books available",
+		"context": "When Buy\/Sell any asset, if no books available",
 		"message_type": "error",
 		"message_english": "Order book is empty. Please try after some time.",
-		"message": "Order book is empty. Please try after some time."
+		"message": "Order book is empty. Please try again after some time."
 	},
 	"Create Crypto Wallet": {
 		"page": "JST order create, Internal tradding - Market sell order, Internal tradding - Market buy order, Internal tradding - Limit sell order, Internal tradding - Limit buy order, Internal tradding - Stop limit sell order, Internal tradding - Stop limit buy order",
@@ -59,8 +59,8 @@
 		"page": "Invalid quantity",
 		"context": "Invalid Order Quantity",
 		"message_type": "error",
-		"message_english": "Order Quantity should be greated than 0.",
-		"message": "Order Quantity should be greated than 0."
+		"message_english": "Order Quantity should be greated than 0",
+		"message": "Order Quantity should be greater than 0"
 	},
 	"Order Partially Fulfilled and Added to Buy Book": {
 		"page": "Order Partially fulfilled and added to buy book",
@@ -88,14 +88,14 @@
 		"context": "You are not allowed to trade in this regoin as your state is illegal",
 		"message_type": "error",
 		"message_english": "You are not allowed to trade in this regoin as your state is illegal",
-		"message": "You are not allowed to trade in this regoin as your state is illegal"
+		"message": "You are not allowed to trade in this region as your state is illegal"
 	},
 	"You are not allowed to trade in this regoin as country is illegal": {
 		"page": "When user is doing trade in user's region",
 		"context": "You are not allowed to trade in this regoin as country is illegal",
 		"message_type": "error",
 		"message_english": "You are not allowed to trade in this regoin as country is illegal",
-		"message": "You are not allowed to trade in this regoin as country is illegal"
+		"message": "You are not allowed to trade in this region as country is illegal"
 	},
 	"You are not allowed to trade in this regoin": {
 		"page": "KYC needed",
@@ -130,14 +130,14 @@
 		"context": "When Pair already exist",
 		"message_type": "error",
 		"message_english": "Favourites Pair already exist",
-		"message": "Favourites Pair already exist"
+		"message": "Favorites Pair already exist"
 	},
 	"pair added success": {
 		"page": "Internal Tradding",
 		"context": "When Pair added Success",
 		"message_type": "error",
 		"message_english": "Favourites pair added successfully.",
-		"message": "Favourites pair added successfully."
+		"message": "Favorites pair added successfully."
 	},
 	"No Buy Data Found": {
 		"page": "Internal Tradding",
@@ -188,5 +188,151 @@
 		"message_english": "Crypto and Currency should not be same.",
 		"message": "Crypto and Currency should not be same."
 	},
-	"Campaign Offer invalid": "Campaign Offer invalid"
+	"pair details value": {
+		"page": "Trade Desk",
+		"context": "During time of pairs getting",
+		"message_type": "error",
+		"message_english": "Pairs value has been retrieved successfully",
+		"message": "Pairs value has been retrieved successfully"
+	},
+	"no pair details value": {
+		"page": "Trade Desk",
+		"context": "During time of pairs updation and not found",
+		"message_type": "error",
+		"message_english": "No Pairs has been found",
+		"message": "No Pairs has been found"
+	},
+	"pair value update success": {
+		"page": "Trade Desk",
+		"context": "During time of pairs updation",
+		"message_type": "error",
+		"message_english": "Pair Value has been updated successfully.",
+		"message": "Pair Value has been updated successfully."
+	},
+	"spread retrieve success": {
+		"page": "Trade Desk",
+		"context": "Spread Value success",
+		"message_type": "error",
+		"message_english": "Spread Value has been retrieved successfully.",
+		"message": "Spread Value has been retrieved successfully."
+	},
+	"trade desk user wallet success": {
+		"page": "Trade Desk",
+		"context": "Trade Desk Wallet Success",
+		"message_type": "error",
+		"message_english": "Trade Desk Wallet has been retrieved successfully.",
+		"message": "Trade Desk Wallet has been retrieved successfully."
+	},
+	"Api key is missing": {
+		"page": "On each Authernicated routes",
+		"context": "When api key is not sent",
+		"message_type": "error",
+		"message_english": "Missing API key.",
+		"message": "Missing API key."
+	},
+	"Api key is invalid": {
+		"page": "On each Authernicated routes",
+		"context": "When api key is invalid",
+		"message_type": "error",
+		"message_english": "API key is invalid.",
+		"message": "API key is invalid."
+	},
+	"Your KYC is under process. Please wait until KYC is approved": {
+		"page": "When user submit kyc",
+		"context": "Your KYC is under process. Please wait until KYC is approved",
+		"message_type": "success",
+		"message_english": "Your KYC is under process. Please wait until KYC is approved",
+		"message": "Your KYC is under process. Please wait until KYC is approved"
+	},
+	"You are allowed to trade": {
+		"page": "When trade is allowed in user's region",
+		"context": "You are allowed to trade",
+		"message_type": "success",
+		"message_english": "You are allowed to trade",
+		"message": "You are allowed to trade"
+	},
+	"You are not allowed to trade in this regoin as your country is illegal": {
+		"page": "When user is doing trade in user's region",
+		"context": "You are not allowed to trade in this regoin as your country is illegal",
+		"message_type": "error",
+		"message_english": "You are not allowed to trade in this regoin as your country is illegal",
+		"message": "You are not allowed to trade in this region as your country is illegal"
+	},
+	"instrument data": {
+		"page": "Trade Page",
+		"context": "intrument data fetch",
+		"message_type": "error",
+		"message_english": "Instrument Data has been retrieved successfully.",
+		"message": "Instrument Data has been retrieved successfully."
+	},
+	"depth data": {
+		"page": "Trade Page",
+		"context": "Depth Chart data fetch",
+		"message_type": "error",
+		"message_english": "Depth Chart Data has been retrieved successfully.",
+		"message": "Depth Chart Data has been retrieved successfully."
+	},
+	"Trade retrieve success": {
+		"page": "Trade data",
+		"context": "Trade data has been retrieved successfully.",
+		"message_type": "success",
+		"message_english": "Trade data has been retrieved successfully.",
+		"message": "Trade data has been retrieved successfully."
+	},
+	"Invalid Quantity for Maximum": {
+		"page": "Invalid quantity",
+		"context": "Invalid Order Quantity",
+		"message_type": "error",
+		"message_english": "Order Quantity should be greated than 0.",
+		"message": "Order Quantity should be less than"
+	},
+	"Unable to place order": {
+		"page": "Trade Page",
+		"context": "Market order trying to place when already place",
+		"message_type": "error",
+		"message_english": "Please wait until your previous order get executed.",
+		"message": "Please wait until your previous order get executed."
+	},
+	"Your order is successfully placed.": {
+		"page": "Trade Page",
+		"context": "When order added to queue",
+		"message_type": "success",
+		"message_english": "Your order is placed. You will be notified once your order get executed",
+		"message": "Your order is placed. You will be notified once your order get executed"
+	},
+	"Market Order Cannot be cancelled": {
+		"page": "Trade Page",
+		"context": "When order needs to be cancelled",
+		"message_type": "error",
+		"message_english": "Your pending market order cannot be cancelled.",
+		"message": "Your pending market order cannot be cancelled."
+	},
+	"Execution under process": {
+		"page": "Trade Page",
+		"context": "When order needs to be cancelled",
+		"message_type": "error",
+		"message_english": "Your pending order cannot be cancelled as it is already in process",
+		"message": "Your pending order cannot be cancelled as it is already in process"
+	},
+	"No Pending Order Found": {
+		"page": "Trade Page",
+		"context": "When order needs to be cancelled",
+		"message_type": "error",
+		"message_english": "No Pending Orders have been found",
+		"message": "No Pending Orders have been found"
+	},
+	"system_health_ok": {
+		"page": "Check system health",
+		"context": "System Health is Good",
+		"message_type": "success",
+		"message_english": "System Health is Good.",
+		"message": "System Health is Good."
+	},
+	"system_health_not_ok": {
+		"page": "Check system health",
+		"context": "System Health is Not Good",
+		"message_type": "error",
+		"message_english": "System Health is Not Good.",
+		"message": "System Health is Not Good."
+	}
 }

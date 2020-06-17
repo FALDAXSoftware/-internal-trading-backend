@@ -4,7 +4,7 @@ var WalletModel = require("../../models/Wallet")
 
 var addBuyBookData = async (buyLimitOrderData) => {
     try {
-        console.log("buyLimitOrderData", buyLimitOrderData)
+        // console.log("buyLimitOrderData", JSON.stringify(buyLimitOrderData))
         var currency = buyLimitOrderData.currency;
         var crypto = buyLimitOrderData.settle_currency;
         var total_price = buyLimitOrderData.limit_price * buyLimitOrderData.quantity;
@@ -18,16 +18,20 @@ var addBuyBookData = async (buyLimitOrderData) => {
                 ...buyLimitOrderData
             });
 
-        console.log("buyAdd", buyAdd);
+        // console.log("buyAdd", JSON.stringify(buyAdd));
+
+        if (buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
+            return (buyAdd);
+        }
 
         var walletBalance = await walletBalanceValue.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);
-        console.log("walletBalance", walletBalance)
+        // console.log("walletBalance", JSON.stringify(walletBalance))
         if (walletBalance != 0) {
             var balance = walletBalance.placed_balance;
             var updatedBalance = balance - total_price;
             var updatedBalance = parseFloat((updatedBalance).toFixed(6));
 
-            console.log("updatedBalance", updatedBalance)
+            // console.log("updatedBalance", updatedBalance)
 
             var walletUpdate = await WalletModel
                 .query()
@@ -41,7 +45,7 @@ var addBuyBookData = async (buyLimitOrderData) => {
             return ("Coin Not Found")
         }
     } catch (error) {
-        console.log(error)
+        console.log(JSON.stringify(error))
     }
 }
 

@@ -16,7 +16,21 @@ var getSellBookData = async (crypto, currency) => {
     return data;
 
 }
+// Get Buy Book Data
+var getBuyBookDataSummary = async (crypto, currency) => {
+    let helper = require("../../helpers/buy/get-buy-book-order-summary");
+    let data = await helper.getBuyBookOrderSummary(crypto, currency);
+    // console.log("data", data);
+    return data;
 
+}
+// Get Sell Book Data
+var getSellBookDataSummary = async (crypto, currency) => {
+    let helper = require("../../helpers/sell/get-sell-book-order-summary");
+    let data = await helper.sellOrderBookSummary(crypto, currency);
+    return data;
+
+}
 // Get Trade history Data
 var getTradeHistoryData = async (crypto, currency) => {
     let helper = require("../../helpers/trade/get-trade-details");;
@@ -30,26 +44,18 @@ var getUserBalance = async (user_id, crypto, currency) => {
     return data;
 }
 
+var getLatestValue = async (symbol) => {
+    let helper = require("../../helpers/get-bid-ask-latest");
+    let data = await helper.getLatestVaue(symbol);
+    return data;
+}
+
 // Get Card Data
-var getCardData = async (symbol) => {
-    let helper = require("../../helpers/dashboard/get-card-data");
-    let data = await helper.getCardData(symbol);
-    return data;
-}
-
-// Get Depth chart details
-var getDepthChartData = async (crypto, currency) => {
-    let helper = require("../../helpers/chart/get-depth-chart-detail");
-    let data = await helper.getDepthChartDetails(crypto, currency);
-    return data;
-}
-
-// Get Instrument details
-var getInstrumentData = async (currency) => {
-    let helper = require("../../helpers/tradding/get-instrument-data");
-    let data = await helper.getInstrumentData(currency);
-    return data;
-}
+// var getCardData = async (symbol) => {
+//     let helper = require("../../helpers/dashboard/get-card-data");
+//     let data = await helper.getCardData(symbol);
+//     return data;
+// }
 
 // Get Users Completed Orders details
 var getUserOrdersData = async (data) => {
@@ -58,13 +64,14 @@ var getUserOrdersData = async (data) => {
     var crypto = pair[0];
     var currency = pair[1];
     var month = data.month;
+    var limit = data.limit
     if (data.flag == 1) {
         let helper = require("../../helpers/tradding/get-completed-orders");
         let data = await helper.getCompletedOrders(user_id, crypto, currency, month);
         return data;
     } else if (data.flag == 2) {
         let helper = require("../../helpers/tradding/get-pending-orders");
-        let data = await helper.getPendingOrders(user_id, crypto, currency, month);
+        let data = await helper.getPendingOrders(user_id, crypto, currency, month, limit);
         return data;
     } else if (data.flag == 3) {
         let helper = require("../../helpers/tradding/get-cancelled-orders");
@@ -72,6 +79,13 @@ var getUserOrdersData = async (data) => {
         return data;
     }
 }
+
+// // Get All Pending Orders
+// var getAllPendingOrders = async (crypto, currency) => {
+//     let helper = require("../../helpers/tradding/get-all-pending-orders");
+//     let data = await helper.getAllPendingOrders(crypto, currency);
+//     return { data, id: process.env.TRADEDESK_USER_ID };
+// }
 
 // Get Users Cancelled Orders details
 var getCancelledOrdersData = async (user_id, crypto, currency, month) => {
@@ -110,25 +124,45 @@ var getPortfolioData = async (user_id) => {
 
 // Get Activity Data
 var getActivityData = async (user_id) => {
-    console.log(user_id)
+    // console.log(user_id)
     let helper = require("../../controllers/v1/DashboardController");
     let data = await helper.getActivityData(user_id);
+    return data;
+}
+
+// Get last price, 24 hour change, volume
+var getHighInfo = async (pair) => {
+    let helper = require("../tradding/get-socket-value");
+    let data = await helper.getSocketValueData(pair);
+    return data;
+}
+
+// CMS quantity and price precision
+var getTradePrecision = async (pair) => {
+    let helper = require("../get-pair-precision");
+    let data = await helper.getPairPrecision(pair);
     return data;
 }
 
 module.exports = {
     getBuyBookData,
     getSellBookData,
+    getBuyBookDataSummary,
+    getSellBookDataSummary,
     getTradeHistoryData,
     getUserBalance,
-    getCardData,
-    getDepthChartData,
-    getInstrumentData,
+    // getCardData,
+    // getDepthChartData,
+    // getInstrumentData,
     getUserOrdersData,
     getCancelledOrdersData,
     getPendingOrdersData,
+    // getAllPendingOrders,
     getMarketValue,
     getUserFavouritesData,
     getPortfolioData,
-    getActivityData
+    getActivityData,
+    getHighInfo,
+    getLatestValue,
+    getTradePrecision
 }

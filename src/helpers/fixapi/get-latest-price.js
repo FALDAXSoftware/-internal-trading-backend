@@ -1,12 +1,12 @@
 var PriceHistoryModel = require("../../models/PriceHistory")
 
 var latestPrice = async (coin, side) => {
-    try{
-        console.log("coin",coin);
-        console.log("side",side);
+    try {
+        // console.log("coin", coin);
+        // console.log("side", side);
         var get_price
         if (side == "Buy") {
-            console.log(coin);
+            // console.log(coin);
 
             get_price = await PriceHistoryModel
                 .query()
@@ -16,7 +16,7 @@ var latestPrice = async (coin, side) => {
                 .andWhere('type', 1)
                 .andWhere("ask_price", '>', 0)
                 .orderBy('id', 'DESC');
-            console.log("get_price",get_price);
+            // console.log("get_price", JSON.stringify(get_price));
         } else if (side == "Sell") {
             get_price = await PriceHistoryModel
                 .query()
@@ -28,8 +28,8 @@ var latestPrice = async (coin, side) => {
                 .orderBy('id', 'DESC');
         }
         return get_price
-    }catch(err){
-        console.log("err",err);
+    } catch (err) {
+        console.log("err", err);
         return err;
     }
 

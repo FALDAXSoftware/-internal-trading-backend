@@ -7,12 +7,14 @@
     "dev": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "debug": "node app.js"
+    "debug": "node app.js",
+    "migrate": "knex migrate:latest"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "aes-js": "^3.1.2",
+    "amqplib": "^0.5.6",
     "bluebird": "^3.5.3",
     "body-parser": "^1.18.2",
     "bunyan": "^1.8.12",
@@ -21,6 +23,7 @@
     "dom-parser": "^0.1.6",
     "dotenv": "^5.0.1",
     "ejs": "^3.0.1",
+    "elastic-apm-node": "^3.5.0",
     "express": "^4.16.3",
     "express-group-routes": "^1.1.0",
     "express-mailer": "^0.3.1",
@@ -29,7 +32,7 @@
     "i18n": "^0.8.5",
     "image-to-base64": "^2.0.1",
     "jwt-simple": "^0.5.6",
-    "knex": "^0.20.13",
+    "knex": "^0.20.15",
     "moment": "^2.22.2",
     "node-cron": "^1.2.1",
     "node-fetch": "^2.3.0",

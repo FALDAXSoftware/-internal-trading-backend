@@ -1,12 +1,21 @@
 /* Common functions which can be used anywhere */
-
+var constants = require("../config/constants");
 // Used for Response Output in JSON Format
 var jsonFormat = async (res, status, message, data, extra = "") => {
+
+  // if (status == 500) {
+  //   var output = {
+  //     "status": status,
+  //     "err": message,
+  //     "data": data
+  //   };
+  // } else {
   var output = {
     "status": status,
     "message": message,
     "data": data
   };
+  // }
   if (extra != "") {
     output.extra = extra;
   }
@@ -24,7 +33,7 @@ var randomString = (length) => {
 
 // Common Customized Mailer Function to send mail
 var SendEmail = async (res, requestedData) => {
-  console.log(res)
+  // console.log(res)
   if (res == null) {
     var express = require('express');
     var app = express();
@@ -33,7 +42,7 @@ var SendEmail = async (res, requestedData) => {
     // res = app;
     return 1;
   }
-  console.log(res)
+  // console.log(res)
   var EmailTemplate = require("../models/EmailTemplate");
   var template_name = requestedData.template;
   var email = requestedData.email;
@@ -44,17 +53,46 @@ var SendEmail = async (res, requestedData) => {
   var format_data = requestedData.formatData;
 
   let user_language = (user_detail.default_language ? user_detail.default_language : 'en');
-
   let template = await EmailTemplate.getSingleData({
     slug: requestedData.templateSlug
   });
 
+  // let language_content = template.all_content[user_language].content;
+  // let language_subject = template.all_content[user_language].subject;
+
   let language_content = template.all_content[user_language].content;
   let language_subject = template.all_content[user_language].subject;
+  let tradeData = '';
 
+  if (format_data.allTradeData) {
+    var sortedOrderData = format_data.allTradeData;
+    // console.log("sortedOrderData", sortedOrderData)
+    sortedOrderData.sort(function (a, b) { return b.id - a.id });
+    const allTradeData = sortedOrderData;
+    // console.log("allTradeData", allTradeData)
+    tradeData += '<table style="border:1px solid #888;border-collapse:collapse;border-spacing:0;font-size:13px;">'
+    tradeData += '<tr>'
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Filled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Unfilled Quantity(${allTradeData[0].settle_currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Trade Price(${allTradeData[0].currency})</th>`
+    tradeData += `<th style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">Datetime</th>`
+    tradeData += '</tr>'
+    for (let i = 0; i < allTradeData.length; i++) {
+      const remaining = parseFloat(allTradeData[i].fix_quantity) - parseFloat(allTradeData[i].quantity);
+      const datetime = moment(allTradeData[i].created_at).local().format("YYYY-MM-DD HH:mm")
+      tradeData += '<tr>'
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].quantity).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(remaining).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${(allTradeData[i].fill_price).toFixed(8)}</td>`;
+      tradeData += `<td style="border:1px solid #888;border-collapse:collapse;padding:10px;text-align:center;">${datetime}</td>`;
+      tradeData += '</tr>'
+    }
+    tradeData += '</table>'
+  }
+  format_data.allTradeData = tradeData;
   language_content = await module.exports.formatEmail(language_content, format_data);
 
-  console.log(language_content)
+  // console.log(language_content)
 
   try {
     await res.mailer
@@ -74,7 +112,7 @@ var SendEmail = async (res, requestedData) => {
         }
       });
   } catch (err) {
-    console.log("EMail err:", err);
+    console.log("EMail err:", JSON.stringify(err));
     return 0;
   }
 }
@@ -83,7 +121,7 @@ var SendEmail = async (res, requestedData) => {
 var formatEmail = async (emailContent, data) => {
   let rex = /{{([^}]+)}}/g;
   let key;
-  console.log("data", data);
+  // console.log("data", JSON.stringify(data));
   if ("object" in data) {
     data = data.object;
   }
@@ -105,10 +143,40 @@ var formatEmail = async (emailContent, data) => {
 }
 
 // Get User ID
-var getUserId = async function (headers) {
+var getUserId = async function (headers, res) {
   var authorization = headers;
-  var authentication = require("../config/authorization")(authorization);
-  return authentication.user_id;
+  // console.log("authorization", JSON.stringify(authorization));
+  var authentication = await require("../config/authorization")(authorization);
+  // console.log("authentication", JSON.stringify(authentication))
+  if (authentication.status != constants.SUCCESS_CODE) {
+    return res.status(authentication.status).json(authentication);
+  }
+  let user_id = authentication.user_id;
+  if (authentication.isAdmin) {
+    user_id = process.env.TRADEDESK_USER_ID;
+  }
+  return user_id;
+}
+
+// Check Bot or Actual User
+var checkWhichUser = function (user_id) {
+  let check = false;
+  if (user_id == process.env.TRADEDESK_USER_ID) {
+    check = true;
+  }
+  return check;
+}
+
+// Generate Trasnsaction group
+var generateTxGroup = function (user_id) {
+  var result = '';
+  let length = 48;
+  let chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (var i = length; i > 0; --i) result += chars[Math.round(Math.random() * (chars.length - 1))];
+  var current_date = new Date();
+  current_date = current_date.getTime();
+  return values = ("txg_" + user_id + current_date + result).toLocaleLowerCase();
+
 }
 
 module.exports = {
@@ -116,6 +184,8 @@ module.exports = {
   randomString,
   SendEmail,
   formatEmail,
-  getUserId
+  getUserId,
+  checkWhichUser,
+  generateTxGroup,
 }
 

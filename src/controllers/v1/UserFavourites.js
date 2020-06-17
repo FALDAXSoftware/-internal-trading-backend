@@ -9,6 +9,9 @@ const constants = require('../../config/constants');
 var Helper = require("../../helpers/helpers");
 var UserFavouriteModel = require("../../models/UserFavourites");
 var TradeHistoryModel = require("../../models/TradeHistory");
+var UsersModel = require("../../models/UsersModel");
+var KYCModel = require("../../models/KYC");
+
 var Currency = require("../../helpers/currency");
 var { map, sortBy } = require('lodash');
 
@@ -22,7 +25,7 @@ class UserFavourites extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var socket_headers = req.headers;
-            console.log(socket_headers)
+            // console.log(JSON.stringify(socket_headers))
             var authentication = require("../../config/authorization")(socket_headers);
             let user_id = authentication.user_id;
             var symbol = req.query.symbol;
@@ -55,34 +58,36 @@ class UserFavourites extends AppController {
                 average_price = total_price / (price.length);
             }
 
-            var current_price = await TradeHistoryModel
-                .query()
-                .first()
-                .where('settle_currency', crypto)
-                .andWhere('currency', currency)
-                .andWhere('created_at', '<=', today)
-                .andWhere('created_at', '>=', yesterday)
-                .orderBy('id', 'DESC')
+            // var current_price = await TradeHistoryModel
+            //     .query()
+            //     .first()
+            //     .where('settle_currency', crypto)
+            //     .andWhere('currency', currency)
+            //     .andWhere('created_at', '<=', today)
+            //     .andWhere('created_at', '>=', yesterday)
+            //     .orderBy('id', 'DESC')
 
-            if (current_price == undefined) {
+            var current_price = 0.0
+            if (price.length == 0) {
                 current_price = 0;
             } else {
-                current_price = current_price.fill_price;
+                current_price = price[0]['fill_price'];
             }
 
-            var previous_price = await TradeHistoryModel
-                .query()
-                .first()
-                .where('settle_currency', crypto)
-                .andWhere('currency', currency)
-                .andWhere('created_at', '<=', today)
-                .andWhere('created_at', '>=', yesterday)
-                .orderBy('id', 'ASC')
+            // var previous_price = await TradeHistoryModel
+            //     .query()
+            //     .first()
+            //     .where('settle_currency', crypto)
+            //     .andWhere('currency', currency)
+            //     .andWhere('created_at', '<=', today)
+            //     .andWhere('created_at', '>=', yesterday)
+            //     .orderBy('id', 'ASC')
 
-            if (previous_price == undefined) {
+            var previous_price = 0.0
+            if (price.length == 0) {
                 previous_price = 0;
             } else {
-                previous_price = previous_price.fill_price;
+                previous_price = price[price.length - 1]['fill_price'];
             }
 
             var diffrence = current_price - previous_price;
@@ -100,8 +105,8 @@ class UserFavourites extends AppController {
                 flag = true;
             }
 
-            console.log(today)
-            console.log(yesterday)
+            // console.log(today)
+            // console.log(yesterday)
             var tradeorderdetails = await TradeHistoryModel
                 .query()
                 .where('settle_currency', crypto)
@@ -130,7 +135,7 @@ class UserFavourites extends AppController {
                     "data": cardData
                 });
         } catch (error) {
-            console.log("err", error);
+            console.log("err", JSON.stringify(error));
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
         // })
@@ -249,7 +254,7 @@ class UserFavourites extends AppController {
                     "data": cardData
                 });
             } catch (error) {
-                console.log("err", error);
+                console.log("err", JSON.stringify(error));
                 // return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
             }
         })
@@ -314,8 +319,50 @@ class UserFavourites extends AppController {
 
 
         } catch (error) {
-            console.log(error)
+            console.log(JSON.stringify(error))
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
+        }
+    }
+
+    async updateUserTier(req, res) {
+        var getUser = await UsersModel
+            .query()
+            .select("id", "account_tier")
+            .where("deleted_at", null)
+            .andWhere("is_active", true)
+            .orderBy("id", "DESC");
+
+        if (getUser != undefined) {
+            for (let index = 0; index < getUser.length; index++) {
+                const element = getUser[index];
+                var getValueKYC = await KYCModel
+                    .query()
+                    .first()
+                    .select("user_id", "direct_response", "webhook_response")
+                    .where("user_id", element.id)
+                    .andWhere("deleted_at", null)
+                    .orderBy("id", "DESC")
+
+                if (getValueKYC.length != undefined && getValueKYC.direct_response == "ACCEPT" && getValueKYC.webhook_response == "ACCEPT") {
+                    var updateUserTier = await UsersModel
+                        .query()
+                        .where("deleted_at", null)
+                        .andWhere("is_active", true)
+                        .andWhere("id", element.id)
+                        .patch({
+                            account_tier: 1
+                        })
+                } else {
+                    var updateUserTier = await UsersModel
+                        .query()
+                        .where("deleted_at", null)
+                        .andWhere("is_active", true)
+                        .andWhere("id", element.id)
+                        .patch({
+                            account_tier: 0
+                        })
+                }
+            }
         }
     }
 }
