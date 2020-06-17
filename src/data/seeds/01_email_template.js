@@ -1,7 +1,7 @@
 
 exports.seed = function (knex) {
   // Inserts seed entries
-  return knex('email_template_21').update([
+  return knex('email_template').insert([
     {
       "slug": 'trade_execute',
       "name": 'Trade Execution',
