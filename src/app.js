@@ -2,17 +2,17 @@ var dotenv = require('dotenv');
 
 dotenv.load(); // Configuration load (ENV file)
 
-if (process.env.ENVIROMENT == "preprod") {
-  // Add this to the VERY top of the first file loaded in your app
-  var apm = require('elastic-apm-node').start({
-    // Override service name from package.json
-    // Allowed characters: a-z, A-Z, 0-9, -, _, and space
-    serviceName: "internal-trading-preprod-faldax",
+// if (process.env.ENVIROMENT == "preprod") {
+//   // Add this to the VERY top of the first file loaded in your app
+//   var apm = require('elastic-apm-node').start({
+//     // Override service name from package.json
+//     // Allowed characters: a-z, A-Z, 0-9, -, _, and space
+//     serviceName: "internal-trading-preprod-faldax",
 
-    // Set custom APM Server URL (default: http://localhost:8200)
-    serverUrl: 'http://apm.orderhive.plus:8200'
-  })
-}
+//     // Set custom APM Server URL (default: http://localhost:8200)
+//     serverUrl: 'http://apm.orderhive.plus:8200'
+//   })
+// }
 
 var amqp = require('amqplib/callback_api');
 let CONN_URL = process.env.QUEUE_URL;
@@ -133,13 +133,13 @@ io.on('connection', async function (socket) {
     constants = require("./config/constants");
   socket.to("join").emit("test", { name: "le bhai" });
   var socket_headers = socket.request.headers;
-  console.log("socket_headers", socket_headers);
+  // console.log("socket_headers", socket_headers);
   // if ((!socket_headers.authorization || socket_headers.authorization == undefined || socket_headers.authorization == "") || (!socket_headers["x-api-key"] || socket_headers["x-api-key"] == undefined || socket_headers["x-api-key"] == "") ) {
   //   console.log("No auth");
   //   return Error("Not authorized")
   // }
   var authentication = await require("./config/authorization")(socket_headers);
-  console.log("authentication", authentication);
+  // console.log("authentication", authentication);
   var rooms = Object.keys(io.sockets.adapter.sids[socket.id]);
   if (authentication.status > constants.SUCCESS_CODE) {
     socket.emit(constants.USER_LOGOUT, true);
@@ -153,7 +153,7 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
-    console.log("room", room)
+    // console.log("room", room)
 
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     if (room.previous_room) {
