@@ -33,11 +33,11 @@ ingress:
 
 resources:
   limits:
-   cpu: 300m
-   memory: 500Mi
+   cpu: 500m
+   memory: 1024Mi
   requests:
-   cpu: 300m
-   memory: 500Mi
+   cpu: 128m
+   memory: 256Mi
 
 nodeSelector: {}
 
@@ -55,8 +55,8 @@ affinity:
 
 controller:
   autoscaling:
-    enabled: true
-    minReplicas: 2
+    enabled: false
+    minReplicas: 1
     maxReplicas: 6
     targetCPUUtilizationPercentage: 50
     targetMemoryUtilizationPercentage: 60
