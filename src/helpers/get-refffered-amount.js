@@ -27,7 +27,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
         .orderBy("id", "DESC");
 
     var addRefferalAddData = {};
-    console.log("referredUserData", JSON.stringify(referredUserData));
+    // console.log("referredUserData", JSON.stringify(referredUserData));
     if (referredUserData !== undefined && referredUserData.referal_percentage > 0) {
         referral_percentage = parseFloat(referredUserData.referal_percentage);
     } else {
@@ -40,10 +40,10 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
             .orderBy("id", "DESC");
         referral_percentage = parseFloat(referal_data.value);
     }
-    console.log("referral_percentage", referral_percentage);
+    // console.log("referral_percentage", referral_percentage);
     if (referredUserData != undefined) {
-        console.log("user_id", user_id);
-        console.log("trade_object", JSON.stringify(trade_object));
+        // console.log("user_id", user_id);
+        // console.log("trade_object", JSON.stringify(trade_object));
         if (trade_object.user_id == user_id) {
             if (trade_object.side == 'Buy') {
                 collectedAmount = parseFloat(trade_object.taker_fee + (trade_object.quantity * trade_object.taker_fee * (referral_percentage / 100)))

@@ -5,11 +5,11 @@ var pendingOrderDelet = require("../pending/delete-pending-order");
 var CoinModel = require("../../models/Coins");
 
 var stopLimitSell = async (now, pending_order_book) => {
-    console.log("pending_order_book", pending_order_book)
+    // console.log("pending_order_book", pending_order_book)
     var order = pending_order_book;
     var order_id = pending_order_book.id
     var checkLastPrice = await lastTradePrice.getLastTradePrice(order.settle_currency, order.currency);
-    console.log("checkLastPrice", checkLastPrice)
+    // console.log("checkLastPrice", checkLastPrice)
     var activityResult = await activityDetails.getActivityDataId(order.activity_id);
     var coinSql = `SELECT id, coin
                         FROM coins
@@ -27,8 +27,8 @@ var stopLimitSell = async (now, pending_order_book) => {
             currency_coin_id = coinData[i].id;
         }
     }
-    console.log("order.stop_price", order.stop_price)
-    console.log("checkLastPrice <= order.stop_price", checkLastPrice <= order.stop_price)
+    // console.log("order.stop_price", order.stop_price)
+    // console.log("checkLastPrice <= order.stop_price", checkLastPrice <= order.stop_price)
     if (checkLastPrice <= order.stop_price) {
         var sellMatchResponse = await LimitSellMatch.limitSellData(order, order.settle_currency, order.currency, activityResult, null, crypto_coin_id, currency_coin_id);
         if (sellMatchResponse) {

@@ -3,7 +3,7 @@ var PendingBookModel = require("../../models/PendingBook");
 var deletePendingOrder = async (id) => {
     var now = new Date();
 
-    console.log("id", id)
+    // console.log("id", id)
 
     await PendingBookModel
         .query()

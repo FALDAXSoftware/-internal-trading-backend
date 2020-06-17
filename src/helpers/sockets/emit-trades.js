@@ -59,7 +59,7 @@ var emitTrades = async (crypto, currency, userIds) => {
 
     // Broadcast balance update for all user
     for (let index = 0; index < filteredUsers.length; index++) {
-        console.log(JSON.stringify(filteredUsers))
+        // console.log(JSON.stringify(filteredUsers))
         const element = filteredUsers[index];
         let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
         global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)

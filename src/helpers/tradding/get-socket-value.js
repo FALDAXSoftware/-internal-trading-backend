@@ -6,7 +6,7 @@ var Currency = require("../../helpers/currency");
 var getSocketValueData = async (pair) => {
     // var pairData = [];
     try {
-        console.log("pair", pair)
+        // console.log("pair", pair)
         var now = moment
             .utc()
             .format();
@@ -15,9 +15,9 @@ var getSocketValueData = async (pair) => {
             .subtract(1, 'days')
             .format();
 
-        console.log("now", now)
+        // console.log("now", now)
 
-        console.log("yesterday", yesterday)
+        // console.log("yesterday", yesterday)
 
         let { crypto, currency } = await Currency.get_currencies(pair);
         var fiatValueSqlData = await CurrencyConversionModel.knex().raw(`SELECT json(quote->'USD'->'price') as fiat_value, coins.coin_name, 
@@ -27,7 +27,7 @@ var getSocketValueData = async (pair) => {
                                                                         ON coins.coin = currency_conversion.symbol
                                                                         WHERE currency_conversion.deleted_at IS NULL AND (currency_conversion.symbol = '${currency}' OR currency_conversion.symbol = '${crypto}');`);
         fiatValueSqlData = fiatValueSqlData.rows;
-        console.log("fiatValueSqlData", fiatValueSqlData)
+        // console.log("fiatValueSqlData", fiatValueSqlData)
         var fiatValue = 0.0;
         var coin_name = '';
         var coin_icon = '';
@@ -46,10 +46,10 @@ var getSocketValueData = async (pair) => {
             }
         }
 
-        console.log(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
-        FROM trade_history
-        WHERE deleted_at IS NULL AND symbol = '${pair}'
-        AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
+        // console.log(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
+        // FROM trade_history
+        // WHERE deleted_at IS NULL AND symbol = '${pair}'
+        // AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
 
         var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
@@ -65,7 +65,7 @@ var getSocketValueData = async (pair) => {
         //                                                         AND symbol = '${pair}'
         //                                                         AND created_at between '${yesterday}' and '${now}'`)
         priceValue = priceValue.rows[0]
-        console.log("priceValue", priceValue)
+        // console.log("priceValue", priceValue)
 
         // var data = await TradeHistoryModel
         //     .query()
@@ -90,8 +90,8 @@ var getSocketValueData = async (pair) => {
                                                                 ORDER BY trade_history.id ASC
                                                                 LIMIT 1`)
         lastPriceValue = lastPriceValue.rows[0]
-        console.log("firstPriceValue", firstPriceValue);
-        console.log("lastPriceValue", lastPriceValue)
+        // console.log("firstPriceValue", firstPriceValue);
+        // console.log("lastPriceValue", lastPriceValue)
         var current_price = (firstPriceValue == undefined) ? 0.0 : (firstPriceValue.fill_price)
         var previous_price = (lastPriceValue == undefined) ? 0.0 : (lastPriceValue.fill_price)
         var diffrence = (current_price) - previous_price
@@ -122,11 +122,11 @@ var getSocketValueData = async (pair) => {
             "currency_coin_code": currency_coin_code
         }
 
-        console.log("data", data)
+        // console.log("data", data)
 
         return (data);
     } catch (error) {
-        console.log(error)
+        console.log(JSON.stringify(error))
     }
 }
 

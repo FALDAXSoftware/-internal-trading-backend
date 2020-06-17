@@ -19,7 +19,7 @@ var fiatValueHelper = require("../get-fiat-value");
 
 var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
     try {
-        console.log("pending_order_id", pending_order_id)
+        // console.log("pending_order_id", pending_order_id)
         var pairDetails = await PairsModel
             .query()
             .first()
@@ -27,7 +27,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             .where("deleted_at", null)
             .andWhere("name", sellLimitOrderData.symbol)
             .orderBy("id", "DESC")
-        console.log("pairDetails", pairDetails)
+        // console.log("pairDetails", pairDetails)
         var quantityValue = parseFloat(sellLimitOrderData.quantity).toFixed(pairDetails.quantity_precision);
         var userIds = [];
         userIds.push(parseInt(sellLimitOrderData.user_id));
@@ -211,7 +211,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         var tradingFees = await TradingFees.getTraddingFees(request);
                     }
 
-                    console.log("tradingFees", tradingFees)
+                    // console.log("tradingFees", tradingFees)
 
                     trade_history_data.user_fee = tradingFees.userFee;
                     trade_history_data.requested_fee = tradingFees.requestedFee;
@@ -377,7 +377,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
                     }
                 } else {
-                    console.log("ELSE", remainningQuantity)
+                    // console.log("ELSE", remainningQuantity)
                     var remainningQuantity = sellLimitOrderData.quantity - buyBook[0].quantity;
                     remainningQuantity = parseFloat(remainningQuantity).toFixed(pairDetails.quantity_precision);
                     var sellAddedData = {
@@ -414,7 +414,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     trade_history_data.created_at = new Date();
                     trade_history_data.is_stop_limit = flag;
                     var activityResult = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, trade_history_data);
-                    console.log("activityResult", JSON.stringify(activityResult))
+                    // console.log("activityResult", JSON.stringify(activityResult))
 
                     var request = {
                         requested_user_id: trade_history_data.requested_user_id,
@@ -439,7 +439,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         var tradingFees = await TradingFees.getTraddingFees(request);
                     }
 
-                    console.log("tradingFees", tradingFees)
+                    // console.log("tradingFees", tradingFees)
 
                     trade_history_data.user_fee = (tradingFees.userFee)
                     trade_history_data.requested_fee = (tradingFees.requestedFee);
@@ -451,7 +451,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     // trade_history_data.txn_group_id = txnGroupId;
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
-                    console.log(JSON.stringify(trade_history_data))
+                    // console.log(JSON.stringify(trade_history_data))
 
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
                     allOrderData.push(tradeHistory)
@@ -605,7 +605,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
                     }
                 }
-                console.log("sellLimitOrderData.quantity", sellLimitOrderData.quantity)
+                // console.log("sellLimitOrderData.quantity", sellLimitOrderData.quantity)
                 var sellAddedData = {
                     ...sellLimitOrderData
                 }
@@ -807,7 +807,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     }
                 }
             }
-            console.log("sellLimitOrderData.quantity", sellLimitOrderData)
+            // console.log("sellLimitOrderData.quantity", sellLimitOrderData)
             var sellAddedData = {
                 ...sellLimitOrderData
             }
@@ -824,12 +824,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 sellAddedData.is_stop_limit = true;
             }
             var activity = await ActivityHelper.addActivityData(sellAddedData);
-            console.log("activity", activity)
+            // console.log("activity", activity)
             sellAddedData.is_partially_fulfilled = true;
             sellAddedData.is_filled = false;
             sellAddedData.activity_id = activity.id;
             sellAddedData.added = true;
-            console.log("sellAddedData", sellAddedData)
+            // console.log("sellAddedData", sellAddedData)
             var addSellBook = await SellAdd.SellOrderAdd(sellAddedData, crypto_coin_id);
 
             if (pending_order_id != 0) {
@@ -903,7 +903,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         }
     } catch (error) {
-        console.log((error));
+        console.log(JSON.stringify(error));
     }
 }
 

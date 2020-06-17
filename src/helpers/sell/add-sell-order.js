@@ -12,7 +12,7 @@ var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
         .query()
         .insertAndFetch({ ...sellLimitOrderData });
 
-    console.log("buyAdd", JSON.stringify(sellAdd));
+    // console.log("buyAdd", JSON.stringify(sellAdd));
 
     if (sellLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
         return (sellAdd);
@@ -29,7 +29,7 @@ var SellOrderAdd = async (sellLimitOrderData, crypto_coin_id) => {
 
     var balance = walletBalance.placed_balance;
     var updatedBalance = balance - total_price;
-    console.log(updatedBalance)
+    // console.log(updatedBalance)
     var updatedBalance = parseFloat((updatedBalance).toFixed(6));
 
     var walletUpdate = await WalletModel
