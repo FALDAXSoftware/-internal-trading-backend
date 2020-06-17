@@ -8,10 +8,10 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
     - port: 80
-      targetPort: {{ .Values.nodeport }}  
+      targetPort: {{ .Values.nodeport }}
       protocol: TCP
       name: http
   selector:
