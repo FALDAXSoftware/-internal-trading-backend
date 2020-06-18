@@ -42,7 +42,7 @@ resources:
 nodeSelector: {}
 
 tolerations:
-- key: kops.k8s.io/instancegroup
+- key: env
   operator: Equal
   value: internal-trading
   effect: NoSchedule
