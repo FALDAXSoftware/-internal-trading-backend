@@ -41,7 +41,11 @@ resources:
 
 nodeSelector: {}
 
-tolerations: []
+tolerations:
+- key: kops.k8s.io/instancegroup
+  operator: Equal
+  value: internal-trading
+  effect: NoSchedule
 
 affinity:
   nodeAffinity:
@@ -52,6 +56,7 @@ affinity:
           operator: In
           values:
           - internal-trading
+  
 
 controller:
   autoscaling:
