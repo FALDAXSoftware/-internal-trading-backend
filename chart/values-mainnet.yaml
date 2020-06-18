@@ -17,8 +17,12 @@ nodeport: 3011
 ingress:
   enabled: true
   annotations:
+    kubernetes.io/tls-acme: "true"
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-2:496403030999:certificate/c789b806-1990-4ff0-8e95-011a9727b80c
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    kubernetes.io/ingress.class: alb
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-  path: /
+  path: /*
 
   hosts:
     - mainnet-trading.faldax.com
@@ -29,15 +33,19 @@ ingress:
 
 resources:
   limits:
-   cpu: 300m
-   memory: 500Mi
+   cpu: 1024m
+   memory: 1500Mi
   requests:
-   cpu: 300m
-   memory: 500Mi
+   cpu: 128m
+   memory: 256Mi
 
 nodeSelector: {}
 
-tolerations: []
+tolerations:
+- key: kops.k8s.io/instancegroup
+  operator: Equal
+  value: internal-trading
+  effect: NoSchedule
 
 affinity:
   nodeAffinity:
@@ -47,20 +55,21 @@ affinity:
         - key: kops.k8s.io/instancegroup
           operator: In
           values:
-          - nodes
+          - internal-trading
+  
 
 controller:
   autoscaling:
-    enabled: true
+    enabled: false
     minReplicas: 1
-    maxReplicas: 6
+    maxReplicas: 1
     targetCPUUtilizationPercentage: 50
     targetMemoryUtilizationPercentage: 60
 
 health:
   enable: true
   livenessProbe:
-    path: /health-check
+    path: /api/v1/tradding/system-health-check
     port: 3011
     initialDelaySeconds: 120
     periodSeconds: 30
@@ -68,7 +77,7 @@ health:
     successThreshold: 1
     timeoutSeconds: 5
   readinessProbe:
-    path: /health-check
+    path: /api/v1/tradding/system-health-check
     port: 3011
     initialDelaySeconds: 60
     periodSeconds: 10
