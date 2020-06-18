@@ -100,6 +100,10 @@ exports.up = async function (knex) {
         .alterTable("roles", tbl => {
             tbl.specificType('allowed_pairs', "text");
         })
+        .alterTable("tiers", tbl => {
+            tbl.specificType("daily_withdraw_limit", "character varying");
+            tbl.specificType("monthly_withdraw_limit", "character varying");
+        })
         .alterTable("sell_book", tbl => {
             tbl.boolean("is_stop_limit").defaultTo(false)
             tbl.string('placed_by');
