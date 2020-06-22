@@ -130,9 +130,17 @@ var getActivityData = async (user_id) => {
     return data;
 }
 
+// Get last price, 24 hour change, volume
 var getHighInfo = async (pair) => {
     let helper = require("../tradding/get-socket-value");
     let data = await helper.getSocketValueData(pair);
+    return data;
+}
+
+// CMS quantity and price precision
+var getTradePrecision = async (pair) => {
+    let helper = require("../get-pair-precision");
+    let data = await helper.getPairPrecision(pair);
     return data;
 }
 
@@ -155,5 +163,6 @@ module.exports = {
     getPortfolioData,
     getActivityData,
     getHighInfo,
-    getLatestValue
+    getLatestValue,
+    getTradePrecision
 }
