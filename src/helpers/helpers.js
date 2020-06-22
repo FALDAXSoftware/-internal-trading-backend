@@ -117,6 +117,47 @@ var SendEmail = async (res, requestedData) => {
   }
 }
 
+var sendSMS = async (requestedData) => {
+  var getDecryptText = require("./get-decrypt-data");
+  var twilio = require('twilio');
+  var SmsTemplateModel = require("../models/SmsTemplate");
+  var account_sid = await getDecryptText.getDecryptData(process.env.TWILLIO_ACCOUNT_SID);
+  var accountSid = account_sid; // Your Account SID from www.twilio.com/console
+  var authToken = await getDecryptText.getDecryptData(process.env.TWILLIO_ACCOUNT_AUTH_TOKEN); // Your Auth Token from www.twilio.com/console
+  var accountNumber = await getDecryptText.getDecryptData(process.env.TWILLIO_ACCOUNT_FROM_NUMBER);
+
+  console.log("accountSid", accountSid);
+  console.log("authToken", authToken);
+  console.log("accountNumber", accountNumber)
+
+  var bodyValue = await SmsTemplateModel
+    .query()
+    .select()
+    .first()
+    .where("deleted_at", null)
+    // .andWhere("slug", requestedData.templateSlug)
+    .andWhere("slug", "trade_execute")
+    .orderBy("id", "DESC");
+
+  console.log("bodyValue", bodyValue)
+
+  //Twilio Integration
+  var client = new twilio(accountSid, authToken);
+  //Sending SMS to users 
+  client.messages.create({
+    body: bodyValue.content,
+    to: 7016540802, // Text this number
+    from: accountNumber // From a valid Twilio number
+  }).then((message) => {
+    console.log("message", message)
+    // return exits.success();
+  })
+    .catch((err) => {
+      console.log("ERROR >>>>>>>>>>>", err)
+    })
+
+}
+
 // Format Email
 var formatEmail = async (emailContent, data) => {
   let rex = /{{([^}]+)}}/g;
@@ -187,5 +228,6 @@ module.exports = {
   getUserId,
   checkWhichUser,
   generateTxGroup,
+  sendSMS
 }
 

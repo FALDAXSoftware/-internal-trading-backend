@@ -47,6 +47,9 @@ router.get("/depth-chart-details", DashboardController.getDepthChartDetails)
 router.get("/get-user-trade-history", TradeController.getUserOrdersData);
 router.get("/system-health-check", TradeController.getHealthCheck)
 
+router.get("/update-user-details", UserFavouritesController.updateUserTier);
+router.get("/send-sms", UserFavouritesController.sendSms);
+
 // Trading View API
 router.get('/tradingview/config', TradingViewController.getConfig);
 router.get('/tradingview/time', TradingViewController.getCurrentTime);

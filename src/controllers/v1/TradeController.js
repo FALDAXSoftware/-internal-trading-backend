@@ -336,7 +336,7 @@ class TradeController extends AppController {
               }
               if (userNotification.text == true || userNotification.text == "true") {
                 if (user_data.phone_number != undefined) {
-                  // await sails.helpers.notification.send.text("trade_execute", user_data)
+                  await sails.helpers.notification.send.text(allData)
                 }
               }
             }

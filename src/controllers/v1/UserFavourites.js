@@ -327,14 +327,17 @@ class UserFavourites extends AppController {
     async updateUserTier(req, res) {
         var getUser = await UsersModel
             .query()
-            .select("id", "account_tier")
+            .select("id", "account_tier", "is_terms_agreed  ")
             .where("deleted_at", null)
             .andWhere("is_active", true)
-            .orderBy("id", "DESC");
+            .orderBy("id", "ASC");
+
+        console.log("getUser", getUser)
 
         if (getUser != undefined) {
             for (let index = 0; index < getUser.length; index++) {
                 const element = getUser[index];
+                console.log("element", element)
                 var getValueKYC = await KYCModel
                     .query()
                     .first()
@@ -342,28 +345,38 @@ class UserFavourites extends AppController {
                     .where("user_id", element.id)
                     .andWhere("deleted_at", null)
                     .orderBy("id", "DESC")
+                console.log("getValueKYC", getValueKYC)
 
-                if (getValueKYC.length != undefined && getValueKYC.direct_response == "ACCEPT" && getValueKYC.webhook_response == "ACCEPT") {
+                if (getValueKYC != undefined && getValueKYC.direct_response == "ACCEPT" && getValueKYC.webhook_response == "ACCEPT") {
+                    console.log("INSIDE IF")
                     var updateUserTier = await UsersModel
                         .query()
                         .where("deleted_at", null)
                         .andWhere("is_active", true)
                         .andWhere("id", element.id)
                         .patch({
-                            account_tier: 1
+                            account_tier: 1,
+                            is_user_updated: (element.is_terms_agreed == true) ? (true) : (false)
                         })
                 } else {
+                    console.log("INSIDE ELSE")
                     var updateUserTier = await UsersModel
                         .query()
                         .where("deleted_at", null)
                         .andWhere("is_active", true)
                         .andWhere("id", element.id)
                         .patch({
-                            account_tier: 0
+                            account_tier: 0,
+                            is_user_updated: (element.is_terms_agreed == true) ? (true) : (false)
                         })
                 }
             }
         }
+    }
+
+    async sendSms(req, res) {
+        var object = {}
+        var getValue = await Helper.sendSMS(object)
     }
 }
 

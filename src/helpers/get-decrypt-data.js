@@ -1,17 +1,11 @@
-module.exports = function (data) {
-    var constants = require("../config/constants")
-    var aesjs = require('aes-js');
+var aesjs = require('aes-js');
 
-    // Get decrypt data.
-    var decryptData;
-    var key = JSON.parse(constants.SECRET_KEY);
-    var iv = JSON.parse(constants.SECRET_IV);
-
-    // console.log(key)
-    // console.log(iv)
+var getDecryptData = async (text) => {
+    var key = process.env.key;
+    var iv = process.env.iv;
 
     // When ready to decrypt the hex string, convert it back to bytes
-    var encryptedBytes = aesjs.utils.hex.toBytes(data);
+    var encryptedBytes = aesjs.utils.hex.toBytes(text);
     // The output feedback mode of operation maintains internal state,
     // so to decrypt a new instance must be instantiated.
     var aesOfb = new aesjs.ModeOfOperation.ofb(key, iv);
@@ -19,6 +13,11 @@ module.exports = function (data) {
 
     // Convert our bytes back into text
     var decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
+
     // Send back the result through the success exit.
-    return decryptedText;
+    return (decryptedText);
+}
+
+module.exports = {
+    getDecryptData
 }
