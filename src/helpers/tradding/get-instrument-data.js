@@ -86,9 +86,12 @@ var getInstrumentData = async () => {
 
         if (isNaN(percentChange)) {
             percentChange = 0;
-        } else if (percentChange == '-Infinity') {
+        } else if (percentChange == '-Infinity' || percentChange == 'Infinity') {
             percentChange = 0;
-        } else {
+        } else if (percentChange == undefined) {
+            percentChange = 0;
+        }
+        else {
             percentChange = percentChange;
         }
 
