@@ -56,7 +56,7 @@ timeout(9){
             container('node'){ 
                 if ( "${myRepo.GIT_BRANCH}" == "preprod"  ){
                     withAWS(credentials:'jenkins_s3_upload') {
-                        s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
+                        s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/preprod/.env", force:true)
                     }
                     sh "mv .env src/.env && cd src && npm install"
                 }
