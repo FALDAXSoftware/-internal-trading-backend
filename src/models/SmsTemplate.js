@@ -6,7 +6,7 @@ var Cryptr = require('cryptr'),
     cryptr = new Cryptr(require('../config/secret')());
 const visibilityPlugin = require('objection-visibility');
 
-class AdminSetting extends visibilityPlugin((AppModel)) {
+class SmsTemplate extends visibilityPlugin((AppModel)) {
 
     constructor() {
         super();
@@ -67,6 +67,22 @@ class AdminSetting extends visibilityPlugin((AppModel)) {
             properties: {}
         };
     }
+
+    // Get Single Data
+    static async getSingleData(filter, select = "") {
+        if (select != "") {
+            select = select;
+        } else {
+            select = "*";
+        }
+        var getData = await SmsTemplate
+            .query()
+            .select(select)
+            .where(filter)
+            .first();
+
+        return getData;
+    }
 }
 
-module.exports = AdminSetting;
+module.exports = SmsTemplate;
