@@ -46,16 +46,30 @@ var getSocketValueData = async (pair) => {
             }
         }
 
-        // console.log(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
-        // FROM trade_history
-        // WHERE deleted_at IS NULL AND symbol = '${pair}'
-        // AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
+        console.log(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
+        FROM trade_history
+        WHERE deleted_at IS NULL AND symbol = '${pair}'
+        AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
 
         var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
                                                             WHERE deleted_at IS NULL AND symbol = '${pair}'
-                                                            AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
+                                                            AND created_at <= '${now}' AND created_at >= '${yesterday}'
+                                                            LIMIT 1;`)
 
+        // var priceValue = await TradeHistoryModel
+        //     .query()
+        //     .max("fill_price as high")
+        //     .min("fill_price as low")
+        //     .sum("(quantity * fill_price) as volume")
+        //     // .select("max(fill_price) as high", "min(fill_price) as low", "SUM(quantity * fill_price) as volume")
+        //     .where("deleted_at", null)
+        //     .andWhere("symbol", pair)
+        //     .andWhere("created_at", "<=", now)
+        //     .andWhere("created_at", ">=", yesterday)
+        //     .limit(1);
+
+        console.log("priceValue", priceValue)
 
         // var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high,
         //                                                         min(fill_price) as low,
@@ -71,27 +85,54 @@ var getSocketValueData = async (pair) => {
         //     .query()
         //     .select()
 
-        var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon, trade_history.side
-                                                                FROM trade_history
-                                                                LEFT JOIN coins
-                                                                ON coins.coin = trade_history.settle_currency
-                                                                WHERE trade_history.deleted_at IS NULL AND trade_history.symbol = '${pair}'
-                                                                AND trade_history.created_at >= '${yesterday}' AND trade_history.created_at <= '${now}'
-                                                                ORDER BY trade_history.id DESC
-                                                                LIMIT 1`)
-        firstPriceValue = firstPriceValue.rows[0]
+        // var firstPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin_name, coins.coin_icon, trade_history.side
+        //                                                         FROM trade_history
+        //                                                         LEFT JOIN coins
+        //                                                         ON coins.coin = trade_history.settle_currency
+        //                                                         WHERE trade_history.deleted_at IS NULL AND trade_history.symbol = '${pair}'
+        //                                                         AND trade_history.created_at >= '${yesterday}' AND trade_history.created_at <= '${now}'
+        //                                                         ORDER BY trade_history.id DESC
+        //                                                         LIMIT 1`)
+        // firstPriceValue = firstPriceValue.rows[0]
 
-        var lastPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin, coins.coin_icon
-                                                                FROM trade_history
-                                                                LEFT JOIN coins
-                                                                ON coins.coin = trade_history.currency
-                                                                WHERE trade_history.deleted_at IS NULL AND trade_history.symbol = '${pair}' 
-                                                                AND trade_history.created_at >= '${yesterday}' AND trade_history.created_at <= '${now}'
-                                                                ORDER BY trade_history.id ASC
-                                                                LIMIT 1`)
-        lastPriceValue = lastPriceValue.rows[0]
+        var firstPriceValue = await TradeHistoryModel
+            .query()
+            .select("trade_history.fill_price", "coins.coin_name", "coins.coin_icon", "trade_history.side")
+            .leftJoin('coins', "coins.coin", "trade_history.settle_currency")
+            .where("trade_history.deleted_at", null)
+            .andWhere("trade_history.symbol", pair)
+            .andWhere("trade_history.created_at", ">=", yesterday)
+            .andWhere("trade_history.created_at", '<=', now)
+            .orderBy("trade_history.id", "ASC")
+            .limit(1);
+
+        firstPriceValue = firstPriceValue[0]
+        console.log("firstPriceValue", firstPriceValue)
+
+        // var lastPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin, coins.coin_icon
+        //                                                         FROM trade_history
+        //                                                         LEFT JOIN coins
+        //                                                         ON coins.coin = trade_history.currency
+        //                                                         WHERE trade_history.deleted_at IS NULL AND trade_history.symbol = '${pair}' 
+        //                                                         AND trade_history.created_at >= '${yesterday}' AND trade_history.created_at <= '${now}'
+        //                                                         ORDER BY trade_history.id ASC
+        //                                                         LIMIT 1`)
+
+        var lastPriceValue = await TradeHistoryModel
+            .query()
+            .select("trade_history.fill_price", "coins.coin", "coins.coin_icon")
+            .leftJoin('coins', "coins.coin", "trade_history.currency")
+            .where("trade_history.deleted_at", null)
+            .andWhere("trade_history.symbol", pair)
+            .andWhere("trade_history.created_at", ">=", yesterday)
+            .andWhere("trade_history.created_at", '<=', now)
+            .orderBy("trade_history.id", "ASC")
+            .limit(1);
+
+        // lastPriceValue = lastPriceValue.rows[0]
+        lastPriceValue = lastPriceValue[0]
         // console.log("firstPriceValue", firstPriceValue);
-        // console.log("lastPriceValue", lastPriceValue)
+        console.log("lastPriceValue", lastPriceValue)
         var current_price = (firstPriceValue == undefined) ? 0.0 : (firstPriceValue.fill_price)
         var previous_price = (lastPriceValue == undefined) ? 0.0 : (lastPriceValue.fill_price)
         var diffrence = (current_price) - previous_price
@@ -122,11 +163,11 @@ var getSocketValueData = async (pair) => {
             "currency_coin_code": currency_coin_code
         }
 
-        // console.log("data", data)
+        console.log("data", data)
 
         return (data);
     } catch (error) {
-        console.log(JSON.stringify(error))
+        console.log((error))
     }
 }
 
