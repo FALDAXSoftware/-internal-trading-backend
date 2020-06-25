@@ -33,11 +33,11 @@ var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 var latestBidPrice = require("../../helpers/get-bid-ask-latest");
 var QueueValue = require("./QueueController");
 var ActivityHelper = require("../../helpers/activity/add");
-const redis = require("redis");
-const axios = require("axios");
-const port_redis = 6379;
+// const redis = require("redis");
+// const axios = require("axios");
+// const port_redis = 6379;
 
-const redis_client = redis.createClient(port_redis);
+// const redis_client = redis.createClient(port_redis);
 
 class DashboardController extends AppController {
 
