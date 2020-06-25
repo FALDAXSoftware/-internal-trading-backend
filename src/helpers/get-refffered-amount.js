@@ -4,6 +4,7 @@ var coinsModel = require("../models/Coins");
 var ReferralModel = require("../models/Referral");
 
 var getAmount = async (trade_object, user_id, transaction_id) => {
+    console.log("user_id, transaction_id", user_id, transaction_id)
     var referral_percentage = 0;
     var collectedAmount = 0;
     var collectCoin;
@@ -40,13 +41,17 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
             .orderBy("id", "DESC");
         referral_percentage = parseFloat(referal_data.value);
     }
-    // console.log("referral_percentage", referral_percentage);
+    console.log("referralData", referralData)
+    console.log("referredUserData", referredUserData)
+    console.log("referral_percentage", referral_percentage);
     if (referredUserData != undefined) {
-        // console.log("user_id", user_id);
-        // console.log("trade_object", JSON.stringify(trade_object));
+        console.log("user_id", user_id);
+        console.log("trade_object", JSON.stringify(trade_object));
         if (trade_object.user_id == user_id) {
             if (trade_object.side == 'Buy') {
+                console.log("trade_object.user_fee", trade_object.user_fee)
                 collectedAmount = parseFloat(trade_object.user_fee - (trade_object.quantity * trade_object.user_fee * (referral_percentage / 100)))
+                console.log("collectedAmount", collectedAmount)
                 collectCoin = trade_object.settle_currency;
                 coinData = await coinsModel
                     .query()
@@ -71,9 +76,10 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                         ...addRefferalAddData
                     })
             } else if (trade_object.side == 'Sell') {
+                console.log("trade_object.user_fee", trade_object.user_fee)
                 collectedAmount = parseFloat(trade_object.user_fee - (trade_object.fill_price * trade_object.quantity * trade_object.user_fee * (referral_percentage / 100)))
+                console.log("collectedAmount", collectedAmount)
                 collectCoin = trade_object.currency;
-
                 coinData = await coinsModel
                     .query()
                     .first()
@@ -99,6 +105,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
             }
         } else if (trade_object.requested_user_id == user_id) {
             if (trade_object.side == "Buy") {
+                console.log("collectedAmount", collectedAmount)
                 collectedAmount = parseFloat(trade_object.requested_fee - (trade_object.fill_price * trade_object.quantity * trade_object.requested_fee * (referral_percentage / 100)))
                 collectCoin = trade_object.currency;
 
@@ -125,9 +132,9 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                         ...addRefferalAddData
                     })
             } else if (trade_object.side == "Sell") {
+                console.log("collectedAmount", collectedAmount)
                 collectedAmount = parseFloat(trade_object.requested_fee - (trade_object.quantity * trade_object.requested_fee * (referral_percentage / 100)))
                 collectCoin = trade_object.settle_currency;
-
                 coinData = await coinsModel
                     .query()
                     .first()

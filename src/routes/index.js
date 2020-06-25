@@ -11,10 +11,87 @@ var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
 
+// const redis = require("redis");
+// const axios = require("axios");
+// const port_redis = 6379;
+
+// const redis_client = redis.createClient(port_redis);
+
 router.get("/soc", function (req, res) {
   io.emit('user-connecting', { name: req.user.name });
   return res.json({ status: 1 })
 });
+
+// //Middleware Function to Check Cache
+// checkCache = (req, res, next) => {
+//   // console.log("req", req)
+//   // console.log("INISDE CACHE CHECKING")
+//   var { symbol } = req.query;
+//   console.log(symbol)
+//   redis_client.get(symbol, async (err, data) => {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).send(err);
+//     }
+//     //if no match found
+//     if (data != null) {
+//       res.send(data);
+//     } else {
+//       //proceed to next middleware function
+//       // app.use('/', require('./routes/index'));
+//       next();
+//       // console.log("NO CACHE FOUND")
+//       // var { symbol, resolution, from, to } = req.query;
+//       // console.log("symbol, resolution, from, to", symbol, resolution, from, to)
+//       // const starShipInfo = await axios.get(
+//       //   `http://localhost:3013/cached/trading/view?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}`
+//       // );
+
+//       // console.log("starShipInfo", starShipInfo.data)
+//       // //get data from response
+//       // const starShipInfoData = starShipInfo.data;
+//       // var value = {
+//       //   'symbol': symbol,
+//       //   'resolution': resolution,
+//       //   from: from,
+//       //   to: to
+//       // }
+
+//       // var dataValue = value.symbol + '-' + value.resolution;
+//       // console.log("dataValue", dataValue);
+//       // console.log("JSON.stringify(starShipInfoData)", JSON.stringify(starShipInfoData))
+//       // // }
+
+
+//       // //add data to Redis
+//       // redis_client.setex(dataValue, 10, JSON.stringify(starShipInfoData));
+
+//       // return res
+//       //   .status(200)
+//       //   .json(starShipInfoData)
+//     }
+//   });
+// };
+
+// //Middleware Function to Check Cache
+// checkInstrumentCache = (req, res, next) => {
+//   // console.log("req", req)
+//   console.log("INISDE CACHE CHECKING")
+//   redis_client.get("instrument", async (err, data) => {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).send(err);
+//     }
+//     //if no match found
+//     if (data != null) {
+//       res.send(data);
+//     } else {
+//       //proceed to next middleware function
+//       // app.use('/', require('./routes/index'));
+//       next();
+//     }
+//   });
+// };
 
 // router.post('/orders/market-sell-create', TradeController.marketSell);
 // router.post('/orders/market-buy-create', TradeController.marketBuy);
@@ -41,8 +118,12 @@ router.get("/get-pairs-value", TradeDesk.getQuantityMinMaxValue);
 router.post("/update-pairs-value", TradeDesk.updateQuantityMinMaxValue)
 router.get("/get-spread-value", TradeDesk.getSpreadValue)
 router.get("/get-tradedesk-user-balances", TradeDesk.getWalletTradeDeskBalance)
-router.get("/get-instrument-data", DashboardController.getInstrumentDataValue)
-router.get("/depth-chart-details", DashboardController.getDepthChartDetails)
+router.get("/get-instrument-value-data", checkInstrumentCache, DashboardController.getInstrumentDataValue)
+router.get("/cached-instrument-details", DashboardController.getCachedInstrumentDataValue)
+router.get("/get-instrument-data", DashboardController.getInstrumentValue)
+router.get("/depth-chart-details-value", checkCache, DashboardController.getDepthChartDetails)
+router.get("/cached-depth-chart-details", DashboardController.getCachedDepthChartDetails)
+router.get("/depth-chart-details", DashboardController.getValueDepthChartDetails)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 router.get("/get-user-trade-history", TradeController.getUserOrdersData);
 router.get("/system-health-check", TradeController.getHealthCheck)
