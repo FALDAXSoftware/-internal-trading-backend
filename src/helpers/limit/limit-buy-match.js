@@ -137,6 +137,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
                                 quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
                             });
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             var userData = userIds;
                             var tradeData = allOrderData;
 
@@ -215,6 +216,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             }
                         } else {
                             await sellDelete.deleteSellOrder(sellBook[0].id);
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             var userData = userIds;
                             var tradeData = allOrderData;
 
