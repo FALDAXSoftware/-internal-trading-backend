@@ -2,6 +2,7 @@ var amqp = require('amqplib/callback_api');
 let CONN_URL = process.env.QUEUE_URL;
 const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
 let ch = null;
+console.log("CONN_URL", CONN_URL)
 amqp.connect(CONN_URL, opt, (err, conn) => {
     // console.log("---------------------------------");
     // console.log("---------------------------------");
@@ -38,7 +39,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         });
         channel.prefetch(1)
         ch = channel;
-        // console.log("ch", ch)
+        console.log("ch", ch)
         // console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
         ch.consume(process.env.PENDING_QUEUE_NAME, async (msg, err) => {
             // console.log("msg", msg)
@@ -228,10 +229,10 @@ var publishToQueue = async (queueName, data) => {
 
 var cronPublishToQueue = async (queueName, data) => {
     try {
-        // console.log({
-        //     queueName,
-        //     data
-        // });
+        console.log({
+            queueName,
+            data
+        });
         var dataValue = ch.assertQueue(queueName, {
             maxPriority: 2
         });
