@@ -32,7 +32,12 @@ var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 // var fetSocketInfo = require("../../helpers/tradding/get-socket-value");
 var latestBidPrice = require("../../helpers/get-bid-ask-latest");
 var QueueValue = require("./QueueController");
-var ActivityHelper = require("../../helpers/activity/add")
+var ActivityHelper = require("../../helpers/activity/add");
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
+
+const redis_client = redis.createClient(port_redis);
 
 class DashboardController extends AppController {
 
@@ -974,6 +979,31 @@ class DashboardController extends AppController {
 
     async getInstrumentDataValue(req, res) {
         try {
+
+            const starShipInfo = await axios.get(
+                `http://localhost:3012/api/v1/tradding/cached-instrument-details`
+            );
+
+            var starShipInfoValue = starShipInfo.data;
+
+            redis_client.setex("instrument", 10, JSON.stringify(starShipInfoValue));
+            return res.status(200)
+                .json(starShipInfo.data)
+
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" + user_id,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
+        }
+    }
+
+    async getCachedInstrumentDataValue(req, res) {
+        try {
+
             var instrumentDataValue = await intrumentData.getInstrumentData();
 
             await logger.info({
@@ -991,12 +1021,12 @@ class DashboardController extends AppController {
                 });
         } catch (error) {
             console.log(JSON.stringify(error));
-            await logger.info({
-                "module": "Portfolio Data",
-                "user_id": "user_" + user_id,
-                "url": "Trade Function",
-                "type": "Success"
-            }, error)
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" + user_id,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
         }
     }
 
@@ -1006,7 +1036,55 @@ class DashboardController extends AppController {
                 symbol,
                 limit
             } = req.query;
+            // let { crypto, currency } = await Currency.get_currencies(symbol);
+
+            // console.log("symbol", symbol)
+
+            const starShipInfo = await axios.get(
+                `http://localhost:3012/api/v1/tradding/cached-depth-chart-details?symbol=${symbol}`
+            );
+
+            // console.log("starShipInfo", starShipInfo.data.data)
+
+            var starShipInfoValue = starShipInfo.data;
+
+            redis_client.setex(symbol, 10, JSON.stringify(starShipInfoValue));
+            return res.status(200)
+                .json(starShipInfo.data)
+
+            // var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
+            // await logger.info({
+            //     "module": "Depth Chart Data",
+            //     "user_id": "user_",
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, i18n.__("depth data").message + "  " + depthChartValue)
+            // return res
+            //     .status(200)
+            //     .json({
+            //         "status": constants.SUCCESS_CODE,
+            //         "message": i18n.__("depth data").message,
+            //         "data": depthChartValue
+            //     });
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" ,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
+        }
+    }
+
+    async getCachedDepthChartDetails(req, res) {
+        try {
+            var {
+                symbol,
+                limit
+            } = req.query;
             let { crypto, currency } = await Currency.get_currencies(symbol);
+
             var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
             await logger.info({
                 "module": "Depth Chart Data",
@@ -1023,12 +1101,41 @@ class DashboardController extends AppController {
                 });
         } catch (error) {
             console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" + user_id,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
+        }
+    }
+
+    async getInstrumentValue(req, res) {
+        try {
+
+            var instrumentDataValue = await intrumentData.getInstrumentData();
+
             await logger.info({
-                "module": "Portfolio Data",
-                "user_id": "user_" + user_id,
+                "module": "Instrument Data",
+                "user_id": "user_",
                 "url": "Trade Function",
                 "type": "Success"
-            }, error)
+            }, i18n.__("instrument data").message + "  " + instrumentDataValue)
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("instrument data").message,
+                    "data": instrumentDataValue
+                });
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" + user_id,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
         }
     }
 }

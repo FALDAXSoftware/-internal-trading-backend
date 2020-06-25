@@ -1829,7 +1829,7 @@ class TradeController extends AppController {
         }
       }
       // Check for referral
-      let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
+      // let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
     } else {
 
       var userNotification = await UserNotifications.getSingleData({

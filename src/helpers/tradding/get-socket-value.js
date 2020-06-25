@@ -46,10 +46,10 @@ var getSocketValueData = async (pair) => {
             }
         }
 
-        console.log(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
-        FROM trade_history
-        WHERE deleted_at IS NULL AND symbol = '${pair}'
-        AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
+        // console.log(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
+        // FROM trade_history
+        // WHERE deleted_at IS NULL AND symbol = '${pair}'
+        // AND created_at <= '${now}' AND created_at >= '${yesterday}'`)
 
         var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high, min(fill_price) as low, SUM(quantity * fill_price) as volume
                                                             FROM trade_history
@@ -69,7 +69,7 @@ var getSocketValueData = async (pair) => {
         //     .andWhere("created_at", ">=", yesterday)
         //     .limit(1);
 
-        console.log("priceValue", priceValue)
+        // console.log("priceValue", priceValue)
 
         // var priceValue = await TradeHistoryModel.knex().raw(`SELECT max(fill_price) as high,
         //                                                         min(fill_price) as low,
@@ -107,7 +107,7 @@ var getSocketValueData = async (pair) => {
             .limit(1);
 
         firstPriceValue = firstPriceValue[0]
-        console.log("firstPriceValue", firstPriceValue)
+        // console.log("firstPriceValue", firstPriceValue)
 
         // var lastPriceValue = await TradeHistoryModel.knex().raw(`SELECT trade_history.fill_price, coins.coin, coins.coin_icon
         //                                                         FROM trade_history
@@ -132,7 +132,7 @@ var getSocketValueData = async (pair) => {
         // lastPriceValue = lastPriceValue.rows[0]
         lastPriceValue = lastPriceValue[0]
         // console.log("firstPriceValue", firstPriceValue);
-        console.log("lastPriceValue", lastPriceValue)
+        // console.log("lastPriceValue", lastPriceValue)
         var current_price = (firstPriceValue == undefined) ? 0.0 : (firstPriceValue.fill_price)
         var previous_price = (lastPriceValue == undefined) ? 0.0 : (lastPriceValue.fill_price)
         var diffrence = (current_price) - previous_price
@@ -163,7 +163,7 @@ var getSocketValueData = async (pair) => {
             "currency_coin_code": currency_coin_code
         }
 
-        console.log("data", data)
+        // console.log("data", data)
 
         return (data);
     } catch (error) {
