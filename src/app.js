@@ -46,9 +46,9 @@ var i18n = require("i18n");
 var session = require('express-session')
 var server = http.createServer(app);
 
-const redis = require("redis");
-const axios = require("axios");
-const port_redis = 6379;
+// const redis = require("redis");
+// const axios = require("axios");
+// const port_redis = 6379;
 
 // var io = require('socket.io')(server);
 var io = require('socket.io')(server, {

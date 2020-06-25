@@ -1138,6 +1138,35 @@ class DashboardController extends AppController {
             // }, error)
         }
     }
+
+    async getValueDepthChartDetails(req, res) {
+        try {
+
+            var instrumentDataValue = await intrumentData.getInstrumentData();
+
+            await logger.info({
+                "module": "Instrument Data",
+                "user_id": "user_",
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("instrument data").message + "  " + instrumentDataValue)
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("instrument data").message,
+                    "data": instrumentDataValue
+                });
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" + user_id,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
+        }
+    }
 }
 
 module.exports = new DashboardController();

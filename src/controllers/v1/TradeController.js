@@ -1510,6 +1510,7 @@ class TradeController extends AppController {
             let updatedSellBook = await sellUpdate.updateSellBook(currentSellBookDetails.id, {
               quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
             });
+            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
 
             var userData = userIds;
             var tradeData = allOrderData;
@@ -1565,6 +1566,7 @@ class TradeController extends AppController {
             }
           } else {
             await sellDelete.deleteSellOrder(currentSellBookDetails.id);
+            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
             var userData = userIds;
             // console.log("allOrderData.length", allOrderData.length)
             var tradeData = allOrderData;
