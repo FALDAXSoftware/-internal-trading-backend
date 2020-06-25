@@ -44,7 +44,7 @@ var getInstrumentData = async () => {
     }
 
     var VolumeStart = new Date();
-    console.log("Volume", new Date())
+    // console.log("Volume", new Date())
     var volumeSql = `SELECT sum(quantity * fill_price) as quantity, symbol
                         FROM trade_history 
                         WHERE deleted_at IS NULL
