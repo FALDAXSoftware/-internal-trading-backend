@@ -1142,20 +1142,26 @@ class DashboardController extends AppController {
     async getValueDepthChartDetails(req, res) {
         try {
 
-            var instrumentDataValue = await intrumentData.getInstrumentData();
+            var {
+                symbol,
+                limit
+            } = req.query;
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+
+            var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
 
             await logger.info({
-                "module": "Instrument Data",
+                "module": "Depth Chart Data",
                 "user_id": "user_",
                 "url": "Trade Function",
                 "type": "Success"
-            }, i18n.__("instrument data").message + "  " + instrumentDataValue)
+            }, i18n.__("depth data").message + "  " + depthChartValue)
             return res
                 .status(200)
                 .json({
                     "status": constants.SUCCESS_CODE,
-                    "message": i18n.__("instrument data").message,
-                    "data": instrumentDataValue
+                    "message": i18n.__("depth data").message,
+                    "data": depthChartValue
                 });
         } catch (error) {
             console.log(JSON.stringify(error));
