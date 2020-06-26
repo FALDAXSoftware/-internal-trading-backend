@@ -124,7 +124,7 @@ var getSocketValueData = async (pair) => {
         }
 
         // console.log("userWalletBalance", userWalletBalance)
-        redis_client.setex(`high-info-${pair}`, 3000, JSON.stringify(data));
+        redis_client.setex(`high-info-${pair}`, 10, JSON.stringify(data));
 
         return (data);
     } catch (error) {
