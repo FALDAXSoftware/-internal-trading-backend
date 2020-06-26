@@ -1,7 +1,8 @@
-/* Used to store CronJobs  */
+// /* Used to store CronJobs  */
 var cron = require('node-cron');
 var cronData = require("../controllers/v1/TradeController");
 var dashBoardUpdate = require("../controllers/v1/DashboardController");
+var cardDataController = require("../controllers/v1/UserFavourites")
 
 // // // // On Every Minute
 cron.schedule('*/15 * * * * *', async (req, res, next) => {
@@ -389,4 +390,39 @@ cron.schedule('* * * * *', async (req, res, next) => {
 cron.schedule('* * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
     await dashBoardUpdate.deleteSellPendingOrder("XRP-PAX");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("LTC-BTC");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("XRP- BTC");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("ETH-BTC");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("BCH-BTC");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("BCH-ETH");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("LTC-ETH");
+})
+
+cron.schedule('*/10 * * * *', async (req, res, next) => {
+    console.log("INISDER FGJ");
+    await cardDataController.updatePairCache("XRP-ETH");
 })

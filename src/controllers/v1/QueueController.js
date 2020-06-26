@@ -39,7 +39,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         });
         channel.prefetch(1)
         ch = channel;
-        console.log("ch", ch)
+        // console.log("ch", ch)
         // console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
         ch.consume(process.env.PENDING_QUEUE_NAME, async (msg, err) => {
             // console.log("msg", msg)
