@@ -189,9 +189,20 @@ var getActivityData = async (user_id) => {
 
 // Get last price, 24 hour change, volume
 var getHighInfo = async (pair) => {
-    let helper = require("../tradding/get-socket-value");
-    let data = await helper.getSocketValueData(pair);
-    return data;
+
+    var value = await client.get(`high-info-${pair}`);
+    console.log("value", value);
+
+    if (value == null) {
+        let helper = require("../tradding/get-socket-value");
+        value = await helper.getSocketValueData(pair);
+    } else {
+        value = JSON.parse(value);
+        value.flag = true;
+    }
+
+    console.log("value", value);
+    return value;
 }
 
 // CMS quantity and price precision
