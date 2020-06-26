@@ -2,6 +2,19 @@
 * Listen and Emit all data in socket
 * */
 
+// Redis
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
+const { promisify } = require("util");
+
+const asyncRedis = require("async-redis");
+const client = asyncRedis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
+
 // Get Buy Book Data
 var getBuyBookData = async (crypto, currency) => {
     let helper = require("../../helpers/buy/get-buy-book-order");
@@ -33,15 +46,59 @@ var getSellBookDataSummary = async (crypto, currency) => {
 }
 // Get Trade history Data
 var getTradeHistoryData = async (crypto, currency) => {
+    // var value = await redis_client.get(`trade-data-${crypto}-${currency}`)
+    // const getAsync = promisify(redis_client.get(`trade-data-${crypto}-${currency}`)).bind(redis_client);
+    // getAsync.then(console.log).catch(console.error);
+    // var value = await client.get(`trade-data-${crypto}-${currency}`);
+    // console.log("value", value);
+
+    // if (value == null) {
+    //     let helper = require("../../helpers/trade/get-trade-details");;
+    //     value = await helper.getTradeDetails(crypto, currency);
+    // }
+    //     , async (err, data) => {
+    //     return new Promise(async (resolve, reject) => {
+    //         console.log("INSIDE CACHING")
+    //         if (err) {
+    //             console.log(err);
+    //             res.status(500).send(err);
+    //         }
+    //         //if no match found
+    //         if (data != null) {
+    //             console.log("RETUNING", data != null)
+    //             console.log("data", JSON.parse(data))
+    //             resolve(JSON.parse(data));
+    //         } else {
+    //             //proceed to next middleware function
+    //             // app.use('/', require('./routes/index'));
+    //             // next();
+    //             // console.log("NO CACHE FOUND")
     let helper = require("../../helpers/trade/get-trade-details");;
-    let data = await helper.getTradeDetails(crypto, currency);
-    return data;
+    let data1 = await helper.getTradeDetails(crypto, currency);
+    console.log("DATA returned")
+    //             resolve(data1);
+    //         }
+    //     })
+    // });
+    // console.log("value", value)
+    return (data1);
 }
 
 var getUserBalance = async (user_id, crypto, currency) => {
-    let helper = require("../tradding/get-user-wallet-balance");
-    let data = await helper.getUserWalletBalance(user_id, currency, crypto);
-    return data;
+
+    var value = await client.get(`${user_id}-${crypto}-${currency}`);
+    console.log("value", value);
+
+    if (value == null) {
+        let helper = require("../tradding/get-user-wallet-balance");
+        value = await helper.getUserWalletBalance(user_id, currency, crypto);
+    } else {
+        value = JSON.parse(value);
+        value.flag = true;
+    }
+
+    console.log("value", value);
+    return value;
 }
 
 var getLatestValue = async (symbol) => {

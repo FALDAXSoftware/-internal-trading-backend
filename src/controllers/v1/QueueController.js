@@ -175,6 +175,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             switch (type) {
                 case "Market":
                     if (dataValue.side == "Sell" && pendingDataStatus.is_cancel == false) {
+                        console.log("dataValue", dataValue)
                         tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency, [], 0.0, dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 // console.log("orderDataResponse", orderDataResponse)
