@@ -54,9 +54,9 @@ timeout(9){
 
         stage('Build Code'){
             container('node'){ 
-                if ( "${myRepo.GIT_BRANCH}" == "preprod" && namespace ){
+                if ( "${myRepo.GIT_BRANCH}" == "preprod"  ){
                     withAWS(credentials:'jenkins_s3_upload') {
-                        s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)
+                        s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/preprod/.env", force:true)
                     }
                     sh "mv .env src/.env && cd src && npm install"
                 }
@@ -65,7 +65,7 @@ timeout(9){
 
         stage('Package Code'){
             container('node'){ 
-                if ( "${myRepo.GIT_BRANCH}" == "preprod" && namespace ){
+                if ( "${myRepo.GIT_BRANCH}" == "preprod"  ){
                     sh "cd src && tar -czf ${env.WORKSPACE}/${artifact_name}.tar.gz ."
                 }
             }
@@ -73,7 +73,7 @@ timeout(9){
 
         stage('Deploy - preprod') {
 
-            if (env.BRANCH_NAME == "preprod" && namespace){
+            if (env.BRANCH_NAME == "preprod" ){
                 sshagent(credentials: ["${sshagent_name}"]) {
                     sh "ssh -o StrictHostKeyChecking=no ubuntu@${ip_address} 'bash -s' < ./pre-deploy.sh ${service_name}-preprod"
                     sh "scp -o StrictHostKeyChecking=no ${env.WORKSPACE}/${artifact_name}.tar.gz ubuntu@${ip_address}:/home/ubuntu/.tmp/builds/${service_name}-preprod"

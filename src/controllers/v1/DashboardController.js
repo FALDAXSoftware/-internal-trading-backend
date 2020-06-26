@@ -33,9 +33,9 @@ var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
 var latestBidPrice = require("../../helpers/get-bid-ask-latest");
 var QueueValue = require("./QueueController");
 var ActivityHelper = require("../../helpers/activity/add");
-const redis = require("redis");
-const axios = require("axios");
-const port_redis = 6379;
+// const redis = require("redis");
+// const axios = require("axios");
+// const port_redis = 6379;
 
 const redis_client = redis.createClient({
     port: process.env.REDIS_PORT,               // replace with your port
@@ -1131,6 +1131,41 @@ class DashboardController extends AppController {
                     "status": constants.SUCCESS_CODE,
                     "message": i18n.__("instrument data").message,
                     "data": instrumentDataValue
+                });
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" + user_id,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
+        }
+    }
+
+    async getValueDepthChartDetails(req, res) {
+        try {
+
+            var {
+                symbol,
+                limit
+            } = req.query;
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+
+            var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
+
+            await logger.info({
+                "module": "Depth Chart Data",
+                "user_id": "user_",
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("depth data").message + "  " + depthChartValue)
+            return res
+                .status(200)
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("depth data").message,
+                    "data": depthChartValue
                 });
         } catch (error) {
             console.log(JSON.stringify(error));

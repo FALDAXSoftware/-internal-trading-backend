@@ -11,9 +11,9 @@ var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
 
-const redis = require("redis");
-const axios = require("axios");
-const port_redis = 6379;
+// const redis = require("redis");
+// const axios = require("axios");
+// const port_redis = 6379;
 
 const redis_client = redis.createClient({
   port: process.env.REDIS_PORT,               // replace with your port
@@ -122,11 +122,12 @@ router.get("/get-pairs-value", TradeDesk.getQuantityMinMaxValue);
 router.post("/update-pairs-value", TradeDesk.updateQuantityMinMaxValue)
 router.get("/get-spread-value", TradeDesk.getSpreadValue)
 router.get("/get-tradedesk-user-balances", TradeDesk.getWalletTradeDeskBalance)
-router.get("/get-instrument-data", checkInstrumentCache, DashboardController.getInstrumentDataValue)
-router.get("/cached-instrument-details", DashboardController.getCachedInstrumentDataValue)
-router.get("/get-instrument-value-data", DashboardController.getInstrumentValue)
-router.get("/depth-chart-details", checkCache, DashboardController.getDepthChartDetails)
-router.get("/cached-depth-chart-details", DashboardController.getCachedDepthChartDetails)
+// router.get("/get-instrument-value-data", checkInstrumentCache, DashboardController.getInstrumentDataValue)
+// router.get("/cached-instrument-details", DashboardController.getCachedInstrumentDataValue)
+router.get("/get-instrument-data", DashboardController.getInstrumentValue)
+// router.get("/depth-chart-details-value", checkCache, DashboardController.getDepthChartDetails)
+// router.get("/cached-depth-chart-details", DashboardController.getCachedDepthChartDetails)
+router.get("/depth-chart-details", DashboardController.getValueDepthChartDetails)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 router.get("/get-user-trade-history", TradeController.getUserOrdersData);
 router.get("/system-health-check", TradeController.getHealthCheck)
