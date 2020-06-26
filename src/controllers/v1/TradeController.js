@@ -70,7 +70,11 @@ const redis = require("redis");
 const axios = require("axios");
 const port_redis = 6379;
 
-const redis_client = redis.createClient(port_redis);
+const redis_client = redis.createClient({
+  port: process.env.REDIS_PORT,               // replace with your port
+  host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+  password: process.env.REDIS_PASSWORD   // replace with your password
+});
 /**
  * Trade Controller : Used for live tradding
 */
@@ -272,7 +276,8 @@ class TradeController extends AppController {
       currency_wallet_data,
       userIds
     } = alldata;
-    // console.log("alldata", alldata)
+    console.log("alldata", alldata);
+    console.log("userIds", userIds)
     const checkUser = Helper.checkWhichUser(user_id);
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);

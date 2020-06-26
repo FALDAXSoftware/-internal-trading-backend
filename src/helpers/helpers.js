@@ -234,8 +234,8 @@ var getDecryptData = (value) => {
   try {
     var aesjs = require('aes-js');
     var decryptData;
-    // var key = JSON.parse(process.env.SECRET_KEY);
-    // var iv = JSON.parse(process.env.SECRET_IV);
+    var key = JSON.parse(process.env.SECRET_KEY);
+    var iv = JSON.parse(process.env.SECRET_IV);
     // console.log("value", value);
     console.log()
     // When ready to decrypt the hex string, convert it back to bytes

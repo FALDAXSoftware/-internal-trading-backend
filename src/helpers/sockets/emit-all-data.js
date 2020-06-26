@@ -9,7 +9,11 @@ const port_redis = 6379;
 const { promisify } = require("util");
 
 const asyncRedis = require("async-redis");
-const client = asyncRedis.createClient();
+const client = asyncRedis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
 
 // Get Buy Book Data
 var getBuyBookData = async (crypto, currency) => {
@@ -82,16 +86,19 @@ var getTradeHistoryData = async (crypto, currency) => {
 
 var getUserBalance = async (user_id, crypto, currency) => {
 
-    // var value = await client.get(`trade-data-${crypto}-${currency}`);
-    // console.log("value", value);
+    var value = await client.get(`${user_id}-${crypto}-${currency}`);
+    console.log("value", value);
 
-    // if (value == null) {
-    //     let helper = require("../../helpers/trade/get-trade-details");;
-    //     value = await helper.getTradeDetails(crypto, currency);
-    // }
-    let helper = require("../tradding/get-user-wallet-balance");
-    let data = await helper.getUserWalletBalance(user_id, currency, crypto);
-    return data;
+    if (value == null) {
+        let helper = require("../tradding/get-user-wallet-balance");
+        value = await helper.getUserWalletBalance(user_id, currency, crypto);
+    } else {
+        value = JSON.parse(value);
+        value.flag = true;
+    }
+
+    console.log("value", value);
+    return value;
 }
 
 var getLatestValue = async (symbol) => {
