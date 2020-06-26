@@ -362,6 +362,93 @@ class UserFavourites extends AppController {
             console.log(err)
         }
     }
+
+    async updateReqPairCache(req, res) {
+        try {
+            var symbol = req.query.symbol;
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+            var cardData = [];
+            var yesterday = moment()
+                .subtract(1, 'days')
+                .format('YYYY-MM-DD HH:mm:ss.SSS');
+            var today = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+
+            var total_price = 0;
+            var average_price = 0;
+            var flag = true;
+
+            var price = await TradeHistoryModel
+                .query()
+                .select("created_at", "fill_price", "quantity")
+                .where('settle_currency', crypto)
+                .andWhere('currency', currency)
+                .andWhere('created_at', '<=', today)
+                .andWhere('created_at', '>=', yesterday)
+                .orderBy('created_at', 'ASC');
+
+            if (price.length == 0) {
+                average_price = 0;
+            } else {
+                map(price, p => {
+                    total_price = total_price + (p.fill_price / p.quantity);
+                });
+                average_price = total_price / (price.length);
+            }
+
+            var current_price = 0.0
+            if (price.length == 0) {
+                current_price = 0;
+            } else {
+                current_price = price[price.length - 1]['fill_price'];
+            }
+
+            var previous_price = 0.0
+            if (price.length == 0) {
+                previous_price = 0;
+            } else {
+                previous_price = price[0]['fill_price'];
+            }
+
+            var diffrence = current_price - previous_price;
+            var percentchange = (diffrence * 100 / previous_price);
+
+            if (percentchange == NaN || percentchange == "-Infinity") {
+                percentchange = 0;
+            } else {
+                percentchange = percentchange;
+            }
+
+            if (diffrence <= 0) {
+                flag = false;
+            } else {
+                flag = true;
+            }
+
+            var card_data = {
+                "pair_from": crypto,
+                "pair_to": currency,
+                "average_price": average_price,
+                "diffrence": diffrence,
+                "percentchange": percentchange,
+                "flag": flag,
+                "tradeChartDetails": price
+                // "socket_id": socket_id
+            }
+
+            cardData.push(card_data);
+
+            var value = {
+                "status": constants.SUCCESS_CODE,
+                "message": "Favourites List",
+                "data": cardData
+            }
+
+            client.setex(`card_graph-${symbol}`, 1800, JSON.stringify(value))
+            console.log("Done")
+        } catch (err) {
+            console.log(err)
+        }
+    }
 }
 
 module.exports = new UserFavourites();

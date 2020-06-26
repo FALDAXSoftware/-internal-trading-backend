@@ -130,7 +130,9 @@ router.get("/get-instrument-data", DashboardController.getInstrumentValue)
 router.get("/depth-chart-details", DashboardController.getValueDepthChartDetails)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 router.get("/get-user-trade-history", TradeController.getUserOrdersData);
-router.get("/system-health-check", TradeController.getHealthCheck)
+router.get("/system-health-check", TradeController.getHealthCheck);
+
+router.get("/update-symbol-cache", UserFavouritesController.updateReqPairCache);
 
 // Trading View API
 router.get('/tradingview/config', TradingViewController.getConfig);
