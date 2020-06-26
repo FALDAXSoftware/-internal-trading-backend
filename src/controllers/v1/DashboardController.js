@@ -37,7 +37,11 @@ var ActivityHelper = require("../../helpers/activity/add");
 // const axios = require("axios");
 // const port_redis = 6379;
 
-// const redis_client = redis.createClient(port_redis);
+const redis_client = redis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
 
 class DashboardController extends AppController {
 
