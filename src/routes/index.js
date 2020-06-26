@@ -11,9 +11,9 @@ var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
 
-// const redis = require("redis");
-// const axios = require("axios");
-// const port_redis = 6379;
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
 
 const redis_client = redis.createClient({
   port: process.env.REDIS_PORT,               // replace with your port
