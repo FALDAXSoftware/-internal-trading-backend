@@ -65,6 +65,12 @@ var PendingOrderExecutuionModel = require("../../models/PendingOrdersExecutuions
 var cancelOrderHelper = require("../../helpers/pending/cancel-pending-order")
 var getBidAskPriceHelper = require("../../helpers/get-bid-ask-latest");
 
+// Redis
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
+
+const redis_client = redis.createClient(port_redis);
 /**
  * Trade Controller : Used for live tradding
 */
@@ -585,6 +591,14 @@ class TradeController extends AppController {
           // console.log("trade_history_data", JSON.stringify(trade_history_data))
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          var tradeObjectData = {
+            quantity: tradeHistory.quantity,
+            side: tradeHistory.side,
+            created_at: tradeHistory.created_at,
+            fill_price: tradeHistory.fill_price
+          };
+          console.log("JSON.stringify(tradeHistory)", JSON.stringify(tradeHistory))
+          // redis_client.setex(`trade-data-${tradeHistory.symbol}`, 3000, JSON.stringify(tradeHistory));
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
 
@@ -716,6 +730,13 @@ class TradeController extends AppController {
           // console.log("trade_history_data", JSON.stringify(trade_history_data))
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          // var tradeObjectData = {
+          //   quantity: tradeHistory.quantity,
+          //   side: tradeHistory.side,
+          //   created_at: tradeHistory.created_at,
+          //   fill_price: tradeHistory.fill_price
+          // };
+          // redis_client.setex(`trade-data-${tradeHistory.symbol}`, 3000, JSON.stringify(tradeHistory));
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
 
@@ -848,6 +869,13 @@ class TradeController extends AppController {
         // console.log("trade_history_data", JSON.stringify(trade_history_data))
 
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+        // var tradeObjectData = {
+        //   quantity: tradeHistory.quantity,
+        //   side: tradeHistory.side,
+        //   created_at: tradeHistory.created_at,
+        //   fill_price: tradeHistory.fill_price
+        // };
+        // redis_client.setex(`trade-data-${tradeHistory.symbol}`, 3000, JSON.stringify(tradeHistory));
         tradeOrder = tradeHistory;
         allOrderData.push(tradeHistory);
         let deleteBuyBook = await OrderDelete.deleteOrder(currentBuyBookDetails.id)

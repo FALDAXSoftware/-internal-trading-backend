@@ -27,7 +27,7 @@ checkCache = (req, res, next) => {
   // console.log("req", req)
   // console.log("INISDE CACHE CHECKING")
   var { symbol } = req.query;
-  console.log(symbol)
+  // console.log(symbol)
   redis_client.get(symbol, async (err, data) => {
     if (err) {
       console.log(err);
@@ -76,7 +76,7 @@ checkCache = (req, res, next) => {
 //Middleware Function to Check Cache
 checkInstrumentCache = (req, res, next) => {
   // console.log("req", req)
-  console.log("INISDE CACHE CHECKING")
+  // console.log("INISDE CACHE CHECKING")
   redis_client.get("instrument", async (err, data) => {
     if (err) {
       console.log(err);
