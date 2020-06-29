@@ -333,7 +333,12 @@ var getTraddingFees = async (inputs) => {
                 });
 
             var requestedFee = ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100));
-            var userFee = ((inputs.quantity) * inputs.takerFee / 100);
+            var userFee = ((inputs.quantity) * (inputs.takerFee / 100));
+
+            console.log("requestedFee", requestedFee);
+            console.log("userFee", userFee);
+
+            console.log("adminWalletCrypto.balance", adminWalletCrypto.balance)
 
             var adminBalance = adminWalletCrypto.balance + userFee
             var adminPlacedBalance = adminWalletCrypto.placed_balance + userFee
