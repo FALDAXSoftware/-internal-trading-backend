@@ -179,6 +179,9 @@ io.on('connection', async function (socket) {
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
 
+    console.log("user_id", user_id);
+    console.log("symbol", symbol)
+
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
       socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
