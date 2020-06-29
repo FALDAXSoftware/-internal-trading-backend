@@ -30,10 +30,60 @@ var randomString = (length) => {
   return result;
 }
 
+// SMS Sending Function
+
+var sendSMS = async (requestedData) => {
+  // console.log("INSIDE SMS", requestedData);
+  var SmsTemplate = require("../models/SmsTemplate");
+  var twilio = require('twilio');
+  var template_name = requestedData.template;
+  var email = requestedData.email;
+  var user_detail = requestedData.user_detail;
+  var format_data = requestedData.formatData;
+  let template = await SmsTemplate.getSingleData({
+    slug: requestedData.templateSlug
+  });
+
+  // console.log("template", template)
+
+  let language_content = template.content;
+  var value = {};
+  value.recipientName = user_detail.first_name
+  if (format_data.reason) {
+    value.reason = format_data.reason;
+  }
+  language_content = await module.exports.formatEmail(language_content, value);
+  // console.log("language_content", language_content)
+  // console.log("process.env.TWILLIO_ACCOUNT_SID", process.env.TWILLIO_ACCOUNT_SID)
+  var account_sid = await module.exports.getDecryptData(process.env.TWILLIO_ACCOUNT_SID);
+  var accountSid = account_sid; // Your Account SID from www.twilio.com/console
+  // console.log("accountSid", accountSid)
+  var authToken = await module.exports.getDecryptData(process.env.TWILLIO_ACCOUNT_AUTH_TOKEN); // Your Auth Token from www.twilio.com/console
+  // console.log("authToken", authToken)
+  var accountNumber = process.env.TWILLIO_ACCOUNT_FROM_NUMBER
+  var user_id = user_detail.id;
+
+  // console.log("language_content", language_content)
+
+  //Twilio Integration
+  var client = new twilio(accountSid, authToken);
+  //Sending SMS to users 
+  client.messages.create({
+    body: language_content,
+    to: user_detail.phone_number, // Text this number
+    from: accountNumber // From a valid Twilio number
+  }).then((message) => {
+    // console.log("message", message)
+    return (1);
+  })
+    .catch((err) => {
+      console.log("ERROR >>>>>>>>>>>", err)
+    })
+}
 
 // Common Customized Mailer Function to send mail
 var SendEmail = async (res, requestedData) => {
-  // console.log(res)
+  // console.log(requestedData)
   if (res == null) {
     var express = require('express');
     var app = express();
@@ -139,6 +189,7 @@ var formatEmail = async (emailContent, data) => {
     // tempEmailContent = tempEmailContent.replace(key[0], data[key[1]] ? data[key[1]] : '');
     tempEmailContent = tempEmailContent.replace(key[0], data[key[1]] ? temp_var : '');
   }
+  // console.log("tempEmailContent", tempEmailContent)
   return tempEmailContent;
 }
 
@@ -179,6 +230,29 @@ var generateTxGroup = function (user_id) {
 
 }
 
+var getDecryptData = (value) => {
+  try {
+    var aesjs = require('aes-js');
+    var decryptData;
+    var key = JSON.parse(process.env.SECRET_KEY);
+    var iv = JSON.parse(process.env.SECRET_IV);
+    // console.log("value", value);
+    console.log()
+    // When ready to decrypt the hex string, convert it back to bytes
+    var encryptedBytes = aesjs.utils.hex.toBytes(value);
+    // The output feedback mode of operation maintains internal state,
+    // so to decrypt a new instance must be instantiated.
+    var aesOfb = new aesjs.ModeOfOperation.ofb(key, iv);
+    var decryptedBytes = aesOfb.decrypt(encryptedBytes);
+
+    // Convert our bytes back into text
+    var decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
+    return (decryptedText);
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 module.exports = {
   jsonFormat,
   randomString,
@@ -187,5 +261,7 @@ module.exports = {
   getUserId,
   checkWhichUser,
   generateTxGroup,
+  getDecryptData,
+  sendSMS
 }
 

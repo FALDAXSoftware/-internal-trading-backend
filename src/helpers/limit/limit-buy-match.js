@@ -137,6 +137,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
                                 quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
                             });
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             var userData = userIds;
                             var tradeData = allOrderData;
 
@@ -174,29 +175,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                 });
                                 if (user_data != undefined) {
                                     if (userNotification != undefined) {
+                                        var allData = {
+                                            template: "emails/general_mail.ejs",
+                                            templateSlug: "trade_partially_filled",
+                                            email: user_data.email,
+                                            user_detail: user_data,
+                                            formatData: {
+                                                recipientName: user_data.first_name,
+                                                side: tradeData[0].side,
+                                                pair: tradeData[0].symbol,
+                                                order_type: tradeData[0].order_type,
+                                                originalQuantity: originalQuantityValue,
+                                                allTradeData: tradeData
+                                            }
+
+                                        }
                                         if (userNotification.email == true || userNotification.email == "true") {
                                             if (user_data.email != undefined) {
-                                                var allData = {
-                                                    template: "emails/general_mail.ejs",
-                                                    templateSlug: "trade_partially_filled",
-                                                    email: user_data.email,
-                                                    user_detail: user_data,
-                                                    formatData: {
-                                                        recipientName: user_data.first_name,
-                                                        side: tradeData[0].side,
-                                                        pair: tradeData[0].symbol,
-                                                        order_type: tradeData[0].order_type,
-                                                        originalQuantity: originalQuantityValue,
-                                                        allTradeData: tradeData
-                                                    }
-
-                                                }
                                                 await Helper.SendEmail(res, allData)
                                             }
                                         }
                                         if (userNotification.text == true || userNotification.text == "true") {
                                             if (user_data.phone_number != undefined) {
-                                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                                await Helper.sendSMS(allData)
                                             }
                                         }
                                     }
@@ -215,6 +216,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             }
                         } else {
                             await sellDelete.deleteSellOrder(sellBook[0].id);
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             var userData = userIds;
                             var tradeData = allOrderData;
 
@@ -252,29 +254,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                 });
                                 if (user_data != undefined) {
                                     if (userNotification != undefined) {
+                                        var allData = {
+                                            template: "emails/general_mail.ejs",
+                                            templateSlug: "trade_partially_filled",
+                                            email: user_data.email,
+                                            user_detail: user_data,
+                                            formatData: {
+                                                recipientName: user_data.first_name,
+                                                side: tradeData[0].side,
+                                                pair: tradeData[0].symbol,
+                                                order_type: tradeData[0].order_type,
+                                                originalQuantity: originalQuantityValue,
+                                                allTradeData: tradeData
+                                            }
+
+                                        }
                                         if (userNotification.email == true || userNotification.email == "true") {
                                             if (user_data.email != undefined) {
-                                                var allData = {
-                                                    template: "emails/general_mail.ejs",
-                                                    templateSlug: "trade_partially_filled",
-                                                    email: user_data.email,
-                                                    user_detail: user_data,
-                                                    formatData: {
-                                                        recipientName: user_data.first_name,
-                                                        side: tradeData[0].side,
-                                                        pair: tradeData[0].symbol,
-                                                        order_type: tradeData[0].order_type,
-                                                        originalQuantity: originalQuantityValue,
-                                                        allTradeData: tradeData
-                                                    }
-
-                                                }
                                                 await Helper.SendEmail(res, allData)
                                             }
                                         }
                                         if (userNotification.text == true || userNotification.text == "true") {
                                             if (user_data.phone_number != undefined) {
-                                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                                await Helper.sendSMS(allData)
                                             }
                                         }
                                     }
@@ -312,29 +314,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (allOrderData.length > 0) {
                             if (user_data != undefined) {
                                 if (userNotification != undefined) {
+                                    var allData = {
+                                        template: "emails/general_mail.ejs",
+                                        templateSlug: "trade_execute",
+                                        email: user_data.email,
+                                        user_detail: user_data,
+                                        formatData: {
+                                            recipientName: user_data.first_name,
+                                            side: side,
+                                            pair: symbol,
+                                            order_type: order_type,
+                                            quantity: originalQuantityValue,
+                                            allTradeData: allOrderData
+                                        }
+
+                                    }
                                     if (userNotification.email == true || userNotification.email == "true") {
                                         if (user_data.email != undefined) {
-                                            var allData = {
-                                                template: "emails/general_mail.ejs",
-                                                templateSlug: "trade_execute",
-                                                email: user_data.email,
-                                                user_detail: user_data,
-                                                formatData: {
-                                                    recipientName: user_data.first_name,
-                                                    side: side,
-                                                    pair: symbol,
-                                                    order_type: order_type,
-                                                    quantity: originalQuantityValue,
-                                                    allTradeData: allOrderData
-                                                }
-
-                                            }
                                             await Helper.SendEmail(res, allData)
                                         }
                                     }
                                     if (userNotification.text == true || userNotification.text == "true") {
                                         if (user_data.phone_number != undefined) {
-                                            // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                            await Helper.sendSMS(allData)
                                         }
                                     }
                                 }
@@ -353,24 +355,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         });
                         if (user_data != undefined) {
                             if (userNotification != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "order_failed",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        reason: i18n.__("Insufficient balance to place order").message
+                                    }
+                                }
                                 if (userNotification.email == true || userNotification.email == "true") {
                                     if (user_data.email != undefined) {
-                                        var allData = {
-                                            template: "emails/general_mail.ejs",
-                                            templateSlug: "order_failed",
-                                            email: user_data.email,
-                                            user_detail: user_data,
-                                            formatData: {
-                                                recipientName: user_data.first_name,
-                                                reason: i18n.__("Insufficient balance to place order").message
-                                            }
-                                        }
                                         await Helper.SendEmail(res, allData)
                                     }
                                 }
                                 if (userNotification.text == true || userNotification.text == "true") {
                                     if (user_data.phone_number != undefined) {
-                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                        await Helper.sendSMS(allData)
                                     }
                                 }
                             }
@@ -523,24 +525,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         });
                         if (user_data != undefined) {
                             if (userNotification != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "order_failed",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        reason: i18n.__("Insufficient balance to place order").message
+                                    }
+                                }
                                 if (userNotification.email == true || userNotification.email == "true") {
                                     if (user_data.email != undefined) {
-                                        var allData = {
-                                            template: "emails/general_mail.ejs",
-                                            templateSlug: "order_failed",
-                                            email: user_data.email,
-                                            user_detail: user_data,
-                                            formatData: {
-                                                recipientName: user_data.first_name,
-                                                reason: i18n.__("Insufficient balance to place order").message
-                                            }
-                                        }
                                         await Helper.SendEmail(res, allData)
                                     }
                                 }
                                 if (userNotification.text == true || userNotification.text == "true") {
                                     if (user_data.phone_number != undefined) {
-                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                        await Helper.sendSMS(allData)
                                     }
                                 }
                             }
@@ -571,29 +573,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         });
                         if (user_data != undefined) {
                             if (userNotification != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "trade_partially_filled",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        side: tradeData[0].side,
+                                        pair: tradeData[0].symbol,
+                                        order_type: tradeData[0].order_type,
+                                        originalQuantity: originalQuantityValue,
+                                        allTradeData: tradeData
+                                    }
+
+                                }
                                 if (userNotification.email == true || userNotification.email == "true") {
                                     if (user_data.email != undefined) {
-                                        var allData = {
-                                            template: "emails/general_mail.ejs",
-                                            templateSlug: "trade_partially_filled",
-                                            email: user_data.email,
-                                            user_detail: user_data,
-                                            formatData: {
-                                                recipientName: user_data.first_name,
-                                                side: tradeData[0].side,
-                                                pair: tradeData[0].symbol,
-                                                order_type: tradeData[0].order_type,
-                                                originalQuantity: originalQuantityValue,
-                                                allTradeData: tradeData
-                                            }
-
-                                        }
                                         await Helper.SendEmail(res, allData)
                                     }
                                 }
                                 if (userNotification.text == true || userNotification.text == "true") {
                                     if (user_data.phone_number != undefined) {
-                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                        await Helper.sendSMS(allData)
                                     }
                                 }
                             }
@@ -661,29 +663,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         });
                         if (user_data != undefined) {
                             if (userNotification != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "trade_place",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        side: buyLimitOrderData.side,
+                                        pair: buyLimitOrderData.symbol,
+                                        order_type: buyLimitOrderData.order_type,
+                                        quantity: buyLimitOrderData.quantity,
+                                        price: buyLimitOrderData.limit_price,
+                                    }
+                                }
                                 if (userNotification.email == true || userNotification.email == "true") {
                                     if (user_data.email != undefined) {
                                         // console.log("++++Order executed partially..");
-                                        var allData = {
-                                            template: "emails/general_mail.ejs",
-                                            templateSlug: "trade_place",
-                                            email: user_data.email,
-                                            user_detail: user_data,
-                                            formatData: {
-                                                recipientName: user_data.first_name,
-                                                side: buyLimitOrderData.side,
-                                                pair: buyLimitOrderData.symbol,
-                                                order_type: buyLimitOrderData.order_type,
-                                                quantity: buyLimitOrderData.quantity,
-                                                price: buyLimitOrderData.limit_price,
-                                            }
-                                        }
                                         await Helper.SendEmail(res, allData)
                                     }
                                 }
                                 if (userNotification.text == true || userNotification.text == "true") {
                                     if (user_data.phone_number != undefined) {
-                                        // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                        await Helper.sendSMS(allData)
                                     }
                                 }
                             }
@@ -728,24 +730,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     });
                     if (user_data != undefined) {
                         if (userNotification != undefined) {
+                            var allData = {
+                                template: "emails/general_mail.ejs",
+                                templateSlug: "order_failed",
+                                email: user_data.email,
+                                user_detail: user_data,
+                                formatData: {
+                                    recipientName: user_data.first_name,
+                                    reason: i18n.__("Insufficient balance to place order").message
+                                }
+                            }
                             if (userNotification.email == true || userNotification.email == "true") {
                                 if (user_data.email != undefined) {
-                                    var allData = {
-                                        template: "emails/general_mail.ejs",
-                                        templateSlug: "order_failed",
-                                        email: user_data.email,
-                                        user_detail: user_data,
-                                        formatData: {
-                                            recipientName: user_data.first_name,
-                                            reason: i18n.__("Insufficient balance to place order").message
-                                        }
-                                    }
                                     await Helper.SendEmail(res, allData)
                                 }
                             }
                             if (userNotification.text == true || userNotification.text == "true") {
                                 if (user_data.phone_number != undefined) {
-                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                    await Helper.sendSMS(allData)
                                 }
                             }
                         }
@@ -775,29 +777,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     });
                     if (user_data != undefined) {
                         if (userNotification != undefined) {
+                            var allData = {
+                                template: "emails/general_mail.ejs",
+                                templateSlug: "trade_partially_filled",
+                                email: user_data.email,
+                                user_detail: user_data,
+                                formatData: {
+                                    recipientName: user_data.first_name,
+                                    side: tradeData[0].side,
+                                    pair: tradeData[0].symbol,
+                                    order_type: tradeData[0].order_type,
+                                    originalQuantity: originalQuantityValue,
+                                    allTradeData: tradeData
+                                }
+
+                            }
                             if (userNotification.email == true || userNotification.email == "true") {
                                 if (user_data.email != undefined) {
-                                    var allData = {
-                                        template: "emails/general_mail.ejs",
-                                        templateSlug: "trade_partially_filled",
-                                        email: user_data.email,
-                                        user_detail: user_data,
-                                        formatData: {
-                                            recipientName: user_data.first_name,
-                                            side: tradeData[0].side,
-                                            pair: tradeData[0].symbol,
-                                            order_type: tradeData[0].order_type,
-                                            originalQuantity: originalQuantityValue,
-                                            allTradeData: tradeData
-                                        }
-
-                                    }
                                     await Helper.SendEmail(res, allData)
                                 }
                             }
                             if (userNotification.text == true || userNotification.text == "true") {
                                 if (user_data.phone_number != undefined) {
-                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                    await Helper.sendSMS(allData)
                                 }
                             }
                         }
@@ -865,29 +867,29 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     });
                     if (user_data != undefined) {
                         if (userNotification != undefined) {
+                            var allData = {
+                                template: "emails/general_mail.ejs",
+                                templateSlug: "trade_place",
+                                email: user_data.email,
+                                user_detail: user_data,
+                                formatData: {
+                                    recipientName: user_data.first_name,
+                                    side: buyLimitOrderData.side,
+                                    pair: buyLimitOrderData.symbol,
+                                    order_type: buyLimitOrderData.order_type,
+                                    quantity: buyLimitOrderData.quantity,
+                                    price: buyLimitOrderData.limit_price,
+                                }
+                            }
                             if (userNotification.email == true || userNotification.email == "true") {
                                 if (user_data.email != undefined) {
                                     // console.log("++++Order placed");
-                                    var allData = {
-                                        template: "emails/general_mail.ejs",
-                                        templateSlug: "trade_place",
-                                        email: user_data.email,
-                                        user_detail: user_data,
-                                        formatData: {
-                                            recipientName: user_data.first_name,
-                                            side: buyLimitOrderData.side,
-                                            pair: buyLimitOrderData.symbol,
-                                            order_type: buyLimitOrderData.order_type,
-                                            quantity: buyLimitOrderData.quantity,
-                                            price: buyLimitOrderData.limit_price,
-                                        }
-                                    }
                                     await Helper.SendEmail(res, allData)
                                 }
                             }
                             if (userNotification.text == true || userNotification.text == "true") {
                                 if (user_data.phone_number != undefined) {
-                                    // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                    await Helper.sendSMS(allData)
                                 }
                             }
                         }
@@ -931,24 +933,24 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                 });
                 if (user_data != undefined) {
                     if (userNotification != undefined) {
+                        var allData = {
+                            template: "emails/general_mail.ejs",
+                            templateSlug: "order_failed",
+                            email: user_data.email,
+                            user_detail: user_data,
+                            formatData: {
+                                recipientName: user_data.first_name,
+                                reason: i18n.__("Insufficient balance to place order").message
+                            }
+                        }
                         if (userNotification.email == true || userNotification.email == "true") {
                             if (user_data.email != undefined) {
-                                var allData = {
-                                    template: "emails/general_mail.ejs",
-                                    templateSlug: "order_failed",
-                                    email: user_data.email,
-                                    user_detail: user_data,
-                                    formatData: {
-                                        recipientName: user_data.first_name,
-                                        reason: i18n.__("Insufficient balance to place order").message
-                                    }
-                                }
                                 await Helper.SendEmail(res, allData)
                             }
                         }
                         if (userNotification.text == true || userNotification.text == "true") {
                             if (user_data.phone_number != undefined) {
-                                // await sails.helpers.notification.send.text("trade_execute", user_data)
+                                await Helper.sendSMS(allData)
                             }
                         }
                     }

@@ -2,6 +2,7 @@ var amqp = require('amqplib/callback_api');
 let CONN_URL = process.env.QUEUE_URL;
 const opt = { credentials: require('amqplib').credentials.plain(process.env.QUEUE_USERNAME, process.env.QUEUE_PASSWORD) };
 let ch = null;
+// console.log("CONN_URL", CONN_URL)
 amqp.connect(CONN_URL, opt, (err, conn) => {
     // console.log("---------------------------------");
     // console.log("---------------------------------");
@@ -174,6 +175,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             switch (type) {
                 case "Market":
                     if (dataValue.side == "Sell" && pendingDataStatus.is_cancel == false) {
+                        console.log("dataValue", dataValue)
                         tradeData.makeMarketSellOrder(dataValue.res, dataValue.object, dataValue.crypto, dataValue.currency, [], 0.0, dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 // console.log("orderDataResponse", orderDataResponse)

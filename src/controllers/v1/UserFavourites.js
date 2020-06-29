@@ -15,6 +15,19 @@ var KYCModel = require("../../models/KYC");
 var Currency = require("../../helpers/currency");
 var { map, sortBy } = require('lodash');
 
+// Redis
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
+const { promisify } = require("util");
+
+const asyncRedis = require("async-redis");
+const client = asyncRedis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
+
 class UserFavourites extends AppController {
 
     constructor() {
@@ -26,116 +39,98 @@ class UserFavourites extends AppController {
         try {
             var socket_headers = req.headers;
             // console.log(JSON.stringify(socket_headers))
-            var authentication = require("../../config/authorization")(socket_headers);
-            let user_id = authentication.user_id;
             var symbol = req.query.symbol;
-            let { crypto, currency } = await Currency.get_currencies(symbol);
-            var cardData = [];
 
-            var yesterday = moment()
-                .subtract(1, 'days')
-                .format('YYYY-MM-DD HH:mm:ss.SSS');
-            var today = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+            var value = await client.get(`card_graph-${symbol}`);
+            // console.log("value", value);
+            if (value == null) {
+                let { crypto, currency } = await Currency.get_currencies(symbol);
+                var cardData = [];
+                var yesterday = moment()
+                    .subtract(1, 'days')
+                    .format('YYYY-MM-DD HH:mm:ss.SSS');
+                var today = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
 
-            var total_price = 0;
-            var average_price = 0;
-            var flag = true;
+                var total_price = 0;
+                var average_price = 0;
+                var flag = true;
 
-            var price = await TradeHistoryModel
-                .query()
-                .select()
-                .where('settle_currency', crypto)
-                .andWhere('currency', currency)
-                .andWhere('created_at', '>=', yesterday)
-                .orderBy('id', 'DESC')
+                var price = await TradeHistoryModel
+                    .query()
+                    .select("created_at", "fill_price", "quantity")
+                    .where('settle_currency', crypto)
+                    .andWhere('currency', currency)
+                    .andWhere('created_at', '<=', today)
+                    .andWhere('created_at', '>=', yesterday)
+                    .orderBy('created_at', 'ASC');
 
-            if (price.length == 0) {
-                average_price = 0;
-            } else {
-                map(price, p => {
-                    total_price = total_price + (p.fill_price / p.quantity);
-                });
-                average_price = total_price / (price.length);
-            }
+                if (price.length == 0) {
+                    average_price = 0;
+                } else {
+                    map(price, p => {
+                        total_price = total_price + (p.fill_price / p.quantity);
+                    });
+                    average_price = total_price / (price.length);
+                }
 
-            // var current_price = await TradeHistoryModel
-            //     .query()
-            //     .first()
-            //     .where('settle_currency', crypto)
-            //     .andWhere('currency', currency)
-            //     .andWhere('created_at', '<=', today)
-            //     .andWhere('created_at', '>=', yesterday)
-            //     .orderBy('id', 'DESC')
+                var current_price = 0.0
+                if (price.length == 0) {
+                    current_price = 0;
+                } else {
+                    current_price = price[price.length - 1]['fill_price'];
+                }
 
-            var current_price = 0.0
-            if (price.length == 0) {
-                current_price = 0;
-            } else {
-                current_price = price[0]['fill_price'];
-            }
+                var previous_price = 0.0
+                if (price.length == 0) {
+                    previous_price = 0;
+                } else {
+                    previous_price = price[0]['fill_price'];
+                }
 
-            // var previous_price = await TradeHistoryModel
-            //     .query()
-            //     .first()
-            //     .where('settle_currency', crypto)
-            //     .andWhere('currency', currency)
-            //     .andWhere('created_at', '<=', today)
-            //     .andWhere('created_at', '>=', yesterday)
-            //     .orderBy('id', 'ASC')
+                var diffrence = current_price - previous_price;
+                var percentchange = (diffrence * 100 / previous_price);
 
-            var previous_price = 0.0
-            if (price.length == 0) {
-                previous_price = 0;
-            } else {
-                previous_price = price[price.length - 1]['fill_price'];
-            }
+                if (percentchange == NaN || percentchange == "-Infinity") {
+                    percentchange = 0;
+                } else {
+                    percentchange = percentchange;
+                }
 
-            var diffrence = current_price - previous_price;
-            var percentchange = (diffrence * 100 / previous_price);
+                if (diffrence <= 0) {
+                    flag = false;
+                } else {
+                    flag = true;
+                }
 
-            if (percentchange == NaN || percentchange == "-Infinity") {
-                percentchange = 0;
-            } else {
-                percentchange = percentchange;
-            }
+                var card_data = {
+                    "pair_from": crypto,
+                    "pair_to": currency,
+                    "average_price": average_price,
+                    "diffrence": diffrence,
+                    "percentchange": percentchange,
+                    "flag": flag,
+                    "tradeChartDetails": price
+                    // "socket_id": socket_id
+                }
 
-            if (diffrence <= 0) {
-                flag = false;
-            } else {
-                flag = true;
-            }
+                cardData.push(card_data);
 
-            // console.log(today)
-            // console.log(yesterday)
-            var tradeorderdetails = await TradeHistoryModel
-                .query()
-                .where('settle_currency', crypto)
-                .andWhere('currency', currency)
-                .andWhere('created_at', '<=', today)
-                .andWhere('created_at', '>=', yesterday)
-                .orderBy('created_at', 'ASC')
 
-            var card_data = {
-                "pair_from": crypto,
-                "pair_to": currency,
-                "average_price": average_price,
-                "diffrence": diffrence,
-                "percentchange": percentchange,
-                "flag": flag,
-                "tradeChartDetails": tradeorderdetails
-                // "socket_id": socket_id
-            }
-
-            cardData.push(card_data);
-            return res
-                .status(200)
-                .json({
+                var value = {
                     "status": constants.SUCCESS_CODE,
                     "message": "Favourites List",
                     "data": cardData
-                });
+                }
+
+                value = JSON.stringify(value)
+
+                client.setex(`card_graph-${symbol}`, 1800, JSON.stringify(value))
+            }
+            return res
+                .status(200)
+                .json(JSON.parse(value));
         } catch (error) {
-            console.log("err", JSON.stringify(error));
+            console.log("err", (error));
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
         // })
@@ -363,6 +358,178 @@ class UserFavourites extends AppController {
                         })
                 }
             }
+        }
+    }
+
+    async updatePairCache(symbol) {
+        try {
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+            var cardData = [];
+            var yesterday = moment()
+                .subtract(1, 'days')
+                .format('YYYY-MM-DD HH:mm:ss.SSS');
+            var today = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+
+            var total_price = 0;
+            var average_price = 0;
+            var flag = true;
+
+            var price = await TradeHistoryModel
+                .query()
+                .select("created_at", "fill_price", "quantity")
+                .where('settle_currency', crypto)
+                .andWhere('currency', currency)
+                .andWhere('created_at', '<=', today)
+                .andWhere('created_at', '>=', yesterday)
+                .orderBy('created_at', 'ASC');
+
+            if (price.length == 0) {
+                average_price = 0;
+            } else {
+                map(price, p => {
+                    total_price = total_price + (p.fill_price / p.quantity);
+                });
+                average_price = total_price / (price.length);
+            }
+
+            var current_price = 0.0
+            if (price.length == 0) {
+                current_price = 0;
+            } else {
+                current_price = price[price.length - 1]['fill_price'];
+            }
+
+            var previous_price = 0.0
+            if (price.length == 0) {
+                previous_price = 0;
+            } else {
+                previous_price = price[0]['fill_price'];
+            }
+
+            var diffrence = current_price - previous_price;
+            var percentchange = (diffrence * 100 / previous_price);
+
+            if (percentchange == NaN || percentchange == "-Infinity") {
+                percentchange = 0;
+            } else {
+                percentchange = percentchange;
+            }
+
+            if (diffrence <= 0) {
+                flag = false;
+            } else {
+                flag = true;
+            }
+
+            var card_data = {
+                "pair_from": crypto,
+                "pair_to": currency,
+                "average_price": average_price,
+                "diffrence": diffrence,
+                "percentchange": percentchange,
+                "flag": flag,
+                "tradeChartDetails": price
+                // "socket_id": socket_id
+            }
+
+            cardData.push(card_data);
+
+            var value = {
+                "status": constants.SUCCESS_CODE,
+                "message": "Favourites List",
+                "data": cardData
+            }
+
+            client.setex(`card_graph-${symbol}`, 1800, JSON.stringify(value))
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    async updateReqPairCache(req, res) {
+        try {
+            var symbol = req.query.symbol;
+            let { crypto, currency } = await Currency.get_currencies(symbol);
+            var cardData = [];
+            var yesterday = moment()
+                .subtract(1, 'days')
+                .format('YYYY-MM-DD HH:mm:ss.SSS');
+            var today = moment().format('YYYY-MM-DD HH:mm:ss.SSS');
+
+            var total_price = 0;
+            var average_price = 0;
+            var flag = true;
+
+            var price = await TradeHistoryModel
+                .query()
+                .select("created_at", "fill_price", "quantity")
+                .where('settle_currency', crypto)
+                .andWhere('currency', currency)
+                .andWhere('created_at', '<=', today)
+                .andWhere('created_at', '>=', yesterday)
+                .orderBy('created_at', 'ASC');
+
+            if (price.length == 0) {
+                average_price = 0;
+            } else {
+                map(price, p => {
+                    total_price = total_price + (p.fill_price / p.quantity);
+                });
+                average_price = total_price / (price.length);
+            }
+
+            var current_price = 0.0
+            if (price.length == 0) {
+                current_price = 0;
+            } else {
+                current_price = price[price.length - 1]['fill_price'];
+            }
+
+            var previous_price = 0.0
+            if (price.length == 0) {
+                previous_price = 0;
+            } else {
+                previous_price = price[0]['fill_price'];
+            }
+
+            var diffrence = current_price - previous_price;
+            var percentchange = (diffrence * 100 / previous_price);
+
+            if (percentchange == NaN || percentchange == "-Infinity") {
+                percentchange = 0;
+            } else {
+                percentchange = percentchange;
+            }
+
+            if (diffrence <= 0) {
+                flag = false;
+            } else {
+                flag = true;
+            }
+
+            var card_data = {
+                "pair_from": crypto,
+                "pair_to": currency,
+                "average_price": average_price,
+                "diffrence": diffrence,
+                "percentchange": percentchange,
+                "flag": flag,
+                "tradeChartDetails": price
+                // "socket_id": socket_id
+            }
+
+            cardData.push(card_data);
+
+            var value = {
+                "status": constants.SUCCESS_CODE,
+                "message": "Favourites List",
+                "data": cardData
+            }
+
+            client.setex(`card_graph-${symbol}`, 1800, JSON.stringify(value))
+            console.log("Done")
+        } catch (err) {
+            console.log(err)
         }
     }
 }
