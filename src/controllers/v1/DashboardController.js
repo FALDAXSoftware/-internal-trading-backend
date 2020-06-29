@@ -50,9 +50,35 @@ class DashboardController extends AppController {
     }
 
     async getPortfolioData(req, res) {
-        // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers, res);
+            const starShipInfo = await axios.get(
+                `${process.env.CACHE_URL}cached-portfolio-details?user_id=${user_id}`
+            );
+
+            // console.log("starShipInfo", starShipInfo.data.data)
+
+            var starShipInfoValue = starShipInfo.data;
+
+            redis_client.setex(`${user_id}-portfolio`, 10, JSON.stringify(starShipInfoValue));
+            return res.status(200)
+                .json(starShipInfo.data);
+        } catch (error) {
+            console.log(JSON.stringify(error));
+            // await logger.info({
+            //     "module": "Portfolio Data",
+            //     "user_id": "user_" ,
+            //     "url": "Trade Function",
+            //     "type": "Success"
+            // }, error)
+        }
+    }
+
+    async getCachedPortfolioData(req, res) {
+        // return new Promise(async (resolve, reject) => {
+        try {
+            console.log("req.headers", req.headers)
+            var user_id = req.query.user_id;
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -60,33 +86,69 @@ class DashboardController extends AppController {
                 "type": "Entry"
             }, "Entered the function")
             var total = 0;
-            // var data = await fetSocketInfo.getSocketValueData("LTC-BTC");
-            // console.log(data);
-            var data = await latestBidPrice.getLatestVaue("LTC-BTC");
-            // console.log("data", data)
             var diffrenceValue = 0;
-            var user_data = await UserModel
-                .query()
-                .first()
-                .select("fiat", "diffrence_fiat", "total_value")
-                .where('id', user_id)
-                .andWhere('deleted_at', null)
-                .andWhere('is_active', true)
-                .orderBy('id', 'DESC');
-
-            var currency = user_data.fiat;
+            var user_data;
+            var coinBalance;
+            var currentPriceFiat;
+            var previousPriceFiat;
             var yesterday = moment().utc().subtract(1, 'days').format("YYYY-MM-DD HH:mm:ss");
             var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
+
+            await Promise.all([
+                await UserModel
+                    .query()
+                    .first()
+                    .select("fiat", "diffrence_fiat", "total_value")
+                    .where('id', user_id)
+                    .andWhere('deleted_at', null)
+                    .andWhere('is_active', true)
+                    .orderBy('id', 'DESC'),
+
+
+                await WalletModel
+                    .query()
+                    .select('coin_name', 'balance', 'coin', 'coin_code')
+                    .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
+                    .where('user_id', user_id)
+                    .andWhere('coins.is_fiat', false)
+                    .andWhere('wallets.deleted_at', null),
+
+                await TempCoinMArketCapModel
+                    .query()
+                    .select("price", "coin")
+                    .where('deleted_at', null)
+                    .andWhere("created_at", "<=", today)
+                    .andWhere("created_at", ">=", yesterday)
+                    .orderBy('id', 'DESC')
+                    .limit(5),
+
+                await TempCoinMArketCapModel
+                    .query()
+                    .select("price", "coin")
+                    .where('deleted_at', null)
+                    .andWhere("created_at", "<=", today)
+                    .andWhere("created_at", ">=", yesterday)
+                    .orderBy('id', 'ASC')
+                    .limit(5)
+            ]).then(values => {
+                user_data = values[0];
+                coinBalance = values[1];
+                currentPriceFiat = values[2];
+                previousPriceFiat = values[3]
+            })
+            var currency = user_data.fiat;
             var portfolioData = [];
             var average_price;
 
-            var coinBalance = await WalletModel
-                .query()
-                .select('coin_name', 'balance', 'coin', 'coin_code')
-                .fullOuterJoin('coins', 'wallets.coin_id', 'coins.id')
-                .where('user_id', user_id)
-                .andWhere('coins.is_fiat', false)
-                .andWhere('wallets.deleted_at', null);
+            var currenctPriceObjcet = {};
+            var data = currentPriceFiat.map(person => {
+                currenctPriceObjcet[person.coin] = person
+            });
+
+            var previousPriceObject = {};
+            var data1 = previousPriceFiat.map(person => {
+                previousPriceObject[person.coin] = person
+            });
 
             for (var i = 0; i < coinBalance.length; i++) {
                 var total_price = 0;
@@ -94,32 +156,20 @@ class DashboardController extends AppController {
                 var percentChange = 0.0;
                 var currentPrice = 0.0;
                 var previousPrice = 0.0;
-                // console.log("coinBalance[i].coin", coinBalance[i].coin)
-                var currentPriceFiat = await TempCoinMArketCapModel
-                    .query()
-                    .select("price")
-                    .where('deleted_at', null)
-                    .andWhere('coin', coinBalance[i].coin)
-                    .andWhere("created_at", "<=", today)
-                    .andWhere("created_at", ">=", yesterday)
-                    .orderBy('id', 'DESC');
 
-                // console.log("currentPriceFiat", currentPriceFiat)
-
-                if (currentPriceFiat.length == 0) {
+                if (currenctPriceObjcet[coinBalance[i].coin] == undefined) {
                     currentPrice = 0;
                 } else {
-                    currentPrice = currentPriceFiat[0].price;
+                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].price;
                 }
 
                 average_price = currentPrice
 
-                if (currentPriceFiat.length == 0) {
+                if (previousPriceObject[coinBalance[i].coin] == undefined) {
                     previousPrice = 0;
                 } else {
-                    previousPrice = currentPriceFiat[currentPriceFiat.length - 1].price;
+                    previousPrice = previousPriceObject[coinBalance[i].coin].price;
                 }
-
 
                 var diffrence = currentPrice - previousPrice;
                 percentChange = (diffrence / currentPrice) * 100;
@@ -133,9 +183,7 @@ class DashboardController extends AppController {
                 var priceFiat = currentPriceFiat
                 if (priceFiat == undefined) {
                     priceFiat = 0;
-                    // percentchange = 0;
                 } else {
-                    // percentchange = priceFiat.quote.USD.percent_change_24h;
                     priceFiat = priceFiat.price;
                 }
 
@@ -190,7 +238,7 @@ class DashboardController extends AppController {
                 });
 
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log((error));
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -981,27 +1029,24 @@ class DashboardController extends AppController {
         }
     }
 
-    async getInstrumentDataValue(req, res) {
+    async getInstrumentDataValue() {
         try {
 
-            const starShipInfo = await axios.get(
-                `http://localhost:3012/api/v1/tradding/cached-instrument-details`
-            );
-
-            var starShipInfoValue = starShipInfo.data;
-
-            redis_client.setex("instrument", 10, JSON.stringify(starShipInfoValue));
-            return res.status(200)
-                .json(starShipInfo.data)
-
+            var instrumentDataValue = await intrumentData.getInstrumentData();
+            var object = {
+                "status": constants.SUCCESS_CODE,
+                "message": i18n.__("instrument data").message,
+                "data": instrumentDataValue
+            }
+            redis_client.setex("instrument", 10, JSON.stringify(object));
+            await logger.info({
+                "module": "Instrument Data",
+                "user_id": "user_",
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("instrument data").message + "  " + instrumentDataValue)
         } catch (error) {
-            console.log(JSON.stringify(error));
-            // await logger.info({
-            //     "module": "Portfolio Data",
-            //     "user_id": "user_" + user_id,
-            //     "url": "Trade Function",
-            //     "type": "Success"
-            // }, error)
+            console.log((error));
         }
     }
 
@@ -1009,7 +1054,12 @@ class DashboardController extends AppController {
         try {
 
             var instrumentDataValue = await intrumentData.getInstrumentData();
-
+            var object = {
+                "status": constants.SUCCESS_CODE,
+                "message": i18n.__("instrument data").message,
+                "data": instrumentDataValue
+            }
+            redis_client.setex("instrument", 10, JSON.stringify(object));
             await logger.info({
                 "module": "Instrument Data",
                 "user_id": "user_",
@@ -1024,7 +1074,7 @@ class DashboardController extends AppController {
                     "data": instrumentDataValue
                 });
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log((error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" + user_id,
@@ -1034,35 +1084,26 @@ class DashboardController extends AppController {
         }
     }
 
-    async getDepthChartDetails(req, res) {
+    async getDepthChartDetails(symbol) {
+
         try {
-            var {
-                symbol,
-                limit
-            } = req.query;
-            // let { crypto, currency } = await Currency.get_currencies(symbol);
+            let { crypto, currency } = await Currency.get_currencies(symbol);
 
-            // console.log("symbol", symbol)
+            var limit = 500;
+            var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit);
 
-            const starShipInfo = await axios.get(
-                `http://localhost:3012/api/v1/tradding/cached-depth-chart-details?symbol=${symbol}`
-            );
-
-            // console.log("starShipInfo", starShipInfo.data.data)
-
-            var starShipInfoValue = starShipInfo.data;
-
-            redis_client.setex(symbol, 10, JSON.stringify(starShipInfoValue));
-            return res.status(200)
-                .json(starShipInfo.data)
-
-            // var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
-            // await logger.info({
-            //     "module": "Depth Chart Data",
-            //     "user_id": "user_",
-            //     "url": "Trade Function",
-            //     "type": "Success"
-            // }, i18n.__("depth data").message + "  " + depthChartValue)
+            var object = {
+                "status": constants.SUCCESS_CODE,
+                "message": i18n.__("depth data").message,
+                "data": depthChartValue
+            }
+            redis_client.setex(symbol, 10, JSON.stringify(object));
+            await logger.info({
+                "module": "Depth Chart Data",
+                "user_id": "user_",
+                "url": "Trade Function",
+                "type": "Success"
+            }, i18n.__("depth data").message + "  " + depthChartValue)
             // return res
             //     .status(200)
             //     .json({
@@ -1071,10 +1112,10 @@ class DashboardController extends AppController {
             //         "data": depthChartValue
             //     });
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log((error));
             // await logger.info({
             //     "module": "Portfolio Data",
-            //     "user_id": "user_" ,
+            //     "user_id": "user_" + user_id,
             //     "url": "Trade Function",
             //     "type": "Success"
             // }, error)
@@ -1089,7 +1130,14 @@ class DashboardController extends AppController {
             } = req.query;
             let { crypto, currency } = await Currency.get_currencies(symbol);
 
-            var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit)
+            var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit);
+
+            var object = {
+                "status": constants.SUCCESS_CODE,
+                "message": i18n.__("depth data").message,
+                "data": depthChartValue
+            }
+            redis_client.setex(symbol, 10, JSON.stringify(object));
             await logger.info({
                 "module": "Depth Chart Data",
                 "user_id": "user_",
