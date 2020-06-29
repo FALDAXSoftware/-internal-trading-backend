@@ -53,7 +53,7 @@ class DashboardController extends AppController {
         try {
             var user_id = await Helper.getUserId(req.headers, res);
             const starShipInfo = await axios.get(
-                `http://localhost:3012/api/v1/tradding/cached-portfolio-details?user_id=${user_id}`
+                `${process.env.CACHE_URL}cached-portfolio-details?user_id=${user_id}`
             );
 
             // console.log("starShipInfo", starShipInfo.data.data)
