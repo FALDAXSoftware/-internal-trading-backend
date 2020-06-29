@@ -45,6 +45,11 @@ var mailer = require('express-mailer');
 var i18n = require("i18n");
 var session = require('express-session')
 var server = http.createServer(app);
+
+// const redis = require("redis");
+// const axios = require("axios");
+// const port_redis = 6379;
+
 // var io = require('socket.io')(server);
 var io = require('socket.io')(server, {
   handlePreflightRequest: (req, res) => {
@@ -174,13 +179,16 @@ io.on('connection', async function (socket) {
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
 
-    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
-    socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
-    socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
-    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
-    socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
-    socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol));
-    socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol));
+    await Promise.all([
+      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
+      socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
+      socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1])),
+      socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1])),
+      socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1])),
+      socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1])),
+      socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol))
+    ])
+
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
