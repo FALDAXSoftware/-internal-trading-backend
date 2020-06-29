@@ -158,6 +158,8 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
+    socket.set('transports', ['websocket']);
+
     // console.log("room", room)
 
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
