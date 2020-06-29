@@ -11,14 +11,25 @@ var SellBookOrderHelper = require("../../helpers/sell/get-sell-book-order");
 var BuyBookOrderHelper = require("../../helpers/buy/get-buy-book-order");
 var Fees = require("../../models/Fees");
 
+// Redis
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
+
+const redis_client = redis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
+
 var getUserWalletBalance = async (user_id, currency, crypto) => {
     var userWalletBalance;
-    var coinId = await CoinsModel
-        .query()
-        .first()
-        .select()
-        .where('coin', currency)
-        .andWhere('deleted_at', null);
+    // var coinId = await CoinsModel
+    //     .query()
+    //     .first()
+    //     .select()
+    //     .where('coin', currency)
+    //     .andWhere('deleted_at', null);
 
     var coinWalletSql = `SELECT coins.coin, coins.is_active , wallets.balance, coins.id,
                             wallets.placed_balance, wallets.receive_address
@@ -156,6 +167,10 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         'cryptoFiat': cryptoUsdValue,
         "currencyFiat": currencyUsdValue
     };
+
+    console.log("userWalletBalance", userWalletBalance)
+    redis_client.setex(`${user_id}-${crypto}-${currency}`, 3000, JSON.stringify(userWalletBalance));
+
     return userWalletBalance;
 }
 

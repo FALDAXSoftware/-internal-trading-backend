@@ -51,16 +51,21 @@ var emitTrades = async (crypto, currency, userIds) => {
     let latesValue = await getLatestValue.getLatestVaue(symbol);
     global.io.sockets.to(crypto + '-' + currency).emit(constants.LATEST_TRADEVALUE, latesValue)
 
+    console.log("userIds", userIds)
+
     // Get only unique user ids
     var filteredUsers = userIds.filter(function (item, pos) {
         return userIds
             .indexOf(item) == pos;
     });
 
+    console.log("filteredUsers", filteredUsers)
+
     // Broadcast balance update for all user
     for (let index = 0; index < filteredUsers.length; index++) {
         // console.log(JSON.stringify(filteredUsers))
         const element = filteredUsers[index];
+        console.log("element", element)
         let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
         global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)
 
