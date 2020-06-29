@@ -158,7 +158,7 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
-    socket.set('transports', ['websocket']);
+    // socket.set('transports', ['websocket']);
 
     // console.log("room", room)
 
