@@ -3932,7 +3932,7 @@ class TradeController extends AppController {
         orderQuantity,
       } = req.body;
 
-      // console.log("req.body", req.body)
+      console.log("req.body", req.body)
 
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -3940,6 +3940,8 @@ class TradeController extends AppController {
       if (quantityTotal.length == 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
       }
+
+      console.log("quantityTotal", quantityTotal)
 
       // For checking if previous market order exist
       var getPendingDetails = await PendingOrderExecutuionModel
@@ -3954,7 +3956,7 @@ class TradeController extends AppController {
         .andWhere("is_executed", false)
         .orderBy("id", "DESC");
 
-      // console.log("getPendingDetails", getPendingDetails)
+      console.log("getPendingDetails", getPendingDetails)
 
       if (getPendingDetails != undefined) {
         await logger.info({
@@ -3990,6 +3992,7 @@ class TradeController extends AppController {
       //   .orderBy("id", "DESC");
       // var usdValue = USDPriceValue.quote.USD.price
       var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
+      console.log("maxDataValue", maxDataValue)
       var maximumValue = (maxDataValue.buyMaximumValue)
       // console.log("maximumValue", maximumValue)
 
@@ -4023,8 +4026,10 @@ class TradeController extends AppController {
         .andWhere("id", user_id)
         .orderBy("id", "DESC");
 
+      console.log("userData", userData)
+
       var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
-      // console.log("tradeDataChecking", tradeDataChecking)
+      console.log("tradeDataChecking", tradeDataChecking)
 
       if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && userData.account_tier == 4)) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
@@ -4043,6 +4048,7 @@ class TradeController extends AppController {
         }
         // Get and check Crypto Wallet details
         let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
+        console.log("walletData", walletData)
         if (!walletData.currency) {
           await logger.info({
             "module": "Market Buy",
@@ -4062,7 +4068,7 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
         }
 
-        if ((walletData.currency.placed_balance < quantityTotal[0].price) && checkUser != true) {
+        if ((parseFloat(walletData.currency.placed_balance) < parseFloat(quantityTotal[0].price * orderQuantity)) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
             "user_id": "user_" + user_id,
@@ -4092,7 +4098,7 @@ class TradeController extends AppController {
           });
 
         // console.log("pendingAdd", pendingAdd)
-        // console.log("pendingAdd.id", pendingAdd.id)
+        console.log("pendingAdd.id", pendingAdd.id)
 
         var queueName = process.env.PENDING_QUEUE_NAME
         var queueData = {
@@ -4553,7 +4559,7 @@ class TradeController extends AppController {
 
       // console.log("quantityTotal", quantityTotal)
       if (quantityTotal.length > 0) {
-        if ((walletData.currency.placed_balance < quantityTotal[0].price) && checkUser != true) {
+        if ((walletData.currency.placed_balance < (quantityTotal[0].price * orderQuantity)) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
             "user_id": "user_" + user_id,
