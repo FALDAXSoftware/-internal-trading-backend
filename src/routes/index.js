@@ -10,6 +10,7 @@ var TradingViewController = require('../controllers/v1/TradingViewController');
 var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
+var Helpers = require("../helpers/helpers")
 
 const redis = require("redis");
 const axios = require("axios");
@@ -39,7 +40,7 @@ checkCache = (req, res, next) => {
     }
     //if no match found
     if (data != null) {
-      res.send(data);
+      res.send(JSON.parse(data));
     } else {
       //proceed to next middleware function
       // app.use('/', require('./routes/index'));
@@ -88,7 +89,7 @@ checkInstrumentCache = (req, res, next) => {
     }
     //if no match found
     if (data != null) {
-      res.send(data);
+      res.send(JSON.parse(data));
     } else {
       //proceed to next middleware function
       // app.use('/', require('./routes/index'));
@@ -96,6 +97,24 @@ checkInstrumentCache = (req, res, next) => {
     }
   });
 };
+
+checkPortfolioCache = async (req, res, next) => {
+  var user_id = await Helpers.getUserId(req.headers, res);
+  redis_client.get(`${user_id}-portfolio`, async (err, data) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+    }
+    //if no match found
+    if (data != null) {
+      res.send(JSON.parse(data));
+    } else {
+      //proceed to next middleware function
+      // app.use('/', require('./routes/index'));
+      next();
+    }
+  });
+}
 
 // router.post('/orders/market-sell-create', TradeController.marketSell);
 // router.post('/orders/market-buy-create', TradeController.marketBuy);
@@ -115,19 +134,20 @@ router.post('/trade/add-favourite-pair', UserFavouritesController.addFavouritesD
 router.post('/cancel-pending-order', TradeController.cancelPendingOrder)
 router.get('/get-chart-data-graph', UserFavouritesController.getFavouritesData);
 router.get('/get-activity-data', DashboardController.getActivityData)
-router.get('/get-portfolio-data', DashboardController.getPortfolioData);
+router.get('/get-portfolio-data', checkPortfolioCache, DashboardController.getPortfolioData);
+router.get('/cached-portfolio-details', DashboardController.getCachedPortfolioData);
 router.get('/update-order-book', DashboardController.updateBuyOrderBook);
 router.get('/update-sell-order-book', DashboardController.updateSellOrderBook);
 router.get("/get-pairs-value", TradeDesk.getQuantityMinMaxValue);
 router.post("/update-pairs-value", TradeDesk.updateQuantityMinMaxValue)
 router.get("/get-spread-value", TradeDesk.getSpreadValue)
 router.get("/get-tradedesk-user-balances", TradeDesk.getWalletTradeDeskBalance)
-// router.get("/get-instrument-value-data", checkInstrumentCache, DashboardController.getInstrumentDataValue)
-// router.get("/cached-instrument-details", DashboardController.getCachedInstrumentDataValue)
-router.get("/get-instrument-data", DashboardController.getInstrumentValue)
-// router.get("/depth-chart-details-value", checkCache, DashboardController.getDepthChartDetails)
-// router.get("/cached-depth-chart-details", DashboardController.getCachedDepthChartDetails)
-router.get("/depth-chart-details", DashboardController.getValueDepthChartDetails)
+router.get("/get-instrument-value-data", checkInstrumentCache, DashboardController.getCachedInstrumentDataValue)
+router.get("/cached-instrument-details", DashboardController.getCachedInstrumentDataValue)
+router.get("/get-instrument-data", checkInstrumentCache, DashboardController.getCachedInstrumentDataValue)
+router.get("/depth-chart-details", checkCache, DashboardController.getCachedDepthChartDetails)
+router.get("/cached-depth-chart-details", DashboardController.getCachedDepthChartDetails)
+router.get("/depth-chart-details-value", DashboardController.getValueDepthChartDetails)
 // router.get('/order/candle-stick-chart', TradeController.getCandleStickData)
 router.get("/get-user-trade-history", TradeController.getUserOrdersData);
 router.get("/system-health-check", TradeController.getHealthCheck);
