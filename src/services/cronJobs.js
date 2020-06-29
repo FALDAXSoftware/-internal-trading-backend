@@ -1,4 +1,4 @@
-// /* Used to store CronJobs  */
+// // /* Used to store CronJobs  */
 var cron = require('node-cron');
 var cronData = require("../controllers/v1/TradeController");
 var dashBoardUpdate = require("../controllers/v1/DashboardController");
