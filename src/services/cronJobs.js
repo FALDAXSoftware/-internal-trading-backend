@@ -1,4 +1,4 @@
-// // /* Used to store CronJobs  */
+// // // /* Used to store CronJobs  */
 var cron = require('node-cron');
 var cronData = require("../controllers/v1/TradeController");
 var dashBoardUpdate = require("../controllers/v1/DashboardController");
@@ -399,7 +399,7 @@ cron.schedule('*/10 * * * *', async (req, res, next) => {
 
 cron.schedule('*/10 * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
-    await cardDataController.updatePairCache("XRP- BTC");
+    await cardDataController.updatePairCache("XRP-BTC");
 })
 
 cron.schedule('*/10 * * * *', async (req, res, next) => {
@@ -425,4 +425,63 @@ cron.schedule('*/10 * * * *', async (req, res, next) => {
 cron.schedule('*/10 * * * *', async (req, res, next) => {
     console.log("INISDER FGJ");
     await cardDataController.updatePairCache("XRP-ETH");
+})
+
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getInstrumentDataValue();
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("LTC-BTC");
+})
+
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("XRP-BTC");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("ETH-BTC");
+})
+
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("BCH-BTC");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("SUSU-BTC");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("BCH-PAX");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("BCH-ETH");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("LTC-ETH");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("XRP-ETH");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("BTC-PAX");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("ETH-PAX");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("XRP-PAX");
+})
+cron.schedule('*/10 * * * * *', async (req, res, next) => {
+    console.log("INSIDE CRON")
+    await dashBoardUpdate.getDepthChartDetails("LTC-PAX");
 })
