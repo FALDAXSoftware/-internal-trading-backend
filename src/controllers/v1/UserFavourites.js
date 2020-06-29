@@ -25,7 +25,7 @@ const asyncRedis = require("async-redis");
 const client = asyncRedis.createClient({
     port: process.env.REDIS_PORT,               // replace with your port
     host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
-    // password: process.env.REDIS_PASSWORD   // replace with your password
+    password: process.env.REDIS_PASSWORD   // replace with your password
 });
 
 class UserFavourites extends AppController {

@@ -4099,7 +4099,7 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Create Crypto Wallet").message, []);
         }
 
-        if ((walletData.currency.placed_balance < quantityTotal[0].price) && checkUser != true) {
+        if ((parseFloat(walletData.currency.placed_balance) < parseFloat(quantityTotal[0].price * orderQuantity)) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
             "user_id": "user_" + user_id,
@@ -4590,7 +4590,7 @@ class TradeController extends AppController {
 
       // console.log("quantityTotal", quantityTotal)
       if (quantityTotal.length > 0) {
-        if ((walletData.currency.placed_balance < quantityTotal[0].price) && checkUser != true) {
+        if ((parseFloat(walletData.currency.placed_balance) < parseFloat(quantityTotal[0].price * orderQuantity)) && checkUser != true) {
           await logger.info({
             "module": "Market Buy",
             "user_id": "user_" + user_id,
