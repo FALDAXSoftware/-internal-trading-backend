@@ -35,10 +35,6 @@ exports.up = async function (knex) {
         .alterTable("coins", tbl => {
             tbl.specificType("access_token_value", "character varying");
         })
-        .alterTable("countries", tbl => {
-            tbl.specificType("sortname", "character varying")
-            tbl.specificType("phonecode", "character varying");
-        })
         .alterTable("currency_conversion", tbl => {
             tbl.specificType("coin_name", "character varying")
             tbl.specificType("original_value", "json");
@@ -91,6 +87,7 @@ exports.up = async function (knex) {
             tbl.boolean("is_cancel").defaultTo(false);
             tbl.specificType("reason", "character varying")
             tbl.boolean("is_under_execution").defaultTo(false)
+            tbl.boolean("is_executed").defaultTo(false)
         })
         .alterTable("price_history", tbl => {
             tbl.specificType("market_snapshot", "json");
