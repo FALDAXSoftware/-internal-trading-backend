@@ -158,6 +158,8 @@ io.on('connection', async function (socket) {
       socket.emit(constants.USER_LOGOUT, true);
     }
 
+    // socket.set('transports', ['websocket']);
+
     // console.log("room", room)
 
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
@@ -178,6 +180,9 @@ io.on('connection', async function (socket) {
       console.log("INSIDE ADMIN");
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
+
+    console.log("user_id", user_id);
+    console.log("symbol", symbol)
 
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
