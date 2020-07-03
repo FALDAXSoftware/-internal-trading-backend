@@ -276,8 +276,8 @@ class TradeController extends AppController {
       currency_wallet_data,
       userIds
     } = alldata;
-    console.log("alldata", alldata);
-    console.log("userIds", userIds)
+    // console.log("alldata", alldata);
+    // console.log("userIds", userIds)
     const checkUser = Helper.checkWhichUser(user_id);
     // Make Market Sell order
     let buy_book_data = await BuyBookHelper.getBuyBookOrder(crypto, currency);
@@ -602,7 +602,7 @@ class TradeController extends AppController {
             created_at: tradeHistory.created_at,
             fill_price: tradeHistory.fill_price
           };
-          console.log("JSON.stringify(tradeHistory)", JSON.stringify(tradeHistory))
+          // console.log("JSON.stringify(tradeHistory)", JSON.stringify(tradeHistory))
           // redis_client.setex(`trade-data-${tradeHistory.symbol}`, 3000, JSON.stringify(tradeHistory));
           allOrderData.push(tradeHistory);
           tradeOrder = tradeHistory;
@@ -643,8 +643,8 @@ class TradeController extends AppController {
               id: userData[i],
               is_active: true
             });
-            console.log("user_data", user_data);
-            console.log("userNotification", userNotification)
+            // console.log("user_data", user_data);
+            // console.log("userNotification", userNotification)
             if (user_data != undefined) {
               var allData = {
                 template: "emails/general_mail.ejs",

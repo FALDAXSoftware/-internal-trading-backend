@@ -77,7 +77,7 @@ class DashboardController extends AppController {
     async getCachedPortfolioData(req, res) {
         // return new Promise(async (resolve, reject) => {
         try {
-            console.log("req.headers", req.headers)
+            // console.log("req.headers", req.headers)
             var user_id = req.query.user_id;
             await logger.info({
                 "module": "Portfolio Data",
@@ -253,6 +253,7 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers, res);
+            // console.log(user_id)
             await logger.info({
                 "module": "Activity Data",
                 "user_id": "user_" + user_id,
@@ -267,7 +268,10 @@ class DashboardController extends AppController {
                 .andWhere('is_market', false)
                 .andWhere("is_cancel", false)
                 .andWhere('deleted_at', null)
-                .orderBy('id', 'DESC');
+                .orderBy('id', 'DESC')
+                .limit(50);
+
+            // console.log("data", data)
 
             // data.map((value1, i) => {
             //     value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
@@ -280,15 +284,19 @@ class DashboardController extends AppController {
                 "url": "Trade Function",
                 "type": "Success"
             }, i18n.__("activity data").message + " " + data)
+
+            var dataValue = {
+                "status": constants.SUCCESS_CODE,
+                "message": i18n.__("activity data").message,
+                "data": data
+            }
+            redis_client.setex(`${user_id}-activity`, 3600, JSON.stringify(dataValue));
+
             return res
                 .status(200)
-                .json({
-                    "status": constants.SUCCESS_CODE,
-                    "message": i18n.__("activity data").message,
-                    "data": data
-                });
+                .json(dataValue);
         } catch (error) {
-            console.log(JSON.stringify(error));
+            console.log((error));
             await logger.info({
                 "module": "Activity Data",
                 "user_id": "user_" + user_id,

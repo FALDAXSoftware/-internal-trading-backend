@@ -177,12 +177,12 @@ io.on('connection', async function (socket) {
     socket.join(pair[1]); // Join to new Currency Room
 
     if (authentication.isAdmin == true) {
-      console.log("INSIDE ADMIN");
+      // console.log("INSIDE ADMIN");
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
 
-    console.log("user_id", user_id);
-    console.log("symbol", symbol)
+    // console.log("user_id", user_id);
+    // console.log("symbol", symbol)
 
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
