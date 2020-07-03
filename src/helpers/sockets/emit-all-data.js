@@ -75,7 +75,7 @@ var getTradeHistoryData = async (crypto, currency) => {
     //             // console.log("NO CACHE FOUND")
     let helper = require("../../helpers/trade/get-trade-details");;
     let data1 = await helper.getTradeDetails(crypto, currency);
-    console.log("DATA returned")
+    // console.log("DATA returned")
     //             resolve(data1);
     //         }
     //     })
@@ -87,7 +87,7 @@ var getTradeHistoryData = async (crypto, currency) => {
 var getUserBalance = async (user_id, crypto, currency) => {
 
     var value = await client.get(`${user_id}-${crypto}-${currency}`);
-    console.log("value", value);
+    // console.log("value", value);
 
     if (value == null) {
         let helper = require("../tradding/get-user-wallet-balance");
@@ -97,7 +97,7 @@ var getUserBalance = async (user_id, crypto, currency) => {
         value.flag = true;
     }
 
-    console.log("value", value);
+    // console.log("value", value);
     return value;
 }
 
@@ -116,6 +116,8 @@ var getLatestValue = async (symbol) => {
 
 // Get Users Completed Orders details
 var getUserOrdersData = async (data) => {
+    var now = new Date();
+    // console.log("now", now)
     var user_id = data.user_id;
     var pair = (data.pair).split("-");
     var crypto = pair[0];
@@ -123,17 +125,38 @@ var getUserOrdersData = async (data) => {
     var month = data.month;
     var limit = data.limit
     if (data.flag == 1) {
+        // var value = await client.get(`${user_id}-${crypto}-${currency}-${month}-completed-orders`);
+        // if (value == null) {
         let helper = require("../../helpers/tradding/get-completed-orders");
-        let data = await helper.getCompletedOrders(user_id, crypto, currency, month);
-        return data;
+        var value = await helper.getCompletedOrders(user_id, crypto, currency, month);
+        // } else {
+        //     value = JSON.parse(value);
+        //     value.flag = true;
+        // }
+        // console.log("Caching Data", new Date(), (new Date()) - now);
+        return value;
     } else if (data.flag == 2) {
+        // var value = await client.get(`${user_id}-${crypto}-${currency}-${month}-pending-orders`);
+        // if (value == null) {
         let helper = require("../../helpers/tradding/get-pending-orders");
-        let data = await helper.getPendingOrders(user_id, crypto, currency, month, limit);
-        return data;
+        var value = await helper.getPendingOrders(user_id, crypto, currency, month, limit);
+        // } else {
+        //     value = JSON.parse(value);
+        //     value.flag = true;
+        // }
+        // console.log("Caching Data", new Date(), (new Date()) - now);
+        return value;
     } else if (data.flag == 3) {
+        // var value = await client.get(`${user_id}-${crypto}-${currency}-${month}-cancelled-orders`);
+        // if (value == null) {
         let helper = require("../../helpers/tradding/get-cancelled-orders");
-        let data = await helper.getCancelledOrders(user_id, crypto, currency, month);
-        return data;
+        var value = await helper.getCancelledOrders(user_id, crypto, currency, month);
+        // } else {
+        //     value = JSON.parse(value);
+        //     value.flag = true;
+        // }
+        // console.log("Caching Data", new Date(), (new Date()) - now);
+        return value;
     }
 }
 
@@ -191,7 +214,7 @@ var getActivityData = async (user_id) => {
 var getHighInfo = async (pair) => {
 
     var value = await client.get(`high-info-${pair}`);
-    console.log("value", value);
+    // console.log("value", value);
 
     if (value == null) {
         let helper = require("../tradding/get-socket-value");
@@ -201,7 +224,7 @@ var getHighInfo = async (pair) => {
         value.flag = true;
     }
 
-    console.log("value", value);
+    // console.log("value", value);
     return value;
 }
 

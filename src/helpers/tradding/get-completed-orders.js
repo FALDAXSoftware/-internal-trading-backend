@@ -4,7 +4,19 @@ Get Completed Orders of Users
 var moment = require('moment');
 var TradeHistoryModel = require("../../models/TradeHistory");
 
-var getCompletedOrders = async (user_id, crypto, currency, month, limit = 2000) => {
+var getCompletedOrders = async (user_id, crypto, currency, month, limit = 500) => {
+
+    // Redis
+    const redis = require("redis");
+    const axios = require("axios");
+    const port_redis = 6379;
+
+    const redis_client = redis.createClient({
+        port: process.env.REDIS_PORT,               // replace with your port
+        host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+        password: process.env.REDIS_PASSWORD   // replace with your password
+    });
+
     // Get completed data.
     var completedData;
     var yesterday = moment
@@ -42,6 +54,8 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 2000) 
         })
         .orderBy('id', 'DESC')
         .limit(limit);
+
+    // redis_client.setex(`${user_id}-${crypto}-${currency}-${month}-completed-orders`, 3000, JSON.stringify(tradeData));
     return tradeData;
 }
 

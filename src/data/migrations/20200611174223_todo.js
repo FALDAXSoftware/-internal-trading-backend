@@ -35,10 +35,10 @@ exports.up = async function (knex) {
         .alterTable("coins", tbl => {
             tbl.specificType("access_token_value", "character varying");
         })
-        .alterTable("currency_conversion", tbl => {
-            tbl.specificType("coin_name", "character varying")
-            tbl.specificType("original_value", "json");
-        })
+        // .alterTable("currency_conversion", tbl => {
+        //     tbl.specificType("coin_name", "character varying")
+        //     tbl.specificType("original_value", "json");
+        // })
         .createTableIfNotExists("kraken_users", tbl => {
             tbl.increments('id').primary();
             tbl.specificType('user_id', "integer");
@@ -89,11 +89,11 @@ exports.up = async function (knex) {
             tbl.boolean("is_under_execution").defaultTo(false)
             tbl.boolean("is_executed").defaultTo(false)
         })
-        .alterTable("price_history", tbl => {
-            tbl.specificType("market_snapshot", "json");
-            tbl.specificType("type", "integer");
+        // .alterTable("price_history", tbl => {
+        //     tbl.specificType("market_snapshot", "json");
+        //     tbl.specificType("type", "integer");
 
-        })
+        // })
         .alterTable("roles", tbl => {
             tbl.specificType('allowed_pairs', "text");
         })

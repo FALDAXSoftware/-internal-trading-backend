@@ -90,7 +90,7 @@ class TradingViewController extends AppController {
     async getHistoryData(req, res) {
         try {
             var { symbol, resolution, from, to } = req.query();
-            console.log("req.query()", req.query())
+            // console.log("req.query()", req.query())
             var { crypto, currency } = await Currency.get_currencies(symbol);
             var resolutionInMinute = 0;
 
@@ -138,7 +138,7 @@ class TradingViewController extends AppController {
                     resolutionInMinute = parseInt(resolution);
                     break;
             }
-            console.log("crypto, currency, resolutionInMinute, from, to", crypto, currency, resolutionInMinute, from, to)
+            // console.log("crypto, currency, resolutionInMinute, from, to", crypto, currency, resolutionInMinute, from, to)
             var candleStickData = await candleData.getCandleData(crypto, currency, resolutionInMinute, from, to)
 
             if (candleStickData.o.length > 0) {

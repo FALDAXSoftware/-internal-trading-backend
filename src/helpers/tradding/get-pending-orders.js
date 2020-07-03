@@ -5,6 +5,15 @@ var BuyBookModel = require("../../models/BuyBook");
 var SellBookModel = require("../../models/SellBook");
 
 var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) => {
+    const redis = require("redis");
+    const axios = require("axios");
+    const port_redis = 6379;
+
+    const redis_client = redis.createClient({
+        port: process.env.REDIS_PORT,               // replace with your port
+        host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+        password: process.env.REDIS_PASSWORD   // replace with your password
+    });
     var tradePendingDetails;
 
     if (month == 0) {
@@ -81,6 +90,7 @@ var getPendingOrders = async (user_id, crypto, currency, month, limit = 2000) =>
         }
     }
     // console.log("tradePendingDetails", tradePendingDetails)
+    // redis_client.setex(`${user_id}-${crypto}-${currency}-${month}-pending-orders`, 3000, JSON.stringify(tradePendingDetails));
     return tradePendingDetails;
 
 }

@@ -6,7 +6,7 @@ var CoinsModel = require("../../models/Coins");
 var TradeHistoryModel = require("../../models/TradeHistory");
 var Currency = require("../../helpers/currency");
 var getCardData = async (symbol) => {
-    console.log("Inside card Data symbol", symbol)
+    // console.log("Inside card Data symbol", symbol)
     var card_data = [];
     var current_price = 0;
     var previous_price = 0;
@@ -21,7 +21,7 @@ var getCardData = async (symbol) => {
         .andWhere('is_active', true)
         .andWhere('coin', crypto);
 
-    console.log("coinData", coinData)
+    // console.log("coinData", coinData)
 
     var yesterday = moment
         .utc()
@@ -44,7 +44,7 @@ var getCardData = async (symbol) => {
         .andWhere('created_at', '>=', yesterday)
         .orderBy('id', 'DESC');
 
-    console.log("price", price)
+    // console.log("price", price)
 
     if (price == undefined) {
         average_price = 0
