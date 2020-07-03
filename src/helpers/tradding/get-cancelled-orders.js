@@ -7,7 +7,15 @@ const {
 
 
 var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) => {
+    const redis = require("redis");
+    const axios = require("axios");
+    const port_redis = 6379;
 
+    const redis_client = redis.createClient({
+        port: process.env.REDIS_PORT,               // replace with your port
+        host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+        password: process.env.REDIS_PASSWORD   // replace with your password
+    });
     var cancelDetails;
 
     var yesterday = moment.utc().subtract(month, 'months').format();
@@ -65,7 +73,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) 
     } else {
         cancelDetails = pendingCancelDetails
     }
-
+    // redis_client.setex(`${user_id}-${crypto}-${currency}-${month}-cancelled-orders`, 3000, JSON.stringify(cancelDetails));
     return (cancelDetails);
 
 }

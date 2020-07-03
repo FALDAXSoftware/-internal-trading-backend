@@ -237,7 +237,7 @@ var getDecryptData = (value) => {
     var key = JSON.parse(process.env.SECRET_KEY);
     var iv = JSON.parse(process.env.SECRET_IV);
     // console.log("value", value);
-    console.log()
+    // console.log()
     // When ready to decrypt the hex string, convert it back to bytes
     var encryptedBytes = aesjs.utils.hex.toBytes(value);
     // The output feedback mode of operation maintains internal state,
