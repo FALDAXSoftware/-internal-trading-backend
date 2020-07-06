@@ -90,6 +90,7 @@ var getUserBalance = async (user_id, crypto, currency) => {
     // // console.log("value", value);
 
     // if (value == null) {
+    console.log("INSIDE THIS")
     let helper = require("../tradding/get-user-wallet-balance");
     var value = await helper.getUserWalletBalance(user_id, currency, crypto);
     // } else {
