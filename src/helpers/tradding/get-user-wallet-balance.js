@@ -24,12 +24,6 @@ const redis_client = redis.createClient({
 
 var getUserWalletBalance = async (user_id, currency, crypto) => {
     var userWalletBalance;
-    // var coinId = await CoinsModel
-    //     .query()
-    //     .first()
-    //     .select()
-    //     .where('coin', currency)
-    //     .andWhere('deleted_at', null);
 
     var coinWalletSql = `SELECT coins.coin, coins.is_active , wallets.balance, coins.id,
                             wallets.placed_balance, wallets.receive_address
@@ -46,13 +40,21 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
     var userWalletCurrencyBalance = [];
     var cryptoMessage = '';
     var userWalletCryptoBalance = [];
+    var currencyinactive = false;
+    var cryptoinactive = false;
 
     for (var i = 0; i < walletStatusBalance.rows.length; i++) {
         const element = walletStatusBalance.rows[i];
         if (crypto == element.coin) {
             userWalletCryptoBalance = element
+            if (element.is_active == false) {
+                cryptoinactive = true
+            }
         } else if (currency == element.coin) {
             userWalletCurrencyBalance = element
+            if (element.is_active == false) {
+                currencyinactive = true;
+            }
         }
     }
 
@@ -165,7 +167,9 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         'sellPay': sellPay,
         'fees': takerFee,
         'cryptoFiat': cryptoUsdValue,
-        "currencyFiat": currencyUsdValue
+        "currencyFiat": currencyUsdValue,
+        "currencyinactive": currencyinactive,
+        "cryptoinactive": cryptoinactive
     };
 
     // console.log("userWalletBalance", userWalletBalance)
