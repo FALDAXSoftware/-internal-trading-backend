@@ -36,6 +36,8 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
 
     var walletStatusBalance = await WalletsModel.knex().raw(coinWalletSql);
 
+    console.log("walletStatusBalance", walletStatusBalance)
+
     var currencyMessage = '';
     var userWalletCurrencyBalance = [];
     var cryptoMessage = '';
@@ -173,7 +175,7 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
     };
 
     console.log("userWalletBalance", userWalletBalance)
-    redis_client.setex(`${user_id}-${crypto}-${currency}`, 3000, JSON.stringify(userWalletBalance));
+    // redis_client.setex(`${user_id}-${crypto}-${currency}`, 3000, JSON.stringify(userWalletBalance));
 
     return userWalletBalance;
 }
