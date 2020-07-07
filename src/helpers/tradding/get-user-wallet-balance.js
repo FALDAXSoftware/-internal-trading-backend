@@ -36,8 +36,6 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
 
     var walletStatusBalance = await WalletsModel.knex().raw(coinWalletSql);
 
-    console.log("walletStatusBalance", walletStatusBalance)
-
     var currencyMessage = '';
     var userWalletCurrencyBalance = [];
     var cryptoMessage = '';
@@ -49,14 +47,8 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         const element = walletStatusBalance.rows[i];
         if (crypto == element.coin) {
             userWalletCryptoBalance = element
-            if (element.is_active == false) {
-                cryptoinactive = true
-            }
         } else if (currency == element.coin) {
             userWalletCurrencyBalance = element
-            if (element.is_active == false) {
-                currencyinactive = true;
-            }
         }
     }
 
@@ -75,11 +67,11 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .subtract(1, 'months')
         .format();
 
-    var qouteSql = `SELECT coins.coin, currency_conversion.quote
+    var qouteSql = `SELECT coins.coin, coins.is_active, currency_conversion.quote
                         FROM coins
                         LEFT JOIN currency_conversion
                         ON coins.id = currency_conversion.coin_id
-                        WHERE coins.deleted_at IS NULL AND coins.is_active = 'true'
+                        WHERE coins.deleted_at IS NULL
                         AND currency_conversion.deleted_at IS NULL
                         AND (coins.coin = '${currency}' OR coins.coin = '${crypto}');`
 
@@ -90,8 +82,14 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         const element = qouteValue.rows[index];
         if (element.coin == crypto) {
             cryptoUsdValue = element.quote.USD.price
+            if (element.is_active == false) {
+                cryptoinactive = true
+            }
         } else if (element.coin == currency) {
             currencyUsdValue = element.quote.USD.price
+            if (element.is_active == false) {
+                currencyinactive = true;
+            }
         }
     }
 
