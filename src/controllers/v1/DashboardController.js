@@ -113,13 +113,11 @@ class DashboardController extends AppController {
                     .andWhere('coins.is_fiat', false)
                     .andWhere('wallets.deleted_at', null),
 
-                await TempCoinMArketCapModel
+                await CurrencyConversionModel
                     .query()
-                    .select("price", "coin")
+                    .select("quote  ", "symbol")
                     .where('deleted_at', null)
-                    .andWhere("created_at", "<=", today)
-                    .andWhere("created_at", ">=", yesterday)
-                    .orderBy('id', 'DESC')
+                    .orderBy('id', 'ASC')
                     .limit(5),
 
                 await TempCoinMArketCapModel
@@ -141,9 +139,11 @@ class DashboardController extends AppController {
             var average_price;
 
             var currenctPriceObjcet = {};
+            console.log("currentPriceFiat", currentPriceFiat)
             var data = currentPriceFiat.map(person => {
-                currenctPriceObjcet[person.coin] = person
+                currenctPriceObjcet[person.symbol] = person
             });
+
 
             var previousPriceObject = {};
             var data1 = previousPriceFiat.map(person => {
@@ -157,10 +157,11 @@ class DashboardController extends AppController {
                 var currentPrice = 0.0;
                 var previousPrice = 0.0;
 
+                console.log("currenctPriceObjcet[coinBalance[i].coin]", currenctPriceObjcet[coinBalance[i].coin])
                 if (currenctPriceObjcet[coinBalance[i].coin] == undefined) {
                     currentPrice = 0;
                 } else {
-                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].price;
+                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].quote.USD.price;
                 }
 
                 average_price = currentPrice
