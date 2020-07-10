@@ -204,7 +204,7 @@ class DashboardController extends AppController {
             // var changeValue = user_data.diffrence_fiat - diffrenceValue;
             console.log("user_data.total_value", user_data);
             console.log("total", total)
-            user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (0.0)
+            user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (user_data.total_value) 
             var changeValue = user_data.total_value - total;
             changeValue = changeValue.toFixed(2)
             var totalFiat = total;
