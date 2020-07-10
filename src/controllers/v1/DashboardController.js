@@ -78,7 +78,7 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             console.log("req.headers", req.headers)
-            var user_id = req.query.user_id;
+            var user_id = req.query.user_id;;
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -186,23 +186,27 @@ class DashboardController extends AppController {
                 } else {
                     priceFiat = priceFiat.price;
                 }
-
-                total = total + percentChange;
+                console.log("coinBalance[i].balance", coinBalance[i].balance)
+                total = total + (currentPrice * coinBalance[i].balance);
                 diffrenceValue = diffrenceValue + diffrence;
                 var portfolio_data = {
                     "name": coinBalance[i].name,
-                    "average_price": average_price,
+                    "average_price": (average_price * coinBalance[i].balance),
                     "percentchange": percentChange,
                     "Amount": coinBalance[i].balance,
-                    'symbol': coinBalance[i].coin_code,
+                    'symbol': (coinBalance[i].coin_code).toUpperCase(),
                     "fiatPrice": priceFiat,
                     "name": coinBalance[i].coin_name
                 }
                 portfolioData.push(portfolio_data);
             }
-            var changeValue = user_data.diffrence_fiat - diffrenceValue;
+            // var changeValue = user_data.diffrence_fiat - diffrenceValue;
+            console.log("user_data.total_value", user_data);
+            console.log("total", total)
+            user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (0.0)
+            var changeValue = user_data.total_value - total;
             changeValue = changeValue.toFixed(8)
-            var totalFiat = user_data.total_value - total;
+            var totalFiat = total;
             totalFiat = totalFiat.toFixed(8)
             var userData = await UserModel
                 .query()
