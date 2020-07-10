@@ -205,9 +205,9 @@ class DashboardController extends AppController {
             console.log("total", total)
             user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (0.0)
             var changeValue = user_data.total_value - total;
-            changeValue = changeValue.toFixed(8)
+            changeValue = changeValue.toFixed(2)
             var totalFiat = total;
-            totalFiat = totalFiat.toFixed(8)
+            totalFiat = totalFiat.toFixed(2)
             var userData = await UserModel
                 .query()
                 .first()
