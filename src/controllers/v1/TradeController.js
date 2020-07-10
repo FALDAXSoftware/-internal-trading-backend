@@ -3845,7 +3845,7 @@ class TradeController extends AppController {
         "type": "Entry"
       }, "Entered the function")
       var { side, id, order_type, user_id, flag } = req.body;
-      // console.log(JSON.stringify(req.body));
+      console.log(JSON.stringify(req.body));
       if (flag == undefined || Boolean(flag) == false) {
         var cancel_pending_data = await cancelPendingHelper.cancelPendingOrder(side, order_type, id);
       } else if (Boolean(flag) == true) {
@@ -3918,7 +3918,7 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Market Order Cannot be cancelled").message, []);
       }
     } catch (error) {
-      console.log(JSON.stringify(error));
+      console.log((error));
       await logger.info({
         "module": "Cancel PEnding Order",
         "user_id": "user_" + user_id,
