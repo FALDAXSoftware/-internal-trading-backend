@@ -15,7 +15,7 @@ var cancelPendingOrder = async (side, type, id) => {
         var currency;
         var userIds = [];
 
-        // console.log(side, type, id)
+        console.log(side, type, id)
 
         if (type == "Limit" && side == "Buy") {
             var pendingBookDetailsBuy = await BuyBookModel
@@ -205,7 +205,7 @@ var cancelPendingOrder = async (side, type, id) => {
             return (5);
         }
     } catch (error) {
-        console.log(JSON.stringify(error))
+        console.log((error))
     }
 }
 

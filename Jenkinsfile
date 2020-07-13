@@ -84,7 +84,7 @@ timeout(9){
 
         stage('Docker - mainnet'){
             container('build-container'){
-                if ( "${myRepo.GIT_BRANCH}" == "mainnet" && namespace ){
+                if ( "${myRepo.GIT_BRANCH}" == "mainnet" || "${myRepo.GIT_BRANCH}" == "master" && namespace ){
                     echo "Deploying ${myRepo.GIT_BRANCH} on Kubernetes."
                     withAWS(credentials:'jenkins_s3_upload') {
                         s3Download(file:'.env', bucket:'env.faldax', path:"internal-trading/${namespace}/.env", force:true)

@@ -79,6 +79,7 @@ class DashboardController extends AppController {
         try {
             // console.log("req.headers", req.headers)
             var user_id = req.query.user_id;
+            // user_id = 1657;
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -113,14 +114,11 @@ class DashboardController extends AppController {
                     .andWhere('coins.is_fiat', false)
                     .andWhere('wallets.deleted_at', null),
 
-                await TempCoinMArketCapModel
+                await CurrencyConversionModel
                     .query()
-                    .select("price", "coin")
+                    .select("quote  ", "symbol")
                     .where('deleted_at', null)
-                    .andWhere("created_at", "<=", today)
-                    .andWhere("created_at", ">=", yesterday)
-                    .orderBy('id', 'DESC')
-                    .limit(5),
+                    .orderBy('id', 'ASC'),
 
                 await TempCoinMArketCapModel
                     .query()
@@ -141,9 +139,11 @@ class DashboardController extends AppController {
             var average_price;
 
             var currenctPriceObjcet = {};
+            // console.log("currentPriceFiat", currentPriceFiat)
             var data = currentPriceFiat.map(person => {
-                currenctPriceObjcet[person.coin] = person
+                currenctPriceObjcet[person.symbol] = person
             });
+
 
             var previousPriceObject = {};
             var data1 = previousPriceFiat.map(person => {
@@ -157,10 +157,11 @@ class DashboardController extends AppController {
                 var currentPrice = 0.0;
                 var previousPrice = 0.0;
 
+                console.log("currenctPriceObjcet[coinBalance[i].coin]", currenctPriceObjcet[coinBalance[i].coin])
                 if (currenctPriceObjcet[coinBalance[i].coin] == undefined) {
                     currentPrice = 0;
                 } else {
-                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].price;
+                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].quote.USD.price;
                 }
 
                 average_price = currentPrice
@@ -186,24 +187,28 @@ class DashboardController extends AppController {
                 } else {
                     priceFiat = priceFiat.price;
                 }
-
-                total = total + percentChange;
+                console.log("coinBalance[i].balance", coinBalance[i].balance)
+                total = total + (currentPrice * coinBalance[i].balance);
                 diffrenceValue = diffrenceValue + diffrence;
                 var portfolio_data = {
                     "name": coinBalance[i].name,
-                    "average_price": average_price,
+                    "average_price": (average_price * coinBalance[i].balance).toFixed(2),
                     "percentchange": percentChange,
                     "Amount": coinBalance[i].balance,
-                    'symbol': coinBalance[i].coin_code,
+                    'symbol': (coinBalance[i].coin_code).toUpperCase(),
                     "fiatPrice": priceFiat,
                     "name": coinBalance[i].coin_name
                 }
                 portfolioData.push(portfolio_data);
             }
-            var changeValue = user_data.diffrence_fiat - diffrenceValue;
-            changeValue = changeValue.toFixed(8)
-            var totalFiat = user_data.total_value - total;
-            totalFiat = totalFiat.toFixed(8)
+            // var changeValue = user_data.diffrence_fiat - diffrenceValue;
+            console.log("user_data.total_value", user_data);
+            console.log("total", total)
+            user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (user_data.total_value)
+            var changeValue = total - user_data.total_value;
+            changeValue = changeValue.toFixed(2)
+            var totalFiat = total;
+            totalFiat = totalFiat.toFixed(2)
             var userData = await UserModel
                 .query()
                 .first()

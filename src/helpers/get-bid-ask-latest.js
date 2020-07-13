@@ -70,7 +70,7 @@ var getLatestVaue = async (symbol) => {
 
         return (data);
     } catch (err) {
-        console.log(error)
+        console.log(err)
     }
 
 }
