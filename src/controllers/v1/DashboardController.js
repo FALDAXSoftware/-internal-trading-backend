@@ -79,6 +79,7 @@ class DashboardController extends AppController {
         try {
             // console.log("req.headers", req.headers)
             var user_id = req.query.user_id;
+            // user_id = 1657;
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -117,8 +118,7 @@ class DashboardController extends AppController {
                     .query()
                     .select("quote  ", "symbol")
                     .where('deleted_at', null)
-                    .orderBy('id', 'ASC')
-                    .limit(5),
+                    .orderBy('id', 'ASC'),
 
                 await TempCoinMArketCapModel
                     .query()
@@ -139,7 +139,7 @@ class DashboardController extends AppController {
             var average_price;
 
             var currenctPriceObjcet = {};
-            console.log("currentPriceFiat", currentPriceFiat)
+            // console.log("currentPriceFiat", currentPriceFiat)
             var data = currentPriceFiat.map(person => {
                 currenctPriceObjcet[person.symbol] = person
             });
@@ -192,7 +192,7 @@ class DashboardController extends AppController {
                 diffrenceValue = diffrenceValue + diffrence;
                 var portfolio_data = {
                     "name": coinBalance[i].name,
-                    "average_price": (average_price * coinBalance[i].balance),
+                    "average_price": (average_price * coinBalance[i].balance).toFixed(2),
                     "percentchange": percentChange,
                     "Amount": coinBalance[i].balance,
                     'symbol': (coinBalance[i].coin_code).toUpperCase(),
@@ -205,7 +205,7 @@ class DashboardController extends AppController {
             console.log("user_data.total_value", user_data);
             console.log("total", total)
             user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (user_data.total_value)
-            var changeValue = user_data.total_value - total;
+            var changeValue = total - user_data.total_value;
             changeValue = changeValue.toFixed(2)
             var totalFiat = total;
             totalFiat = totalFiat.toFixed(2)
