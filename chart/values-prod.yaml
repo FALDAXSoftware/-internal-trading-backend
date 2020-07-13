@@ -25,7 +25,7 @@ ingress:
   path: /*
 
   hosts:
-    - mainnet-trading.faldax.com
+    - tradeapi.faldax.com
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
