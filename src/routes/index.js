@@ -11,6 +11,7 @@ var UserFavouritesController = require("../controllers/v1/UserFavourites");
 var DashboardController = require("../controllers/v1/DashboardController");
 var TradeDesk = require("../controllers/v1/TradeDeskController");
 var Helpers = require("../helpers/helpers")
+var InfluxController = require("../controllers/v1/RootController");
 
 const redis = require("redis");
 const axios = require("axios");
@@ -177,5 +178,9 @@ router.get('/tradingview/config', TradingViewController.getConfig);
 router.get('/tradingview/time', TradingViewController.getCurrentTime);
 router.get('/tradingview/symbols', TradingViewController.getSymbolInfo);
 router.get('/tradingview/history', TradingViewController.getHistoryData);
+
+// write influx data
+router.get("/write-influx-data", InfluxController.writeInfluxData);
+router.get("/get-influx-data", InfluxController.getInfluxData);
 
 module.exports = router;
