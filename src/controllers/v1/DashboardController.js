@@ -157,11 +157,15 @@ class DashboardController extends AppController {
                 var currentPrice = 0.0;
                 var previousPrice = 0.0;
 
-                console.log("currenctPriceObjcet[coinBalance[i].coin]", currenctPriceObjcet[coinBalance[i].coin])
+                var fiatValue = 'USD'
+                // console.log("currenctPriceObjcet[coinBalance[i].coin]", currenctPriceObjcet[coinBalance[i].coin].quote[user_data.fiat].price)
+                if (user_data.fiat && user_data.fiat != null) {
+                    fiatValue = user_data.fiat
+                }
                 if (currenctPriceObjcet[coinBalance[i].coin] == undefined) {
                     currentPrice = 0;
                 } else {
-                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].quote.USD.price;
+                    currentPrice = (currenctPriceObjcet[coinBalance[i].coin].quote != undefined) ? (currenctPriceObjcet[coinBalance[i].coin].quote[fiatValue].price) : (0.0);
                 }
 
                 average_price = currentPrice
