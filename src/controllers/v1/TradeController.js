@@ -75,6 +75,29 @@ const redis_client = redis.createClient({
   host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
   password: process.env.REDIS_PASSWORD   // replace with your password
 });
+
+// Influx setup
+const Influx = require('influx');
+const influx = new Influx.InfluxDB({
+  host: process.env.INFLUX_HOST,
+  port: process.env.INFLUX_PORT,
+  database: process.env.INFLUX_DATABASE,
+  username: process.env.INFLUX_USERNAME,
+  password: process.env.INFLUX_PASSWORD,
+  schema: [
+    {
+      measurement: 'trade_history_xrp_btc',
+      fields: {
+        price: Influx.FieldType.FLOAT,
+        amount: Influx.FieldType.FLOAT
+      },
+      tags: [
+        'pair'
+      ]
+    }
+  ]
+})
+
 /**
  * Trade Controller : Used for live tradding
 */
@@ -486,7 +509,7 @@ class TradeController extends AppController {
     var pairDetails = await PairsModel
       .query()
       .first()
-      .select("name", "quantity_precision", "price_precision")
+      .select("name", "quantity_precision", "price_precision", "influx_pair_name", "influx_table_name")
       .where("deleted_at", null)
       .andWhere("name", symbol)
       .orderBy("id", "DESC")
@@ -596,6 +619,23 @@ class TradeController extends AppController {
           // console.log("trade_history_data", JSON.stringify(trade_history_data))
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+          if (pairDetails.influx_pair_name != null) {
+            await influx.writePoints([
+              {
+                measurement: pairDetails.influx_table_name,
+                tags: { pair: pairDetails.influx_pair_name },
+                timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                fields: {
+                  price: parseFloat(request.fill_price),
+                  amount: parseFloat(request.quantity)
+                }
+              }])
+              .then(() => {
+                console.log('Added data to the Db');
+              });
+          }
+
           var tradeObjectData = {
             quantity: tradeHistory.quantity,
             side: tradeHistory.side,
@@ -735,6 +775,22 @@ class TradeController extends AppController {
           // console.log("trade_history_data", JSON.stringify(trade_history_data))
           // Log into trade history
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+          if (pairDetails.influx_pair_name != null) {
+            await influx.writePoints([
+              {
+                measurement: pairDetails.influx_table_name,
+                tags: { pair: pairDetails.influx_pair_name },
+                timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                fields: {
+                  price: parseFloat(request.fill_price),
+                  amount: parseFloat(request.quantity)
+                }
+              }])
+              .then(() => {
+                console.log('Added data to the Db');
+              });
+          }
           // var tradeObjectData = {
           //   quantity: tradeHistory.quantity,
           //   side: tradeHistory.side,
@@ -874,6 +930,22 @@ class TradeController extends AppController {
         // console.log("trade_history_data", JSON.stringify(trade_history_data))
 
         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+        if (pairDetails.influx_pair_name != null) {
+          await influx.writePoints([
+            {
+              measurement: pairDetails.influx_table_name,
+              tags: { pair: pairDetails.influx_pair_name },
+              timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+              fields: {
+                price: parseFloat(request.fill_price),
+                amount: parseFloat(request.quantity)
+              }
+            }])
+            .then(() => {
+              console.log('Added data to the Db');
+            });
+        }
         // var tradeObjectData = {
         //   quantity: tradeHistory.quantity,
         //   side: tradeHistory.side,
@@ -1191,7 +1263,9 @@ class TradeController extends AppController {
 
   // Used for function to make Market Buy order
   async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0) {
-    const checkUser = Helper.checkWhichUser(user_id);
+    
+    try {
+      const checkUser = Helper.checkWhichUser(user_id);
     // console.log("checkUser", JSON.stringify(checkUser))
     // console.log(JSON.stringify({
     //   "module": "Market Buy Execution",
@@ -1415,7 +1489,7 @@ class TradeController extends AppController {
     var pairDetails = await PairsModel
       .query()
       .first()
-      .select("name", "quantity_precision", "price_precision")
+      .select("name", "quantity_precision", "price_precision", "influx_table_name", "influx_pair_name")
       .where("deleted_at", null)
       .andWhere("name", symbol)
       .orderBy("id", "DESC")
@@ -1515,6 +1589,23 @@ class TradeController extends AppController {
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
           // trade_history_data.txn_group_id = txnGroupId;
           let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+          console.log("moment(tradeHistory.created_at).valueOf()", moment(tradeHistory.created_at).valueOf() * 1000000);
+          console.log("tradeHistory.created_at", tradeHistory.created_at)
+          if (pairDetails.influx_pair_name != null) {
+            await influx.writePoints([
+              {
+                measurement: pairDetails.influx_table_name,
+                tags: { pair: pairDetails.influx_pair_name },
+                timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                fields: {
+                  price: parseFloat(request.fill_price),
+                  amount: parseFloat(request.quantity)
+                }
+              }])
+              .then(() => {
+                console.log('Added data to the Db');
+              });
+          }
           // console.log("tradeHistory", tradeHistory)
           // console.log("allOrderData", allOrderData)
           allOrderData.push(tradeHistory);
@@ -1754,6 +1845,23 @@ class TradeController extends AppController {
           trade_history_data.fiat_values = await fiatValueHelper.getFiatValue(crypto, currency);
           // trade_history_data.txn_group_id = txnGroupId;
           let TradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+          if (pairDetails.influx_pair_name != null) {
+            await influx.writePoints([
+              {
+                measurement: pairDetails.influx_table_name,
+                tags: { pair: pairDetails.influx_pair_name },
+                timestamp: moment(TradeHistory.created_at).valueOf() * 1000000,
+                fields: {
+                  price: parseFloat(request.fill_price),
+                  amount: parseFloat(request.quantity)
+                }
+              }])
+              .then(() => {
+                console.log('Added data to the Db');
+              });
+          }
+
           allOrderData.push(TradeHistory)
           tradeOrder = TradeHistory;
           await sellDelete.deleteSellOrder(currentSellBookDetails.id);
@@ -1979,6 +2087,9 @@ class TradeController extends AppController {
       status: 1,
       message: ''
     }
+    } catch (err) {
+      console.log(err)
+  }
   }
 
   // Used to Create Buy Limit order

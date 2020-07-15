@@ -17,13 +17,36 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
+// Influx setup
+const Influx = require('influx');
+const influx = new Influx.InfluxDB({
+    host: process.env.INFLUX_HOST,
+    port: process.env.INFLUX_PORT,
+    database: process.env.INFLUX_DATABASE,
+    username: process.env.INFLUX_USERNAME,
+    password: process.env.INFLUX_PASSWORD,
+    schema: [
+        {
+            measurement: 'trade_history_xrp_btc',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        }
+    ]
+})
+
 var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
     try {
         // console.log("pending_order_id", pending_order_id)
         var pairDetails = await PairsModel
             .query()
             .first()
-            .select("name", "quantity_precision", "price_precision")
+            .select("name", "quantity_precision", "price_precision", "influx_table_name", "influx_pair_name")
             .where("deleted_at", null)
             .andWhere("name", sellLimitOrderData.symbol)
             .orderBy("id", "DESC")
@@ -224,6 +247,23 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     if (trade_history_data.activity_id)
                         delete trade_history_data.activity_id;
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+                    if (pairDetails.influx_pair_name != null) {
+                        await influx.writePoints([
+                            {
+                                measurement: pairDetails.influx_table_name,
+                                tags: { pair: pairDetails.influx_pair_name },
+                                timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                                fields: {
+                                    price: parseFloat(request.fill_price),
+                                    amount: parseFloat(request.quantity)
+                                }
+                            }])
+                            .then(() => {
+                                console.log('Added data to the Db');
+                            });
+                    }
+
                     allOrderData.push(tradeHistory)
                     tradeOrder = tradeHistory;
                     var remainningQuantity = availableQuantity - quantityValue;
@@ -454,6 +494,23 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     // console.log(JSON.stringify(trade_history_data))
 
                     var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+                    if (pairDetails.influx_pair_name != null) {
+                        await influx.writePoints([
+                            {
+                                measurement: pairDetails.influx_table_name,
+                                tags: { pair: pairDetails.influx_pair_name },
+                                timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                                fields: {
+                                    price: parseFloat(request.fill_price),
+                                    amount: parseFloat(request.quantity)
+                                }
+                            }])
+                            .then(() => {
+                                console.log('Added data to the Db');
+                            });
+                    }
+
                     allOrderData.push(tradeHistory)
                     tradeOrder = tradeHistory;
 
