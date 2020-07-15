@@ -10,7 +10,7 @@ var addTradeHistory = async (orderData) => {
 
         return tradeHistory;
     } catch (error) {
-        console.log(JSON.stringify(error))
+        console.log((error))
     }
 }
 
