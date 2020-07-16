@@ -182,5 +182,6 @@ router.get('/tradingview/history', TradingViewController.getHistoryData);
 // write influx data
 router.get("/write-influx-data", InfluxController.writeInfluxData);
 router.get("/get-influx-data", InfluxController.getInfluxData);
+router.get("/delete-influx-data", InfluxController.deleteInfluxData);
 
 module.exports = router;
