@@ -41,7 +41,9 @@ class InfluxController extends AppController {
                 pair_name,
                 limit,
                 offset,
-                table_name
+                table_name,
+                date,
+
             } = req.query;
             var now = moment().format();
             console.log("now", now);
@@ -54,6 +56,7 @@ class InfluxController extends AppController {
                 .select()
                 .where("deleted_at", null)
                 .andWhere("symbol", "XRP-BTC")
+                .andWhere("created_at", "<=", "2020-07-15T00:00:00+05:30")
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
@@ -138,6 +141,23 @@ class InfluxController extends AppController {
         } catch (error) {
             console.log("error", error)
         }
+    }
+
+    async deleteInfluxData(req, res) {
+        var dataValue = await influx.query(`
+                            SELECT *
+                            FROM trade_history_xrp_btc WHERE price=0
+                        `)
+        console.log("(dataValue.groupRows[0].rows).length", (dataValue.groupRows[0].rows).length)
+        for (var i = 0; i < (dataValue.groupRows[0].rows).length; i++) {
+            console.log("i", i)
+            console.log("dataValue.groupRows[0].rows[i].time", (dataValue.groupRows[0].rows[i].time).valueOf() * 1000000)
+            var dataValueO = await influx.query(`
+                                                DELETE
+                                                FROM trade_history_xrp_btc WHERE time=${(dataValue.groupRows[0].rows[i].time).valueOf() * 1000000}
+                                    `)
+        }
+        return res.status(200);
     }
 }
 module.exports = new InfluxController();
