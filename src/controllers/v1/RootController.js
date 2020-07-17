@@ -21,6 +21,17 @@ const influx = new Influx.InfluxDB({
             tags: [
                 'pair'
             ]
+        },
+        {
+            measurement: 'trade_history_eth_btc',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
         }
     ]
 })
@@ -43,7 +54,7 @@ class InfluxController extends AppController {
                 offset,
                 table_name,
                 date,
-
+                pair
             } = req.query;
             var now = moment().format();
             console.log("now", now);
@@ -55,8 +66,8 @@ class InfluxController extends AppController {
                 .query()
                 .select()
                 .where("deleted_at", null)
-                .andWhere("symbol", "XRP-BTC")
-                .andWhere("created_at", "<=", "2020-07-15T00:00:00+05:30")
+                .andWhere("symbol", pair)
+                .andWhere("created_at", "<=", date)
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
