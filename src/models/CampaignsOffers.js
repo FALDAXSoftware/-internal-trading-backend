@@ -84,7 +84,7 @@ class CampaignsOffers extends AppModel {
 
 			return getData;
 		} catch (err) {
-			console.log("err", JSON.stringify(err));
+			// console.log("err", JSON.stringify(err));
 		}
 
 	}

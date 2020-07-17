@@ -48,7 +48,7 @@ class TradeDeskController extends AppController {
 
             return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("pair details value").message, getPairDetails)
         } catch (error) {
-            console.log("error", JSON.stringify(error));
+            // console.log("error", JSON.stringify(error));
             await logger.info({
                 "module": "Trade Desk Monitoring",
                 "user_id": "user_tradedesk",
@@ -101,7 +101,7 @@ class TradeDeskController extends AppController {
                 return Helper.jsonFormat(res, constants.ACCEPTED_CODE, i18n.__("no pair details value").message, [])
             }
         } catch (error) {
-            console.log(JSON.stringify(error))
+            // console.log(JSON.stringify(error))
             await logger.info({
                 "module": "Trade Desk Monitoring - Update Min Max Value",
                 "user_id": "user_tradedesk",
@@ -149,7 +149,7 @@ class TradeDeskController extends AppController {
             }, i18n.__("spread retrieve success").message + " " + spreadData)
             return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("spread retrieve success").message, spreadData)
         } catch (error) {
-            console.log("error", JSON.stringify(error));
+            // console.log("error", JSON.stringify(error));
             await logger.info({
                 "module": "Trade Desk Monitoring - Get Spread Value",
                 "user_id": "user_tradedesk",
@@ -186,7 +186,7 @@ class TradeDeskController extends AppController {
             }, i18n.__("trade desk user wallet success").message + " ", getWalletData)
             return Helper.jsonFormat(res, constants.SUCCESS_CODE, i18n.__("trade desk user wallet success").message, getWalletData);
         } catch (error) {
-            console.log("error", JSON.stringify(error));
+            // console.log("error", JSON.stringify(error));
             await logger.info({
                 "module": "Trade Desk Monitoring - Get Trade Desk USer Balance",
                 "user_id": "user_tradedesk",

@@ -36,7 +36,7 @@ const influx = new Influx.InfluxDB({
     ]
 })
 
-console.log("influx", influx)
+// console.log("influx", influx)
 
 class InfluxController extends AppController {
 
@@ -57,7 +57,7 @@ class InfluxController extends AppController {
                 pair
             } = req.query;
             var now = moment().format();
-            console.log("now", now);
+            // console.log("now", now);
             console.log(pair_name,
                 limit,
                 offset,

@@ -64,7 +64,7 @@ class DashboardController extends AppController {
             return res.status(200)
                 .json(starShipInfo.data);
         } catch (error) {
-            console.log(JSON.stringify(error));
+            // console.log(JSON.stringify(error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" ,
@@ -191,7 +191,7 @@ class DashboardController extends AppController {
                 } else {
                     priceFiat = priceFiat.price;
                 }
-                console.log("coinBalance[i].balance", coinBalance[i].balance)
+                // console.log("coinBalance[i].balance", coinBalance[i].balance)
                 total = total + (currentPrice * coinBalance[i].balance);
                 diffrenceValue = diffrenceValue + diffrence;
                 var portfolio_data = {
@@ -206,8 +206,8 @@ class DashboardController extends AppController {
                 portfolioData.push(portfolio_data);
             }
             // var changeValue = user_data.diffrence_fiat - diffrenceValue;
-            console.log("user_data.total_value", user_data);
-            console.log("total", total)
+            // console.log("user_data.total_value", user_data);
+            // console.log("total", total)
             user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (user_data.total_value)
             var changeValue = total - user_data.total_value;
             changeValue = changeValue.toFixed(2)
@@ -247,7 +247,7 @@ class DashboardController extends AppController {
                 });
 
         } catch (error) {
-            console.log((error));
+            // console.log((error));
             await logger.info({
                 "module": "Portfolio Data",
                 "user_id": "user_" + user_id,
@@ -305,7 +305,7 @@ class DashboardController extends AppController {
                 .status(200)
                 .json(dataValue);
         } catch (error) {
-            console.log((error));
+            // console.log((error));
             await logger.info({
                 "module": "Activity Data",
                 "user_id": "user_" + user_id,
@@ -966,7 +966,7 @@ class DashboardController extends AppController {
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
             }
         } catch (error) {
-            console.log(JSON.stringify(error));
+            // console.log(JSON.stringify(error));
         }
     }
 
@@ -1042,7 +1042,7 @@ class DashboardController extends AppController {
                 //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
             }
         } catch (error) {
-            console.log(JSON.stringify(error));
+            // console.log(JSON.stringify(error));
         }
     }
 
@@ -1063,7 +1063,7 @@ class DashboardController extends AppController {
                 "type": "Success"
             }, i18n.__("instrument data").message + "  " + instrumentDataValue)
         } catch (error) {
-            console.log((error));
+            // console.log((error));
         }
     }
 
@@ -1091,7 +1091,7 @@ class DashboardController extends AppController {
                     "data": instrumentDataValue
                 });
         } catch (error) {
-            console.log((error));
+            // console.log((error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" + user_id,
@@ -1129,7 +1129,7 @@ class DashboardController extends AppController {
             //         "data": depthChartValue
             //     });
         } catch (error) {
-            console.log((error));
+            // console.log((error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" + user_id,
@@ -1169,7 +1169,7 @@ class DashboardController extends AppController {
                     "data": depthChartValue
                 });
         } catch (error) {
-            console.log(JSON.stringify(error));
+            // console.log(JSON.stringify(error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" + user_id,
@@ -1198,7 +1198,7 @@ class DashboardController extends AppController {
                     "data": instrumentDataValue
                 });
         } catch (error) {
-            console.log(JSON.stringify(error));
+            // console.log(JSON.stringify(error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" + user_id,
@@ -1233,7 +1233,7 @@ class DashboardController extends AppController {
                     "data": depthChartValue
                 });
         } catch (error) {
-            console.log(JSON.stringify(error));
+            // console.log(JSON.stringify(error));
             // await logger.info({
             //     "module": "Portfolio Data",
             //     "user_id": "user_" + user_id,

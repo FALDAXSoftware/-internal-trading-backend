@@ -74,7 +74,7 @@ class FixApiController extends AppController {
       }
       return jstResponseValue;
     } catch (err) {
-      console.log("err", JSON.stringify(err));
+      // console.log("err", JSON.stringify(err));
       // return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
     }
   }

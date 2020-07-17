@@ -335,10 +335,10 @@ var getTraddingFees = async (inputs) => {
             var requestedFee = ((inputs.quantity) * inputs.fill_price * (inputs.makerFee / 100));
             var userFee = ((inputs.quantity) * (inputs.takerFee / 100));
 
-            console.log("requestedFee", requestedFee);
-            console.log("userFee", userFee);
+            // console.log("requestedFee", requestedFee);
+            // console.log("userFee", userFee);
 
-            console.log("adminWalletCrypto.balance", adminWalletCrypto.balance)
+            // console.log("adminWalletCrypto.balance", adminWalletCrypto.balance)
 
             var adminBalance = adminWalletCrypto.balance + userFee
             var adminPlacedBalance = adminWalletCrypto.placed_balance + userFee
@@ -542,7 +542,7 @@ var getTraddingFees = async (inputs) => {
             "taker_fee": inputs.takerFee
         })
     } catch (err) {
-        console.log("fees Error", JSON.stringify(err));
+        // console.log("fees Error", JSON.stringify(err));
         return (1);
     }
 }

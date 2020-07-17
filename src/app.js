@@ -336,7 +336,7 @@ CronSendEmail = async (requestedData) => {
         SITE_URL: process.env.SITE_URL,
         homelink: process.env.SITE_URL
       }, function (err) {
-        console.log("err", JSON.stringify(err))
+        // console.log("err", JSON.stringify(err))
         if (err) {
           return 0;
         } else {
@@ -344,7 +344,7 @@ CronSendEmail = async (requestedData) => {
         }
       });
   } catch (err) {
-    console.log("EMail err:", JSON.stringify(err));
+    // console.log("EMail err:", JSON.stringify(err));
     return 0;
   }
 }
