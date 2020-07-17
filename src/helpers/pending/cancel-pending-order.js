@@ -41,7 +41,7 @@ var cancelData = async (id) => {
             return (6);
         }
     } catch (err) {
-        console.log(err);
+        // console.log(err);
     }
     // .andWhere("is_under_execution", false)
 }

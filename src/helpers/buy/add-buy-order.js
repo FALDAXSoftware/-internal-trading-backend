@@ -45,7 +45,7 @@ var addBuyBookData = async (buyLimitOrderData) => {
             return ("Coin Not Found")
         }
     } catch (error) {
-        console.log(JSON.stringify(error))
+        // console.log(JSON.stringify(error))
     }
 }
 

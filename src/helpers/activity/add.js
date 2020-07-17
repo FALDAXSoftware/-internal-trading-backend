@@ -10,7 +10,7 @@ var addActivityData = async (orderData) => {
             })
         return (activityData)
     } catch (error) {
-        console.log((error))
+        // console.log((error))
     }
 }
 

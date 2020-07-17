@@ -164,7 +164,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                     }
                                 }])
                                 .then(() => {
-                                    console.log('Added data to the Db');
+                                    // console.log('Added data to the Db');
                                 });
                         }
                         // console.log("tradeHistory", tradeHistory)
@@ -521,7 +521,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                     }
                                 }])
                                 .then(() => {
-                                    console.log('Added data to the Db');
+                                    // console.log('Added data to the Db');
                                 });
                         }
                         allOrderData.push(tradeHistory)
@@ -1016,7 +1016,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             }
         }
     } catch (error) {
-        console.log(JSON.stringify(error));
+        // console.log(JSON.stringify(error));
     }
 }
 

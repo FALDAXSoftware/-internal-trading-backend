@@ -100,7 +100,7 @@ var tradeStatus = async (user_id) => {
         }
         return sendInfo
     } catch (error) {
-        console.log(JSON.stringify(error))
+        // console.log(JSON.stringify(error))
     }
 }
 

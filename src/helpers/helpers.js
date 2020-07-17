@@ -77,7 +77,7 @@ var sendSMS = async (requestedData) => {
     return (1);
   })
     .catch((err) => {
-      console.log("ERROR >>>>>>>>>>>", err)
+      // console.log("ERROR >>>>>>>>>>>", err)
     })
 }
 
@@ -154,7 +154,7 @@ var SendEmail = async (res, requestedData) => {
         SITE_URL: process.env.SITE_URL,
         homelink: process.env.SITE_URL
       }, function (err) {
-        console.log("err", err)
+        // console.log("err", err)
         if (err) {
           return 0;
         } else {
@@ -162,7 +162,7 @@ var SendEmail = async (res, requestedData) => {
         }
       });
   } catch (err) {
-    console.log("EMail err:", JSON.stringify(err));
+    // console.log("EMail err:", JSON.stringify(err));
     return 0;
   }
 }
@@ -249,7 +249,7 @@ var getDecryptData = (value) => {
     var decryptedText = aesjs.utils.utf8.fromBytes(decryptedBytes);
     return (decryptedText);
   } catch (err) {
-    console.log(err)
+    // console.log(err)
   }
 }
 

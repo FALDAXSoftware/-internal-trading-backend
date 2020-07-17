@@ -260,7 +260,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                 }
                             }])
                             .then(() => {
-                                console.log('Added data to the Db');
+                                // console.log('Added data to the Db');
                             });
                     }
 
@@ -507,7 +507,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                 }
                             }])
                             .then(() => {
-                                console.log('Added data to the Db');
+                                // console.log('Added data to the Db');
                             });
                     }
 
@@ -960,7 +960,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             }
         }
     } catch (error) {
-        console.log(JSON.stringify(error));
+        // console.log(JSON.stringify(error));
     }
 }
 
