@@ -128,7 +128,7 @@ var getSocketValueData = async (pair) => {
 
         return (data);
     } catch (error) {
-        console.log((error))
+        // console.log((error))
     }
 }
 

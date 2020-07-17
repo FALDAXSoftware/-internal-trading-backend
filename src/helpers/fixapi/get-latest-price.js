@@ -29,7 +29,7 @@ var latestPrice = async (coin, side) => {
         }
         return get_price
     } catch (err) {
-        console.log("err", err);
+        // console.log("err", err);
         return err;
     }
 

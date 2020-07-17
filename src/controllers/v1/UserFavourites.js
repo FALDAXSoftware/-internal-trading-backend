@@ -130,7 +130,7 @@ class UserFavourites extends AppController {
                 .status(200)
                 .json(JSON.parse(value));
         } catch (error) {
-            console.log("err", (error));
+            // console.log("err", (error));
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
         // })
@@ -249,7 +249,7 @@ class UserFavourites extends AppController {
                     "data": cardData
                 });
             } catch (error) {
-                console.log("err", JSON.stringify(error));
+                // console.log("err", JSON.stringify(error));
                 // return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
             }
         })
@@ -314,7 +314,7 @@ class UserFavourites extends AppController {
 
 
         } catch (error) {
-            console.log(JSON.stringify(error))
+            // console.log(JSON.stringify(error))
             return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("server error").message, []);
         }
     }
@@ -442,7 +442,7 @@ class UserFavourites extends AppController {
 
             client.setex(`card_graph-${symbol}`, 1800, JSON.stringify(value))
         } catch (err) {
-            console.log(err)
+            // console.log(err)
         }
     }
 
@@ -527,9 +527,9 @@ class UserFavourites extends AppController {
             }
 
             client.setex(`card_graph-${symbol}`, 1800, JSON.stringify(value))
-            console.log("Done")
+            // console.log("Done")
         } catch (err) {
-            console.log(err)
+            // console.log(err)
         }
     }
 }

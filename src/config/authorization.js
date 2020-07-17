@@ -36,7 +36,7 @@ module.exports = async function (headers) {
             let api_key = headers["x-api-key"];
             let userAPIKeyHelper = require("../helpers/users/get-apikey-user");
             let getUserAPIKey = await userAPIKeyHelper.getUserApiKey(api_key);
-            if ( !getUserAPIKey ) {
+            if (!getUserAPIKey) {
                 return {
                     status: constants.BAD_REQUEST_CODE,
                     message: i18n.__("Api key is invalid").message
@@ -50,7 +50,7 @@ module.exports = async function (headers) {
         }
         return (object)
     } catch (err) {
-        console.log("err", JSON.stringify(err));
+        // console.log("err", JSON.stringify(err));
         return {
             status: constants.UNAUTHORIZED_CODE,
             message: i18n.__("UNAUTHORIZED_ACCESS").message

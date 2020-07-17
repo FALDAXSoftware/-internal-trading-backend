@@ -43,7 +43,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         // console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
         ch.consume(process.env.PENDING_QUEUE_NAME, async (msg, err) => {
             // console.log("msg", msg)
-            console.log("err", JSON.stringify(err))
+            // console.log("err", JSON.stringify(err))
             var PendingOrderExecutionModel = require("../../models/PendingOrdersExecutuions");
             var dataValue = JSON.parse(msg.content.toString());
             // console.log("dataValue", dataValue)
@@ -71,7 +71,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         }, { noAck: false })
         ch.consume(process.env.QUEUE_NAME + '-' + 'Buy', async (msg, err) => {
             // console.log("mesages");
-            console.log(JSON.stringify(err))
+            // console.log(JSON.stringify(err))
             // console.log("Message", msg.content.toString())
             var PendingOrderExecutionModel = require("../../models/PendingOrdersExecutuions");
             var tradeData = require("./TradeController");
@@ -111,7 +111,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                                 ch.ack(msg)
                             })
                             .catch((err) => {
-                                console.log(JSON.stringify(err))
+                                // console.log(JSON.stringify(err))
                                 ch.ack(msg)
                             })
                         break;
@@ -124,7 +124,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                                 ch.ack(msg)
                             })
                             .catch((err) => {
-                                console.log(JSON.stringify(err))
+                                // console.log(JSON.stringify(err))
                                 ch.ack(msg)
                             })
                         break;
@@ -137,7 +137,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         }, { noAck: false })
         ch.consume(process.env.QUEUE_NAME + '-' + 'Sell', async (msg, err) => {
             // console.log("mesages");
-            console.log(JSON.stringify(err))
+            // console.log(JSON.stringify(err))
             // console.log("Message", msg.content.toString())
             var PendingOrderExecutionModel = require("../../models/PendingOrdersExecutuions");
             var tradeData = require("./TradeController");
@@ -182,7 +182,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                                 ch.ack(msg)
                             })
                             .catch((err) => {
-                                console.log(JSON.stringify(err))
+                                // console.log(JSON.stringify(err))
                                 ch.ack(msg)
                             })
                         break;
@@ -195,7 +195,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                                 ch.ack(msg)
                             })
                             .catch((err) => {
-                                console.log(JSON.stringify(err))
+                                // console.log(JSON.stringify(err))
                                 ch.ack(msg)
                             })
                         break;
@@ -223,7 +223,7 @@ var publishToQueue = async (queueName, data) => {
 
         return 0;
     } catch (error) {
-        console.log(JSON.stringify(error))
+        // console.log(JSON.stringify(error))
         return 1;
     }
 }
@@ -248,7 +248,7 @@ var cronPublishToQueue = async (queueName, data) => {
 
         return 0;
     } catch (error) {
-        console.log(JSON.stringify(error))
+        // console.log(JSON.stringify(error))
         return 1;
     }
 }
@@ -260,5 +260,5 @@ module.exports = {
 
 process.on('exit', (code) => {
     ch.close();
-    console.log(`Closing rabbitmq channel`);
+    // console.log(`Closing rabbitmq channel`);
 });
