@@ -11,11 +11,7 @@ var deleteSellOrder = async (id) => {
             deleted_at: now
         });
 
-    var details = await SellBookModel
-        .query()
-        .andWhere('id', id)
-        .orderBy('id', 'DESC');
-    return details;
+    return 1;
 }
 
 module.exports = {
