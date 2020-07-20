@@ -267,11 +267,11 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     allOrderData.push(tradeHistory)
                     tradeOrder = tradeHistory;
                     var remainningQuantity = availableQuantity - quantityValue;
+                    console.log("remainningQuantity", remainningQuantity)
                     if (remainningQuantity > 0) {
                         let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
                             quantity: parseFloat(remainningQuantity).toFixed(pairDetails.quantity_precision)
                         });
-                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         if (pending_order_id != 0) {
                             var getPendingData = await PendingOrderExecutuionModel
                                 .query()
@@ -338,13 +338,13 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         return {
                             status: 1,
                             message: 'Order Success'
                         }
                     } else {
                         await buyDelete.deleteOrder(buyBook[0].id);
-                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         if (pending_order_id != 0) {
                             var getPendingData = await PendingOrderExecutuionModel
                                 .query()
@@ -411,6 +411,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         return {
                             status: 1,
                             message: 'Order Success'
