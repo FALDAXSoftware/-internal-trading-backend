@@ -5,17 +5,17 @@ const {
     raw
 } = require('objection');
 
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
 
-var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) => {
-    const redis = require("redis");
-    const axios = require("axios");
-    const port_redis = 6379;
+const redis_client = redis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
 
-    const redis_client = redis.createClient({
-        port: process.env.REDIS_PORT,               // replace with your port
-        host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
-        password: process.env.REDIS_PASSWORD   // replace with your password
-    });
+var getCancelledOrders = async (user_id, crypto, currency, month, limit = 200) => {
     var cancelDetails;
 
     var yesterday = moment.utc().subtract(month, 'months').format();
@@ -38,13 +38,10 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) 
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
         .andWhere('created_at', ">=", yesterday)
-        .andWhere(builder => {
-            builder.where('user_id', user_id)
-                .orWhere('requested_user_id', user_id)
-        })
+        .andWhere('user_id', user_id)
         .orderBy('id', 'DESC')
         .limit(limit);
-    // console.log("cancelDetails", cancelDetails)
+    console.log("cancelDetails", cancelDetails)
 
     var pendingCancelDetails = await PendingOrdersExecutionModel
         .query()
@@ -66,7 +63,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 2000) 
         .orderBy('id', 'DESC')
         .limit(limit);
 
-    // console.log("pendingCancelDetails", pendingCancelDetails)
+    console.log("pendingCancelDetails", pendingCancelDetails)
 
     if (cancelDetails != undefined) {
         cancelDetails = cancelDetails.concat(pendingCancelDetails);

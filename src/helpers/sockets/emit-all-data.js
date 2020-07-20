@@ -148,6 +148,7 @@ var getUserOrdersData = async (data) => {
         // console.log("Caching Data", new Date(), (new Date()) - now);
         return value;
     } else if (data.flag == 3) {
+        console.log("data", data)
         // var value = await client.get(`${user_id}-${crypto}-${currency}-${month}-cancelled-orders`);
         // if (value == null) {
         let helper = require("../../helpers/tradding/get-cancelled-orders");
