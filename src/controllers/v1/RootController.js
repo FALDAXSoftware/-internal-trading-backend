@@ -1,6 +1,8 @@
 const Influx = require('influx');
 var { AppController } = require('./AppController');
 var TradeHistoryModel = require("../../models/TradeHistory");
+var CoinsModel = require("../../models/Coins");
+var Fees = require("../../models/Fees");
 var moment = require('moment');
 // var moment = require('moment-timezone');
 
@@ -169,6 +171,74 @@ class InfluxController extends AppController {
                                     `)
         }
         return res.status(200);
+    }
+
+    async getUserTradeData(req, res) {
+        var {
+            user_id
+        } = req.query;
+
+
+        let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
+        FROM currency_conversion
+        WHERE currency_conversion.deleted_at IS NULL`
+
+        let conversionData = await CoinsModel.knex().raw(conversionSQL)
+        let userTradeHistorySum = {}
+
+        if (user_id != process.env.TRADEDESK_USER_ID) {
+
+            var now = moment().format();
+            var yesterday = moment(now)
+                .subtract(1, 'months')
+                .format();
+
+            let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+                                                                        FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                        WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                        WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                        ON a1.user_coin = a2.requested_coin`)
+
+            for (let index = 0; index < userTradesum.rows.length; index++) {
+                const element = userTradesum.rows[index];
+                userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
+            }
+        }
+
+        let userTotalUSDSum = 0
+        for (let index = 0; index < conversionData.rows.length; index++) {
+            const element = conversionData.rows[index];
+            if (user_id != process.env.TRADEDESK_USER_ID) {
+                if (userTradeHistorySum[element.symbol]) {
+                    userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
+                }
+            } else {
+                userTotalUSDSum = 0.0
+            }
+        }
+
+        var totalCurrencyAmount = userTotalUSDSum;
+
+        var currencyMakerFee = await Fees
+            .query()
+            .first()
+            .select('maker_fee', 'taker_fee')
+            .where('deleted_at', null)
+            .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
+            .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
+        var takerFee = currencyMakerFee.taker_fee
+        var makerFee = currencyMakerFee.maker_fee
+
+        return res
+            .status(200)
+            .json({
+                "status": 200,
+                "message": "User Fee has been retrieved successfully",
+                totalCurrencyAmount: totalCurrencyAmount + "USD",
+                takerFee,
+                makerFee
+            })
     }
 }
 module.exports = new InfluxController();
