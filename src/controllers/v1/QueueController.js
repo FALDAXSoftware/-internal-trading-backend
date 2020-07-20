@@ -118,6 +118,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
                     }
                 case "Limit":
                     if (dataValue.side == "Buy" && (dataValue.pending_order_id == undefined || pendingDataStatus.is_cancel == false)) {
+                        console.log("dataValue", dataValue)
                         tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, [], dataValue.pending_order_id)
                             .then((orderDataResponse) => {
                                 // console.log("orderDataResponse", orderDataResponse)
