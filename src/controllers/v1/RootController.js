@@ -102,7 +102,7 @@ class InfluxController extends AppController {
                 .select()
                 .where("deleted_at", null)
                 .andWhere("symbol", pair)
-                .andWhere("created_at", "<=", "2020-07-21T11:19:09+05:30")
+                .andWhere("created_at", "<=", "2020-06-17T09:55:00+05:30")
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
