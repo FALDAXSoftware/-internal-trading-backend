@@ -101,7 +101,7 @@ class InfluxController extends AppController {
                 .query()
                 .select()
                 .where("deleted_at", null)
-                .andWhere("symbol", "SUSU-BTC")
+                .andWhere("symbol", pair)
                 .andWhere("created_at", "<=", "2020-07-21T11:19:09+05:30")
                 .orderBy("id", "DESC")
                 .offset(offset)
