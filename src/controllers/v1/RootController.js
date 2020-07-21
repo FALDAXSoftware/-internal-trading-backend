@@ -45,6 +45,28 @@ const influx = new Influx.InfluxDB({
             tags: [
                 'pair'
             ]
+        },
+        {
+            measurement: 'trade_history_susu_btc',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_bch_btc',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
         }
     ]
 })
@@ -79,8 +101,8 @@ class InfluxController extends AppController {
                 .query()
                 .select()
                 .where("deleted_at", null)
-                .andWhere("symbol", "LTC-BTC")
-                .andWhere("created_at", "<=", "2020-07-20T17:07:46+05:30")
+                .andWhere("symbol", "SUSU-BTC")
+                .andWhere("created_at", "<=", "2020-07-21T11:19:09+05:30")
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
