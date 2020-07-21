@@ -89,6 +89,17 @@ const influx = new Influx.InfluxDB({
             tags: [
                 'pair'
             ]
+        },
+        {
+            measurement: 'trade_history_xrp_eth',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
         }
     ]
 })
@@ -124,7 +135,7 @@ class InfluxController extends AppController {
                 .select()
                 .where("deleted_at", null)
                 .andWhere("symbol", pair)
-                .andWhere("created_at", "<=", "2020-07-21T17:15:00+05:30")
+                .andWhere("created_at", "<=", "2020-07-21T18:50:00")
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
