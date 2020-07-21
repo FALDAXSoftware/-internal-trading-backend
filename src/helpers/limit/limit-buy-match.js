@@ -44,7 +44,7 @@ const influx = new Influx.InfluxDB({
 
 var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
     try {
-        console.log(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
+        // console.log(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         var pairDetails = await PairsModel
             .query()
             .first()
@@ -83,7 +83,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             if ((buyLimitOrderData.order_type == "Limit") ? (sellBook[0].price <= buyLimitOrderData.limit_price) : (sellBook[0].price <= buyLimitOrderData.stop_price && sellBook[0].price <= buyLimitOrderData.limit_price)) {
                 // console.log("INSIDE IF")
                 if (sellBook[0].quantity >= buyLimitOrderData.quantity) {
-                    console.log("INSIDE SECOND IF")
+                    // console.log("INSIDE SECOND IF")
                     var availableQuantity = parseFloat(sellBook[0].quantity).toFixed(pairDetails.quantity_precision);
                     buyLimitOrderData.fill_price = parseFloat(sellBook[0].price).toFixed(pairDetails.price_precision);
                     delete buyLimitOrderData.id;
@@ -126,7 +126,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             currency_coin_id
                         }
 
-                        console.log("request", request)
+                        // console.log("request", request)
 
                         if (buyLimitOrderData.user_id == sellBook[0].user_id && buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID) {
                             var tradingFees = {
@@ -173,9 +173,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         // console.log("tradeHistory", tradeHistory)
                         allOrderData.push(tradeHistory)
                         tradeOrder = tradeHistory;
-                        console.log("tradeOrder", tradeOrder)
+                        // console.log("tradeOrder", tradeOrder)
                         var remainigQuantity = availableQuantity - quantityValue;
-                        console.log("remainigQuantity", remainigQuantity)
+                        // console.log("remainigQuantity", remainigQuantity)
                         if (remainigQuantity > 0) {
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
                                 quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
@@ -183,7 +183,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             var userData = userIds;
                             var tradeData = allOrderData;
 
-                            console.log("pending_order_id", pending_order_id)
+                            // console.log("pending_order_id", pending_order_id)
 
                             if (pending_order_id != 0) {
                                 var getPendingData = await PendingOrderExecutuionModel
@@ -251,7 +251,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             //Emit data in rooms
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
                             let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
-                            console.log("referredData", referredData)
+                            // console.log("referredData", referredData)
                             return {
                                 status: 1,
                                 message: 'Order Success',

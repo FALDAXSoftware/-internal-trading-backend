@@ -189,28 +189,32 @@ class InfluxController extends AppController {
             user_id
         } = req.query;
 
-
-        let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
-        FROM currency_conversion
-        WHERE currency_conversion.deleted_at IS NULL`
-
-        let conversionData = await CoinsModel.knex().raw(conversionSQL)
         let userTradeHistorySum = {}
 
         if (user_id != process.env.TRADEDESK_USER_ID) {
-
             var now = moment().format();
             var yesterday = moment(now)
                 .subtract(1, 'months')
                 .format();
-
+            // console.log("INSIDE IF USEr")
             let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                        FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                        WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-                                                                        WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-                                                                        ON a1.user_coin = a2.requested_coin`)
+                                                                            FROM(SELECT user_coin, 
+                                                                                SUM((CASE
+                                                                                    WHEN side='Buy' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                                    WHEN side='Sell' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                                  END)) as sum
+                                                                                 FROM trade_history
+                                                                            WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                            FULL JOIN (SELECT requested_coin, 
+                                                                                SUM((CASE
+                                                                                    WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                                    WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                                  END)) as sum
+                                                                                FROM trade_history
+                                                                            WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                            ON a1.user_coin = a2.requested_coin`)
 
+            // console.log("userTradesum", userTradesum.rows.length)
             for (let index = 0; index < userTradesum.rows.length; index++) {
                 const element = userTradesum.rows[index];
                 userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
@@ -218,15 +222,13 @@ class InfluxController extends AppController {
         }
 
         let userTotalUSDSum = 0
-        for (let index = 0; index < conversionData.rows.length; index++) {
-            const element = conversionData.rows[index];
-            if (user_id != process.env.TRADEDESK_USER_ID) {
-                if (userTradeHistorySum[element.symbol]) {
-                    userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
-                }
-            } else {
-                userTotalUSDSum = 0.0
-            }
+        if (Object.keys(userTradeHistorySum).length != 0) {
+            var entries = Object.entries(userTradeHistorySum);
+            entries.forEach(([key, value]) => {
+                userTotalUSDSum += value
+            });
+        } else {
+            userTotalUSDSum = 0.0;
         }
 
         var totalCurrencyAmount = userTotalUSDSum;
@@ -250,6 +252,10 @@ class InfluxController extends AppController {
                 takerFee,
                 makerFee
             })
+    }
+
+    async getUserTrade(req, res) {
+
     }
 }
 module.exports = new InfluxController();

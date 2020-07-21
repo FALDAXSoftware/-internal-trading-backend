@@ -29,15 +29,15 @@ var getTraddingFees = async (inputs) => {
 
         // let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
 
-        let conversionData = await CurrencyConversionModel
-            .query()
-            .select()
-            .where("deleted_at", null)
-            .andWhere(builder => {
-                builder.where('coin_id', request.crypto_coin_id)
-                    .orWhere('coin_id', request.currency_coin_id)
-            })
-            .orderBy("id", "DESC");
+        // let conversionData = await CurrencyConversionModel
+        //     .query()
+        //     .select()
+        //     .where("deleted_at", null)
+        //     .andWhere(builder => {
+        //         builder.where('coin_id', request.crypto_coin_id)
+        //             .orWhere('coin_id', request.currency_coin_id)
+        //     })
+        //     .orderBy("id", "DESC");
 
         // console.log("conversionData", conversionData)
 
@@ -50,12 +50,28 @@ var getTraddingFees = async (inputs) => {
             .format();
         let userTradeHistorySum = {}
         // console.log("user_id", user_id)
+        // console.log(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
+        // FROM(SELECT user_coin, sum(quantity) FROM trade_history
+        // WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+        // FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+        // WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+        // ON a1.user_coin = a2.requested_coin`)
         if (user_id != process.env.TRADEDESK_USER_ID) {
             // console.log("INSIDE IF USEr")
             let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                        FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                        WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                        FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                    FROM(SELECT user_coin, 
+                                                                        SUM((CASE
+                                                                            WHEN side='Buy' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                            WHEN side='Sell' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                        END)) as sum
+                                                                        FROM trade_history
+                                                                    WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                    FULL JOIN (SELECT requested_coin, 
+                                                                        SUM((CASE
+                                                                            WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                            WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                        END)) as sum
+                                                                        FROM trade_history
                                                                         WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                         ON a1.user_coin = a2.requested_coin`)
 
@@ -65,15 +81,25 @@ var getTraddingFees = async (inputs) => {
                 userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
             }
         }
-
+        // console.log("userTradeHistorySum", userTradeHistorySum)
         let requestedTradeHistorySum = {}
         // console.log("requested_user_id", requested_user_id)
         if (requested_user_id != process.env.TRADEDESK_USER_ID) {
             // console.log("INSIDE IF Requested")
             let requestedTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                            FROM(SELECT user_coin, sum(quantity) FROM trade_history
-                                                                            WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                            FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
+                                                                        FROM(SELECT user_coin, 
+                                                                            SUM((CASE
+                                                                                WHEN side='Buy' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                                WHEN side='Sell' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                            END)) as sum
+                                                                            FROM trade_history
+                                                                        WHERE user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+                                                                        FULL JOIN (SELECT requested_coin, 
+                                                                            SUM((CASE
+                                                                                WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                                WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                            END)) as sum
+                                                                            FROM trade_history
                                                                             WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                             ON a1.user_coin = a2.requested_coin`)
             for (let index = 0; index < requestedTradesum.rows.length; index++) {
@@ -91,28 +117,31 @@ var getTraddingFees = async (inputs) => {
 
         let userTotalUSDSum = 0
         let requestedTotalUSDSum = 0
-        for (let index = 0; index < conversionData.length; index++) {
-            const element = conversionData[index];
-            if (element.coin_id == request.crypto_coin_id) {
-                getCryptoPriceData = element
-            }
-            if (element.coin_id == request.currency_coin_id) {
-                getCurrencyPriceData = element
-            }
-            if (Object.keys(userTradeHistorySum).length != 0) {
-                if (userTradeHistorySum[element.symbol]) {
-                    userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
-                }
-            } else {
-                userTotalUSDSum = 0.0;
-            }
-            if (Object.keys(requestedTradeHistorySum).length != 0) {
-                if (requestedTradeHistorySum[element.symbol]) {
-                    requestedTotalUSDSum += (requestedTradeHistorySum[element.symbol] * element.quote.USD.price)
-                }
-            } else {
-                requestedTotalUSDSum = 0.0
-            }
+        // for (let index = 0; index < conversionData.length; index++) {
+        //     const element = conversionData[index];
+        //     if (element.coin_id == request.crypto_coin_id) {
+        //         getCryptoPriceData = element
+        //     }
+        //     if (element.coin_id == request.currency_coin_id) {
+        //         getCurrencyPriceData = element
+        //     }
+        // }
+
+        if (Object.keys(userTradeHistorySum).length != 0) {
+            var entries = Object.entries(userTradeHistorySum);
+            entries.forEach(([key, value]) => {
+                userTotalUSDSum += value
+            });
+        } else {
+            userTotalUSDSum = 0.0;
+        }
+        if (Object.keys(requestedTotalUSDSum).length != 0) {
+            var entries = Object.entries(requestedTotalUSDSum);
+            entries.forEach(([key, value]) => {
+                requestedTotalUSDSum += value
+            });
+        } else {
+            requestedTotalUSDSum = 0.0
         }
 
         // console.log("userTotalUSDSum", userTotalUSDSum);
