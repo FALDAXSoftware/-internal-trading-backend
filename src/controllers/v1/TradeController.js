@@ -2499,7 +2499,7 @@ class TradeController extends AppController {
     if (sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
-        console.log("crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
+        // console.log("crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
         await logger.info({
           "module": "Limit Buy",
@@ -2515,7 +2515,7 @@ class TradeController extends AppController {
         // Send Notification to users
         // Emit Socket Event
       } else {
-        console.log("crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
+        // console.log("crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         // console.log("INSIDE ELSE??????")
         buyLimitOrderData.activity_id = activity.id;
         var total_price = buyLimitOrderData.quantity * buyLimitOrderData.limit_price;
@@ -2535,7 +2535,7 @@ class TradeController extends AppController {
               .andWhere("deleted_at", null)
               .orderBy("id", "DESC");
 
-            console.log("getPendingData", getPendingData)
+            // console.log("getPendingData", getPendingData)
 
             if (getPendingData != undefined) {
               var getData = await PendingOrderExecutuionModel
@@ -2710,7 +2710,7 @@ class TradeController extends AppController {
         }
       }
     } else {
-      console.log("INSIDE crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
+      // console.log("INSIDE crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
       buyLimitOrderData.activity_id = activity.id;
       var total_price = parseFloat(buyLimitOrderData.quantity * buyLimitOrderData.limit_price).toFixed(8);
       if (total_price <= wallet.placed_balance || placedBy == process.env.TRADEDESK_BOT || placedBy == process.env.TRADEDESK_MANUAL) {
@@ -2729,7 +2729,7 @@ class TradeController extends AppController {
             .andWhere("deleted_at", null)
             .orderBy("id", "DESC");
 
-          console.log("getPendingData", getPendingData)
+          // console.log("getPendingData", getPendingData)
 
           if (getPendingData != undefined) {
             var getData = await PendingOrderExecutuionModel
