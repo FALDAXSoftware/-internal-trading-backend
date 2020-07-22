@@ -86,16 +86,16 @@ var getTradeHistoryData = async (crypto, currency) => {
 
 var getUserBalance = async (user_id, crypto, currency) => {
 
-    var value = await client.get(`${user_id}-${crypto}-${currency}`);
-    console.log("value", value);
+    // var value = await client.get(`${user_id}-${crypto}-${currency}`);
+    // console.log("value", value);
 
-    if (value == null) {
-        let helper = require("../tradding/get-user-wallet-balance");
-        value = await helper.getUserWalletBalance(user_id, currency, crypto);
-    } else {
-        value = JSON.parse(value);
-        value.flag = true;
-    }
+    // if (value == null) {
+    let helper = require("../tradding/get-user-wallet-balance");
+    var value = await helper.getUserWalletBalance(user_id, currency, crypto);
+    // } else {
+    //     value = JSON.parse(value);
+    //     value.flag = true;
+    // }
 
     console.log("value", value);
     return value;
