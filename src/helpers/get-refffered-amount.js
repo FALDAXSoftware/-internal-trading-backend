@@ -69,6 +69,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.referred_user_id = referralData.id;
                 addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
+                addRefferalAddData.referral_percentage = referral_percentage
 
                 var addedData = await ReferralModel
                     .query()
@@ -96,6 +97,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.referred_user_id = referralData.id;
                 addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
+                addRefferalAddData.referral_percentage = referral_percentage
 
                 var addedData = await ReferralModel
                     .query()
@@ -125,6 +127,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.referred_user_id = referralData.id;
                 addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
+                addRefferalAddData.referral_percentage = referral_percentage
 
                 var addedData = await ReferralModel
                     .query()
@@ -151,6 +154,7 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                 addRefferalAddData.referred_user_id = referralData.id;
                 addRefferalAddData.txid = transaction_id;
                 addRefferalAddData.is_collected = false;
+                addRefferalAddData.referral_percentage = referral_percentage
 
                 var addedData = await ReferralModel
                     .query()
