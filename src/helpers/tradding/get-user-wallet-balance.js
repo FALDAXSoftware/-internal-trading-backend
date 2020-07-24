@@ -140,6 +140,7 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
         .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
     var takerFee = currencyMakerFee.taker_fee
+    var makerFee = currencyMakerFee.maker_fee
 
     let sellBook = await SellBookOrderHelper.sellOrderBook(crypto, currency);
     let buyBook = await BuyBookOrderHelper.getBuyBookOrder(crypto, currency);
@@ -173,7 +174,8 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         'cryptoFiat': cryptoUsdValue,
         "currencyFiat": currencyUsdValue,
         "currencyinactive": currencyinactive,
-        "cryptoinactive": cryptoinactive
+        "cryptoinactive": cryptoinactive,
+        "makerFee": makerFee
     };
 
     // console.log("userWalletBalance", userWalletBalance)
