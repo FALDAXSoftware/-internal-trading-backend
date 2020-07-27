@@ -3,7 +3,7 @@ var MarketSnapshotPriceModel = require("../../models/MarketSnapshotPrices");
 
 var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
     symbol = symbol.replace("/", "");
-
+    // console.log(symbol, side, order_quantity, flag, type_of)
     return new Promise(async (resolve, reject) => {
         var md_entry_type = (side == "Buy" ? 1 : 0)
         await request({
