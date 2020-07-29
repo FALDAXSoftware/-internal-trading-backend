@@ -105,7 +105,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             switch (type) {
                 case "Market":
                     if (dataValue.side == "Buy" && pendingDataStatus.is_cancel == false) {
-                        tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency, [], 0.0, dataValue.pending_order_id)
+                        tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency, [], 0.0, dataValue.pending_order_id, dataValue.is_checkbox_enabled)
                             .then((orderDataResponse) => {
                                 // console.log("orderDataResponse", orderDataResponse)
                                 ch.ack(msg)
