@@ -4,6 +4,7 @@ var TradeHistoryModel = require("../../models/TradeHistory");
 var CoinsModel = require("../../models/Coins");
 var Fees = require("../../models/Fees");
 var moment = require('moment');
+var axios = require('axios');
 // var moment = require('moment-timezone');
 
 const influx = new Influx.InfluxDB({
@@ -306,6 +307,27 @@ class InfluxController extends AppController {
                 totalCurrencyAmount: totalCurrencyAmount + "USD",
                 takerFee,
                 makerFee
+            })
+    }
+
+    async getAtalixData(req, res) {
+        const expiryDate = moment().add(7, 'days');;
+        return axios
+            .get(
+                `https://partners.sandbox.altalix.com/api/currencies`,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer VUsHh54VkG1CHzjo73/DDojb6o5kn5hcVuftwErbakR3KwuaYGEegKAozi91o4ZkQujEej4msEHyMIZa188KjNUw7+ANW8peU6tCU9ClLRLy+6mWJ3DImlM+tMjM+HlhbJXhet3K1b1GorbgcTRle5zRWa5eGfGznTY7muv94gsBDya2uIVCNS3tHkTtbC9wxovajzjtojHi7ERn7MPdiDLKnq4UQSy6SoDIX/ELOReVmlNNAHDPDDlqD7uf7N8Bys3HOQhdoSwpmze4WKRJSa9oP9HsXBWanC+rZ4Auxo2L13ZB0m1p+TesqBITUbxmAnzpdocMow+5w==',
+                    },
+                }
+            )
+            .then((resp) => {
+                console.log(resp.data)
+                return res.status(200).json({
+                    "status": 200,
+                    "data": resp.data
+                });
             })
     }
 }

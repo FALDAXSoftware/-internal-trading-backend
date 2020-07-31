@@ -2258,7 +2258,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], pending_order_id = 0.0) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], pending_order_id = 0.0, is_checkbox_enabled = false) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -2271,7 +2271,12 @@ class TradeController extends AppController {
     let { crypto, currency } = await Currency.get_currencies(symbol);
     // Bot User By pass
     let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-    let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+
+    if (user_id == process.env.TRADEDESK_USER_ID && Boolean(is_checkbox_enabled) == true) {
+      var sellBook = await sellOrderBookUser.sellOrderBook(crypto, currency, user_id);
+    } else {
+      var sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+    }
 
     var pairDetails = await PairsModel
       .query()
@@ -2299,7 +2304,7 @@ class TradeController extends AppController {
     var originalQuantityValue = orderQuantity
 
     if (placedBy == process.env.TRADEDESK_USER) {
-      if (sellBook.length > 0) {
+      if (sellBook != undefined && sellBook.length > 0) {
         if (wallet == 1) {
           var userNotification = await UserNotifications.getSingleData({
             user_id: user_id,
@@ -2520,11 +2525,11 @@ class TradeController extends AppController {
     // console.log("sellBook.length", JSON.stringify(sellBook))
     // var txnGroupId = Helper.generateTxGroup(user_id);
     // var originalQuantityValue = orderQuantity
-    if (sellBook && sellBook.length > 0) {
+    if (sellBook != undefined && sellBook && sellBook.length > 0) {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
         // console.log("crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
-        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
+        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id, is_checkbox_enabled);
         await logger.info({
           "module": "Limit Buy",
           "user_id": "user_" + user_id,
@@ -4638,7 +4643,8 @@ class TradeController extends AppController {
       side,
       order_type,
       orderQuantity,
-      limit_price
+      limit_price,
+      is_checkbox_enabled
     } = req.body;
     let { crypto, currency } = await Currency.get_currencies(symbol);
     const checkUser = Helper.checkWhichUser(user_id);
@@ -4667,7 +4673,6 @@ class TradeController extends AppController {
       }, i18n.__("Unable to place order").message);
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
     }
-
 
     var userIds = [];
     userIds.push(user_id);
@@ -4806,7 +4811,8 @@ class TradeController extends AppController {
         flag: false,
         crypto: walletData.crypto.coin_id,
         currency: walletData.currency.coin_id,
-        pending_order_id: pendingAdd.id
+        pending_order_id: pendingAdd.id,
+        is_checkbox_enabled: is_checkbox_enabled
       }
       var responseValue = await QueueValue.publishToQueue(queueName, queueData)
 

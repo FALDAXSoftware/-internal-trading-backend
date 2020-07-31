@@ -186,4 +186,6 @@ router.get("/delete-influx-data", InfluxController.deleteInfluxData);
 
 router.get("/get-user-trade-value", InfluxController.getUserTradeData);
 
+router.get("/get-atalix-token", InfluxController.getAtalixData);
+
 module.exports = router;
