@@ -3,7 +3,7 @@ var buyBookHelper = require("./buy/get-buy-book-order-summary");
 var TradeHistoryModel = require("../models/TradeHistory");
 var Currency = require("./currency");
 var PairsModel = require("../models/Pairs");
-var CurrencyConversionModel = require("../models/CurrencyConversion");
+var CoinsModel = require("../models/Coins");
 
 var getLatestVaue = async (symbol) => {
     try {
@@ -12,6 +12,16 @@ var getLatestVaue = async (symbol) => {
         var askPrice = 0.0;
         var lastPrice = 0.0;
         let { crypto, currency } = await Currency.get_currencies(symbol);
+
+        var buyMinimumValue = await CoinsModel
+            .query()
+            .first()
+            .select("orders_minimum")
+            .where("deleted_at", null)
+            .andWhere("is_active", true)
+            .andWhere("coin_code", crypto)
+            .orderBy("id", "ASC")
+
         var bidValue = await buyBookHelper.getBuyBookOrderSummary(crypto, currency);
         // console.log("bidValue", bidValue)
         bidPrice = (bidValue.data.length == 0) ? (0.0) : (bidValue.data[0].price)
@@ -63,7 +73,8 @@ var getLatestVaue = async (symbol) => {
             bidPrice: bidPrice,
             buyMaximumValue: sellMaximumValue,
             sellMaximumValue: buyMaximumValue,
-            lastPrice: lastPrice
+            lastPrice: lastPrice,
+            MinimumValue: buyMinimumValue
         }
 
         // console.log("data", data)
