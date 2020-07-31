@@ -74,7 +74,7 @@ var feesValue = async (coin, quantity = null, price = null) => {
         } else if (coin == 'SUSU') {
             value = 0.01
         }
-        // console.log("FEES>>>>>>", value)
+        console.log("FEES>>>>>>", value)
         return value;
     } else {
         // Coin not Found
