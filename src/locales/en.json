@@ -283,8 +283,15 @@
 		"page": "Invalid quantity",
 		"context": "Invalid Order Quantity",
 		"message_type": "error",
-		"message_english": "Order Quantity should be greated than 0.",
-		"message": "Order quantity should be greater than 0."
+		"message_english": "Order Quantity should be less than 0.",
+		"message": "Order quantity should be less than 0."
+	},
+	"Invalid Quantity for Minimum": {
+		"page": "Invalid quantity",
+		"context": "Invalid Order Quantity",
+		"message_type": "error",
+		"message_english": "Order Quantity should be greater than",
+		"message": "Order quantity should be greater than"
 	},
 	"Unable to place order": {
 		"page": "Trade Page",
