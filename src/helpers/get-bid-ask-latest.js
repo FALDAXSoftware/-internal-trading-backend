@@ -63,7 +63,8 @@ var getLatestVaue = async (symbol) => {
             bidPrice: bidPrice,
             buyMaximumValue: sellMaximumValue,
             sellMaximumValue: buyMaximumValue,
-            lastPrice: lastPrice
+            lastPrice: lastPrice,
+            minimumValue: (symbol == "SUSU-BTC") ? (process.env.SUSU_BTC_MINIMUM_LIMIT) : (0.0)
         }
 
         // console.log("data", data)
