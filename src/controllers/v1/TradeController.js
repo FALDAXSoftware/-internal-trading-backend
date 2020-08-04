@@ -4044,6 +4044,21 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
       }
 
+      console.log("symbol",symbol)
+      if (symbol == "SUSU-BTC") {
+        console.log("parseFloat(orderQuantity) < process.env.SUSU_BTC_MINIMUM_LIMIT",parseFloat(orderQuantity) < process.env.SUSU_BTC_MINIMUM_LIMIT)
+        if (parseFloat(orderQuantity) < process.env.SUSU_BTC_MINIMUM_LIMIT) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Invalid Quantity").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Minimum").message + " " + parseFloat(process.env.SUSU_BTC_MINIMUM_LIMIT).toFixed(8) + " " + crypto, []);
+        }
+
+      }
+
       if (parseFloat(orderQuantity) > maximumValue) {
         await logger.info({
           "module": "Market Buy",
@@ -4051,7 +4066,7 @@ class TradeController extends AppController {
           "url": "Trade Function",
           "type": "Entry"
         }, i18n.__("Invalid Quantity").message);
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(3) + " " + crypto, []);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Maximum").message + " " + parseFloat(maximumValue).toFixed(8) + " " + crypto, []);
       }
 
       var userData = await Users
@@ -4281,6 +4296,18 @@ class TradeController extends AppController {
           "type": "Entry"
         }, i18n.__("Invalid Quantity").message);
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
+      }
+
+      if (symbol == "SUSU-BTC") {
+        if (parseFloat(orderQuantity) < process.env.SUSU_BTC_MINIMUM_LIMIT) {
+          await logger.info({
+            "module": "Market Buy",
+            "user_id": "user_" + user_id,
+            "url": "Trade Function",
+            "type": "Entry"
+          }, i18n.__("Invalid Quantity").message);
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Minimum").message + " " + parseFloat(process.env.SUSU_BTC_MINIMUM_LIMIT).toFixed(8) + " " + crypto, []);
+        }
       }
 
       if (parseFloat(orderQuantity) > maximumValue) {
@@ -4536,6 +4563,19 @@ class TradeController extends AppController {
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
     }
 
+    if (symbol == "SUSU-BTC") {
+      if (parseFloat(orderQuantity) < process.env.SUSU_BTC_MINIMUM_LIMIT) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Minimum").message + " " + parseFloat(process.env.SUSU_BTC_MINIMUM_LIMIT).toFixed(8) + " " + crypto, []);
+      }
+    }
+
+
     // if (orderQuantity > maximumValue) {
     //   await logger.info({
     //     "module": "Market Buy",
@@ -4754,6 +4794,19 @@ class TradeController extends AppController {
       }, i18n.__("Invalid Quantity").message);
       return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
     }
+
+    if (symbol == "SUSU-BTC") {
+      if (parseFloat(orderQuantity) < process.env.SUSU_BTC_MINIMUM_LIMIT) {
+        await logger.info({
+          "module": "Market Buy",
+          "user_id": "user_" + user_id,
+          "url": "Trade Function",
+          "type": "Entry"
+        }, i18n.__("Invalid Quantity").message);
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Minimum").message + " " + parseFloat(process.env.SUSU_BTC_MINIMUM_LIMIT).toFixed(8) + " " + crypto, []);
+      }
+    }
+
 
     // if (orderQuantity > maximumValue) {
     //   await logger.info({
