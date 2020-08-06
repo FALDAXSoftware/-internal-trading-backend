@@ -185,5 +185,6 @@ router.get("/get-influx-data", InfluxController.getInfluxData);
 router.get("/delete-influx-data", InfluxController.deleteInfluxData);
 
 router.get("/get-user-trade-value", InfluxController.getUserTradeData);
+router.get("/get-user-tier-0-report", InfluxController.getTier0Report);
 
 module.exports = router;

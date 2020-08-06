@@ -31,12 +31,18 @@ var userTier0Report = async (user_id, amount, crypto) => {
                     .local()
                     .format();
 
+                console.log("now", now)
+
                 var after30Days = moment(usersData.account_verified_at)
                     .add(getTierDetails[0].max_allowed_days, "day")
                     .local()
                     .format();
 
-                if (now.isAfter(after30Days)) {
+                console.log("after30Days", after30Days)
+
+                console.log("now.isAfter(after30Days)", moment(now).isAfter(after30Days))
+
+                if (moment(now).isBefore(after30Days)) {
                     var after1Day = moment(now)
                         .startOf('day')
                         .local()
@@ -100,9 +106,10 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         data.completedFlag = true;
                         data.completedFlagAfterTrade = false;
                         data.leftFlag = false;
-                    } else if ((parseFloat(userTotalUSDSum) + parseFloat(usdValue)) >= parseFloat(getTierDetails[0].max_trade_amount)) {
+                        data.tier_flag = true;
+                    } else if ((parseFloat(userTotalUSDSum) + parseFloat(usdValue)) > parseFloat(getTierDetails[0].max_trade_amount)) {
                         var subtractValue = parseFloat(getTierDetails[0].max_trade_amount) - parseFloat(userTotalUSDSum)
-                        var leftAmount = (parseFloat(userTotalUSDSum) + parseFloat(usdValue)) - parseFloat(getTierDetails[0].max_trade_amount)
+                        var leftAmount = parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue))
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
                             "current_left_limit": (parseFloat(subtractValue) > 0) ? (subtractValue) : (0.0),
@@ -112,21 +119,24 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         data.completedFlag = false;
                         data.completedFlagAfterTrade = true;
                         data.leftFlag = false;
+                        data.tier_flag = true;
                     } else {
                         var subtractValue = parseFloat(getTierDetails[0].max_trade_amount) - parseFloat(userTotalUSDSum)
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
                             "current_left_limit": (parseFloat(subtractValue) > 0) ? (subtractValue) : (0.0),
-                            "amount_left_after_trade": (parseFloat(userTotalUSDSum) + parseFloat(usdValue)) - parseFloat(getTierDetails[0].max_trade_amount)
+                            "amount_left_after_trade": parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue))
                         }
                         data.valueObject = value;
                         data.completedFlag = false;
                         data.completedFlagAfterTrade = false;
                         data.leftFlag = true;
+                        data.tier_flag = true;
                     }
                 } else {
                     data.msg = "30 days completed. Please verify your Identity Verfication";
-                    data.response_flag = false;
+                    data.response_flag = true;
+                    data.tier_flag = true;
                 }
             } else {
                 data.msg = "Tier Inactive. Complete ID verification";
@@ -136,7 +146,12 @@ var userTier0Report = async (user_id, amount, crypto) => {
             data.account_tier_flag = false;
         }
 
-        return data;
+        // data.response_flag = true;
+        // data.msg = "30 days completed. Please verify your Identity Verfication";
+
+        console.log("data", data)
+
+        return (data);
 
     } catch (error) {
         console.log(error)
