@@ -342,5 +342,26 @@
 		"message_english": "Order Quantity should be greater than",
 		"message": "Order quantity should be greater than"
 	},
+	"30 days completed. Please verify your Identity Verfication": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 checking",
+		"message_type": "error",
+		"message_english": "Maximum Allowable days for trade are completed. Please complete your Identity Verificaton to do trades further",
+		"message": "Maximum Allowable days for trade are completed. Please complete your Identity Verificaton to do trades further"
+	},
+	"User Cannot Do trade because he has reached daily limit": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 Trade checking",
+		"message_type": "error",
+		"message_english": "Maximum Allowable trade for today has been completed. Please try tommorrow for more trades.",
+		"message": "Maximum Allowable trade for today has been completed. Please try tommorrow for more trades."
+	},
+	"User Cannot Do trade because he has reached daily limit using this amount": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 Trade checking",
+		"message_type": "error",
+		"message_english": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades.",
+		"message": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades."
+	},
 	"Campaign Offer invalid": "Campaign Offer invalid"
 }
