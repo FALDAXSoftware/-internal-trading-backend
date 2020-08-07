@@ -1112,11 +1112,7 @@ class DashboardController extends AppController {
             }, i18n.__("instrument data").message + "  " + instrumentDataValue)
             return res
                 .status(200)
-                .json({
-                    "status": constants.SUCCESS_CODE,
-                    "message": i18n.__("instrument data").message,
-                    "data": dataObject
-                });
+                .json(object);
         } catch (error) {
             // console.log((error));
             // await logger.info({

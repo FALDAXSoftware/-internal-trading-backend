@@ -142,6 +142,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                     }
                 } else {
                     data.msg = "30 days completed. Please verify your Identity Verfication";
+                    data.days = getTierDetails[0].max_allowed_days
                     data.response_flag = true;
                     data.tier_flag = true;
                     data.account_tier_flag = true;
