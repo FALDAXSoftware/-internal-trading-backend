@@ -16,6 +16,8 @@ var userTier0Report = async (user_id, amount, crypto) => {
             .andWhere("id", user_id)
             .orderBy("id", "DESC");
 
+        console.log("usersData", usersData)
+
         if (usersData.account_tier == 0) {
 
             var getTierDetails = await TierModel
@@ -109,6 +111,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         data.completedFlagAfterTrade = false;
                         data.leftFlag = false;
                         data.tier_flag = true;
+                        data.account_tier_flag = true;
                     } else if ((parseFloat(userTotalUSDSum) + parseFloat(usdValue)) > parseFloat(getTierDetails[0].max_trade_amount)) {
                         var subtractValue = parseFloat(getTierDetails[0].max_trade_amount) - parseFloat(userTotalUSDSum)
                         var leftAmount = parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue))
@@ -122,6 +125,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         data.completedFlagAfterTrade = true;
                         data.leftFlag = false;
                         data.tier_flag = true;
+                        data.account_tier_flag = true;
                     } else {
                         var subtractValue = parseFloat(getTierDetails[0].max_trade_amount) - parseFloat(userTotalUSDSum)
                         var value = {
@@ -134,15 +138,18 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         data.completedFlagAfterTrade = false;
                         data.leftFlag = true;
                         data.tier_flag = true;
+                        data.account_tier_flag = true;
                     }
                 } else {
                     data.msg = "30 days completed. Please verify your Identity Verfication";
                     data.response_flag = true;
                     data.tier_flag = true;
+                    data.account_tier_flag = true;
                 }
             } else {
                 data.msg = "Tier Inactive. Complete ID verification";
                 data.tier_flag = false;
+                data.account_tier_flag = true;
             }
         } else {
             data.account_tier_flag = false;
@@ -151,7 +158,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
         // data.response_flag = true;
         // data.msg = "30 days completed. Please verify your Identity Verfication";
 
-        // console.log("data", data)
+        console.log("data", data)
 
         return (data);
 
