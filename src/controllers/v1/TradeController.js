@@ -4111,6 +4111,10 @@ class TradeController extends AppController {
         var getTier0Data = await getUser0TierReport.userTier0Report(user_id, parseFloat(orderQuantity), crypto);
 
         console.log("getTier0Data.response_flag", getTier0Data.response_flag)
+        if (getTier0Data.tier_flag == false && getTier0Data.account_tier_flag == true) {
+          return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(getTier0Data.msg).message, []);
+        }
+
         if (getTier0Data.response_flag && getTier0Data.response_flag == true) {
           console.log("INSIDE IF")
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(getTier0Data.msg).message, []);
