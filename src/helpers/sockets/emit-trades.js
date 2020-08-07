@@ -12,6 +12,8 @@ var AllPendingOrders = require("../../helpers/tradding/get-all-pending-orders");
 var highLevelInfoData = require("../../helpers/tradding/get-socket-value");
 var getLatestValue = require("../../helpers/get-bid-ask-latest");
 var constants = require("../../config/constants");
+var tier0Report = require("../tier-0-report");
+
 var emitTrades = async (crypto, currency, userIds) => {
     let buyBookDetails = await BuyBookOrderHelperSummary.getBuyBookOrderSummary(crypto, currency);
     global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_BUY_BOOK_EVENT, buyBookDetails)
@@ -69,6 +71,7 @@ var emitTrades = async (crypto, currency, userIds) => {
         let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
         global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)
 
+        global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_LIMIT, await tier0Report.userTier0Report(element, 0, crypto))
 
         global.io.sockets.to(crypto + "-" + currency + element).emit("users-completed-flag", true)
         // sails
