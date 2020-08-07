@@ -214,6 +214,19 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
 
+  socket.on("tier-0-trade-limit", async function (data) {
+
+    console.log("data", data)
+    var socket_headers = socket.request.headers;
+    var authentication = await require("./config/authorization")(socket_headers);
+    if (authentication.status > constants.SUCCESS_CODE) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
+    var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
+    data.user_id = user_id
+    socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
+  })
+
   socket.on("get-limit-stop-latest", async function (data) {
     var socket_headers = socket.request.headers;
     var authentication = await require("./config/authorization")(socket_headers);
