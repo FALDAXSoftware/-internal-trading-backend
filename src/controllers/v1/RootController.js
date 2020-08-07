@@ -4,7 +4,6 @@ var TradeHistoryModel = require("../../models/TradeHistory");
 var CoinsModel = require("../../models/Coins");
 var Fees = require("../../models/Fees");
 var moment = require('moment');
-// var moment = require('moment-timezone');
 
 const influx = new Influx.InfluxDB({
     host: process.env.INFLUX_HOST,
@@ -103,8 +102,6 @@ const influx = new Influx.InfluxDB({
         }
     ]
 })
-
-// console.log("influx", influx)
 
 class InfluxController extends AppController {
 
@@ -307,6 +304,24 @@ class InfluxController extends AppController {
                 takerFee,
                 makerFee
             })
+    }
+
+    async getTier0Report(req, res) {
+        try {
+            var tierReport = require("../../helpers/tier-0-report");
+
+            var data = await tierReport.userTier0Report(req.query.user_id, req.query.amount, req.query.crypto);
+            console.log("data", data)
+
+            return res
+                .status(200)
+                .json({
+                    "status": 200,
+                    "data": data
+                })
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
 module.exports = new InfluxController();
