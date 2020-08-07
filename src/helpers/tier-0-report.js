@@ -26,7 +26,9 @@ var userTier0Report = async (user_id, amount, crypto) => {
                 .andWhere("tier_step", usersData.account_tier)
                 .orderBy("id", "DESC");
 
-            if (getTierDetails != undefined) {
+            console.log("getTierDetails", getTierDetails)
+
+            if (getTierDetails != undefined && getTierDetails.length > 0) {
                 var now = moment()
                     .local()
                     .format();
@@ -149,7 +151,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
         // data.response_flag = true;
         // data.msg = "30 days completed. Please verify your Identity Verfication";
 
-        console.log("data", data)
+        // console.log("data", data)
 
         return (data);
 
