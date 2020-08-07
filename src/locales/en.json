@@ -363,5 +363,12 @@
 		"message_english": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades.",
 		"message": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades."
 	},
+	"Tier Inactive. Complete ID verification": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 Trade checking",
+		"message_type": "error",
+		"message_english": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade",
+		"message": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade"
+	},
 	"Campaign Offer invalid": "Campaign Offer invalid"
 }
