@@ -1071,10 +1071,37 @@ class DashboardController extends AppController {
         try {
 
             var instrumentDataValue = await intrumentData.getInstrumentData();
+
+
+            var spreadSql = `SELECT name, buy_value.bid_price, sell_value.ask_price
+                                FROM pairs
+                                LEFT JOIN (
+                                    SELECT max(limit_price) as bid_price, symbol
+                                        FROM buy_book
+                                        WHERE deleted_at IS NULL
+                                        GROUP BY symbol
+                                ) as buy_value
+                                ON pairs.name = buy_value.symbol
+                                LEFT JOIN (
+                                    SELECT min(limit_price) as ask_price, symbol
+                                        FROM sell_book
+                                        WHERE deleted_at IS NULL 
+                                        GROUP BY symbol
+                                ) as sell_value
+                                ON sell_value.symbol = pairs.name
+                                WHERE deleted_at IS NULL `
+
+            var spreadData = await PairsModel.knex().raw(spreadSql)
+            spreadData = spreadData.rows;
+
+            var dataObject = {
+                "instrumentDataValue": instrumentDataValue,
+                "spread": spreadData
+            }
             var object = {
                 "status": constants.SUCCESS_CODE,
                 "message": i18n.__("instrument data").message,
-                "data": instrumentDataValue
+                "data": dataObject
             }
             redis_client.setex("instrument", 10, JSON.stringify(object));
             await logger.info({
@@ -1088,7 +1115,7 @@ class DashboardController extends AppController {
                 .json({
                     "status": constants.SUCCESS_CODE,
                     "message": i18n.__("instrument data").message,
-                    "data": instrumentDataValue
+                    "data": dataObject
                 });
         } catch (error) {
             // console.log((error));
@@ -1109,10 +1136,32 @@ class DashboardController extends AppController {
             var limit = 500;
             var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit);
 
+            var spreadSql = `SELECT name, buy_value.bid_price, sell_value.ask_price
+                                FROM pairs
+                                LEFT JOIN (
+                                    SELECT max(limit_price) as bid_price, symbol
+                                        FROM buy_book
+                                        WHERE deleted_at IS NULL
+                                        GROUP BY symbol
+                                ) as buy_value
+                                ON pairs.name = buy_value.symbol
+                                LEFT JOIN (
+                                    SELECT min(limit_price) as ask_price, symbol
+                                        FROM sell_book
+                                        WHERE deleted_at IS NULL
+                                        GROUP BY symbol
+                                ) as sell_value
+                                ON sell_value.symbol = pairs.name
+                                WHERE deleted_at IS NULL`
+
+            var spreadData = await PairsModel.knex().raw(spreadSql)
+            spreadData = spreadData.rows;
+
             var object = {
                 "status": constants.SUCCESS_CODE,
                 "message": i18n.__("depth data").message,
-                "data": depthChartValue
+                "data": depthChartValue,
+                "spread": spreadData
             }
             redis_client.setex(symbol, 10, JSON.stringify(object));
             await logger.info({
@@ -1149,10 +1198,32 @@ class DashboardController extends AppController {
 
             var depthChartValue = await depthChartHelper.getDepthChartDetails(crypto, currency, limit);
 
+            var spreadSql = `SELECT name, buy_value.bid_price, sell_value.ask_price
+                                FROM pairs
+                                LEFT JOIN (
+                                    SELECT max(limit_price) as bid_price, symbol
+                                        FROM buy_book
+                                        WHERE deleted_at IS NULL AND symbol LIKE '%${symbol}%'
+                                        GROUP BY symbol
+                                ) as buy_value
+                                ON pairs.name = buy_value.symbol
+                                LEFT JOIN (
+                                    SELECT min(limit_price) as ask_price, symbol
+                                        FROM sell_book
+                                        WHERE deleted_at IS NULL AND symbol LIKE '%${symbol}%'
+                                        GROUP BY symbol
+                                ) as sell_value
+                                ON sell_value.symbol = pairs.name
+                                WHERE deleted_at IS NULL AND name LIKE '%${symbol}%'`
+
+            var spreadData = await PairsModel.knex().raw(spreadSql)
+            spreadData = spreadData.rows;
+
             var object = {
                 "status": constants.SUCCESS_CODE,
                 "message": i18n.__("depth data").message,
-                "data": depthChartValue
+                "data": depthChartValue,
+                "spread": spreadData
             }
             redis_client.setex(symbol, 10, JSON.stringify(object));
             await logger.info({
@@ -1166,7 +1237,8 @@ class DashboardController extends AppController {
                 .json({
                     "status": constants.SUCCESS_CODE,
                     "message": i18n.__("depth data").message,
-                    "data": depthChartValue
+                    "data": depthChartValue,
+                    "spread": spreadData
                 });
         } catch (error) {
             // console.log(JSON.stringify(error));
@@ -1184,18 +1256,43 @@ class DashboardController extends AppController {
 
             var instrumentDataValue = await intrumentData.getInstrumentData();
 
+            var spreadSql = `SELECT name, buy_value.bid_price, sell_value.ask_price
+                                FROM pairs
+                                LEFT JOIN (
+                                    SELECT max(limit_price) as bid_price, symbol
+                                        FROM buy_book
+                                        WHERE deleted_at IS NULL
+                                        GROUP BY symbol
+                                ) as buy_value
+                                ON pairs.name = buy_value.symbol
+                                LEFT JOIN (
+                                    SELECT min(limit_price) as ask_price, symbol
+                                        FROM sell_book
+                                        WHERE deleted_at IS NULL
+                                        GROUP BY symbol
+                                ) as sell_value
+                                ON sell_value.symbol = pairs.name
+                                WHERE deleted_at IS NULL`
+
+            var spreadData = await PairsModel.knex().raw(spreadSql)
+            spreadData = spreadData.rows;
+
             await logger.info({
                 "module": "Instrument Data",
                 "user_id": "user_",
                 "url": "Trade Function",
                 "type": "Success"
             }, i18n.__("instrument data").message + "  " + instrumentDataValue)
+            var dataObject = {
+                "instrumentDataValue": instrumentDataValue,
+                "spread": spreadData
+            }
             return res
                 .status(200)
                 .json({
                     "status": constants.SUCCESS_CODE,
                     "message": i18n.__("instrument data").message,
-                    "data": instrumentDataValue
+                    "data": dataObject
                 });
         } catch (error) {
             // console.log(JSON.stringify(error));
