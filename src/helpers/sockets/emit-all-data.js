@@ -243,6 +243,13 @@ var tier0TradeLimit = async (data) => {
     return dataValue;
 }
 
+var getSpreadValue = async (data) => {
+    let helper = require("../spread-value");
+    let dataValue = await helper.spreadData(data);
+    console.log("dataValue", dataValue)
+    return dataValue;
+}
+
 module.exports = {
     getBuyBookData,
     getSellBookData,
@@ -264,5 +271,6 @@ module.exports = {
     getHighInfo,
     getLatestValue,
     getTradePrecision,
-    tier0TradeLimit
+    tier0TradeLimit,
+    getSpreadValue
 }
