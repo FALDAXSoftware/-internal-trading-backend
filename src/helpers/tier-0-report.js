@@ -113,7 +113,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         var subtractValue = parseFloat(userTotalUSDSum)
                         var value = {
                             "available_trade_limit_actual": "Unlimited",
-                            "current_left_limit": parseFloat(subtractValue),
+                            "current_left_limit": "Unlimited",
                             "amount_left_after_trade": "Unlimited"
                         }
                         data.valueObject = value;
