@@ -37,16 +37,21 @@ var userTier0Report = async (user_id, amount, crypto) => {
 
                 console.log("now", now)
 
-                var after30Days = moment(usersData.account_verified_at)
-                    .add(getTierDetails[0].max_allowed_days, "day")
-                    .local()
-                    .format();
+                console.log("getTierDetails[0].max_allowed_days", getTierDetails[0].max_allowed_days)
 
-                console.log("after30Days", after30Days)
+                var unlimitedFlag = false;
+                if (getTierDetails[0].max_allowed_days != "Unlimited") {
+                    var after30Days = moment(usersData.account_verified_at)
+                        .add(parseFloat(getTierDetails[0].max_allowed_days), "day")
+                        .local()
+                        .format();
+                } else {
+                    unlimitedFlag = true;
+                }
 
-                console.log("now.isAfter(after30Days)", moment(now).isAfter(after30Days))
+                console.log("unlimitedFlag", unlimitedFlag)
 
-                if (moment(now).isBefore(after30Days)) {
+                if (unlimitedFlag == true || (moment(now).isBefore(after30Days))) {
                     var after1Day = moment(now)
                         .startOf('day')
                         .local()
@@ -99,7 +104,25 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         usdValue = parseFloat(amount) * parseFloat(getCurrenctConversionValue.quote.USD.price)
                     }
 
-                    if (parseFloat(userTotalUSDSum) >= parseFloat(getTierDetails[0].max_trade_amount)) {
+                    var dailyFlag = false;
+                    if (getTierDetails[0].max_trade_amount == "Unlimited") {
+                        dailyFlag = true;
+                    }
+
+                    if (dailyFlag == true) {
+                        var subtractValue = parseFloat(userTotalUSDSum)
+                        var value = {
+                            "available_trade_limit_actual": "Unlimited",
+                            "current_left_limit": parseFloat(subtractValue),
+                            "amount_left_after_trade": "Unlimited"
+                        }
+                        data.valueObject = value;
+                        data.completedFlag = false;
+                        data.completedFlagAfterTrade = false;
+                        data.leftFlag = true;
+                        data.tier_flag = true;
+                        data.account_tier_flag = true;
+                    } else if (parseFloat(userTotalUSDSum) >= parseFloat(getTierDetails[0].max_trade_amount)) {
                         var subtractValue = parseFloat(getTierDetails[0].max_trade_amount) - parseFloat(userTotalUSDSum)
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
