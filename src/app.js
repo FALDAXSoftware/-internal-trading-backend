@@ -223,6 +223,10 @@ io.on('connection', async function (socket) {
     if (authentication.status > constants.SUCCESS_CODE) {
       socket.emit(constants.USER_LOGOUT, true);
     }
+
+    socket.join(data.symbol); //Join to new  Room
+    socket.join(data.symbol + user_id); // Join to new Room with Userid
+
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id
     socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
