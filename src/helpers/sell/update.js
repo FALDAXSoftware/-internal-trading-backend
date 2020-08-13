@@ -12,7 +12,7 @@ var updateSellBook = async (id, data) => {
         .query()
         .where('deleted_at', null)
         .andWhere('id', id)
-    console.log("updatedBook", updatedBook)
+    // console.log("updatedBook", updatedBook)
 
     return (updatedBook);
 }
