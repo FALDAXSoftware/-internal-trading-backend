@@ -370,5 +370,12 @@
 		"message_english": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade",
 		"message": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade"
 	},
+	"Self Order Execution": {
+		"page": "Self Order Execution",
+		"context": "User Trade Self Execution",
+		"message_type": "error",
+		"message_english": "Self Order Execution so order cannot be executed",
+		"message": "Self Order Execution so order cannot be executed"
+	},
 	"Campaign Offer invalid": "Campaign Offer invalid"
 }

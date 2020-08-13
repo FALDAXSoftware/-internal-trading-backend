@@ -310,6 +310,108 @@ class TradeController extends AppController {
     if (allOrderData.length == 0) {
       originalQuantityValue = orderQuantity
     }
+
+    if (buy_book_data[0].user_id == user_id) {
+      await logger.info({
+        "module": "Market Sell Execution",
+        "user_id": "user_" + alldata.user_id,
+        "url": "Trade Function",
+        "type": "Success"
+      }, "Order Book Empty")
+
+      var userNotification = await UserNotifications.getSingleData({
+        user_id: user_id,
+        deleted_at: null,
+        slug: 'trade_execute'
+      })
+      var user_data = await Users.getSingleData({
+        deleted_at: null,
+        id: user_id,
+        is_active: true
+      });
+
+      if (pending_order_id != 0) {
+        var getPendingData = await PendingOrderExecutuionModel
+          .query()
+          .first()
+          .select("is_cancel")
+          .where("id", pending_order_id)
+          .andWhere("deleted_at", null)
+          .orderBy("id", "DESC");
+
+        if (getPendingData != undefined) {
+          var getData = await PendingOrderExecutuionModel
+            .query()
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .patch({
+              is_executed: true
+            })
+        }
+      }
+
+      if (allOrderData.length > 0) {
+        if (user_data != undefined) {
+          var allData = {
+            template: "emails/general_mail.ejs",
+            templateSlug: "trade_execute",
+            email: user_data.email,
+            user_detail: user_data,
+            formatData: {
+              recipientName: user_data.first_name,
+              side: side,
+              pair: symbol,
+              order_type: order_type,
+              quantity: originalQuantityValue,
+              allTradeData: allOrderData
+            }
+
+          }
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                await Helper.sendSMS(allData)
+              }
+            }
+          }
+        }
+      }
+
+      if (user_data != undefined) {
+        var allData = {
+          template: "emails/general_mail.ejs",
+          templateSlug: "order_failed",
+          email: user_data.email,
+          user_detail: user_data,
+          formatData: {
+            recipientName: user_data.first_name,
+            reason: i18n.__("Order Book Empty").message
+          }
+        }
+        if (userNotification != undefined) {
+          if (userNotification.email == true || userNotification.email == "true") {
+            if (user_data.email != undefined) {
+              await Helper.SendEmail(res, allData)
+            }
+          }
+          if (userNotification.text == true || userNotification.text == "true") {
+            if (user_data.phone_number != undefined) {
+              await Helper.sendSMS(allData)
+            }
+          }
+        }
+      }
+
+      return {
+        status: 2,
+        message: 'Order Book Empty'
+      }
+    }
     // Get and check Crypto Wallet details
     let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
 
@@ -4098,6 +4200,10 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
       }
 
+      if (quantityTotal[0].user_id == user_id) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Self Order Execution").message, []);
+      }
+
       var userData = await Users
         .query()
         .select()
@@ -4348,9 +4454,12 @@ class TradeController extends AppController {
       var quantityTotal = await BuyBookHelper.getBuyBookOrder(crypto, currency);
 
       // console.log("quantityTotal", quantityTotal)
-
       if (quantityTotal.length == 0) {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      }
+
+      if (quantityTotal[0].user_id == user_id) {
+        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Self Order Execution").message, []);
       }
 
       var userData = await Users
