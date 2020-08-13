@@ -74,7 +74,7 @@ var emitTrades = async (crypto, currency, userIds) => {
         let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
         global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)
         console.log("crypto + " - " + currency + element", crypto + "-" + currency + element)
-        global.io.sockets.to(crypto + "-" + currency + element).emit(constants.TRADE_LIMIT, await tier0Report.userTier0Report(element, 0, crypto))
+        // global.io.sockets.to(crypto + "-" + currency + element).emit(constants.TRADE_LIMIT, await tier0Report.userTier0Report(element, 0, crypto))
 
         global.io.sockets.to(crypto + "-" + currency + element).emit("users-completed-flag", true)
         // sails
