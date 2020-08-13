@@ -323,5 +323,30 @@ class InfluxController extends AppController {
             console.log(error);
         }
     }
+
+    async getUserTier0DataReport(req, res) {
+        try {
+            var {
+                user_id
+            } = req.query;
+
+            var getUserTradeHistory = await TradeHistoryModel
+                .query()
+                .select("fiat_values", "quantity", "fill_price", "side")
+                .where("user_id", user_id)
+                .orderBy("id", "DESC")
+                .limit(100);
+
+            return res
+                .status(200)
+                .json({
+                    "status": 200,
+                    "data": getUserTradeHistory
+                });
+
+        } catch (error) {
+            console.log("error", error)
+        }
+    }
 }
 module.exports = new InfluxController();
