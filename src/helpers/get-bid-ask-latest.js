@@ -13,7 +13,7 @@ var getLatestVaue = async (symbol) => {
         var lastPrice = 0.0;
         let { crypto, currency } = await Currency.get_currencies(symbol);
 
-        console.log("crypto", crypto)
+        // console.log("crypto", crypto)
 
         var buyMinimumValue = await CoinsModel
             .query()
@@ -24,7 +24,7 @@ var getLatestVaue = async (symbol) => {
             .andWhere("coin", crypto)
             .orderBy("id", "ASC")
 
-        console.log("buyMinimumValue", buyMinimumValue)
+        // console.log("buyMinimumValue", buyMinimumValue)
 
         var bidValue = await buyBookHelper.getBuyBookOrderSummary(crypto, currency);
         // console.log("bidValue", bidValue)
