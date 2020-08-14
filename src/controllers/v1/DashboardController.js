@@ -29,6 +29,7 @@ var CoinsModel = require("../../models/Coins");
 var cancelOldOrder = require("../../helpers/pending/cancel-pending-data")
 var intrumentData = require("../../helpers/tradding/get-instrument-data");
 var depthChartHelper = require("../../helpers/chart/get-depth-chart-detail");
+var getBuyBookOrderSummary
 // var fetSocketInfo = require("../../helpers/tradding/get-socket-value");
 var latestBidPrice = require("../../helpers/get-bid-ask-latest");
 var QueueValue = require("./QueueController");
@@ -606,8 +607,6 @@ class DashboardController extends AppController {
             let pair = pair_name.split("-").join("")
             let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
             let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-            let SellBookHelperAdd = require("../../helpers/sell/get-sell-order-by-price");
-            let BuyBookHelperAdd = require("../../helpers/buy/get-buy-book-order-by-price");
             let BuyAdd = require("../../helpers/buy/add-buy-order");
             let SellAdd = require("../../helpers/sell/add-sell-order");
             var now = new Date();
@@ -888,6 +887,9 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
+            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
+            let { crypto, currency } = await Currency.get_currencies(pair);
+
             var maxValue = await PairsModel
                 .query()
                 .first()
@@ -896,9 +898,13 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            // console.log("maxValue", maxValue)
+            console.log("maxValue", maxValue)
 
-            if (maxValue.bot_status == true) {
+            var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
+            console.log("getBuyBookSummary", getBuyBookSummary)
+            console.log("getBuyBookOrderSummary.total > maxValue.buy_min_total", getBuyBookOrderSummary.total > maxValue.buy_min_total)
+
+            if (maxValue.bot_status == true && getBuyBookOrderSummary.total > maxValue.buy_min_total) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 // console.log("now", now)
@@ -972,6 +978,10 @@ class DashboardController extends AppController {
 
     async deleteSellPendingOrder(pair) {
         try {
+
+            let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
+            let { crypto, currency } = await Currency.get_currencies(pair);
+
             var maxValue = await PairsModel
                 .query()
                 .first()
@@ -980,7 +990,14 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            if (maxValue.bot_status == true) {
+            console.log("maxValue", maxValue)
+
+            var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
+
+            console.log("bookData", bookData)
+            console.log("bookData.total > maxValue.sell_min_total", bookData.total > maxValue.sell_min_total)
+
+            if (maxValue.bot_status == true && bookData.total > maxValue.sell_min_total) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 let { crypto, currency } = await Currency.get_currencies(pair);
