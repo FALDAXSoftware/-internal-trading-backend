@@ -18,6 +18,8 @@ var userTier0Report = async (user_id, amount, crypto) => {
 
         console.log("usersData", usersData)
 
+        console.log("usersData.account_tier", usersData.account_tier)
+
         if (usersData.account_tier == 0) {
 
             var getTierDetails = await TierModel
