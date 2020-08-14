@@ -612,7 +612,7 @@ class DashboardController extends AppController {
             var now = new Date();
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=20`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -621,8 +621,6 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
                 var askValue = body.asks;
-                // console.log("bidValue", bidValue)
-                // console.log("askValue", askValue)
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -631,8 +629,6 @@ class DashboardController extends AppController {
                     .where("deleted_at", null)
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC');
-
-                // console.log("maxValue", maxValue.bot_status)
 
                 if (maxValue.bot_status == true) {
 
@@ -887,8 +883,8 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
-            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-            let { crypto, currency } = await Currency.get_currencies(pair);
+            // let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
+            // let { crypto, currency } = await Currency.get_currencies(pair);
 
             var maxValue = await PairsModel
                 .query()
@@ -898,17 +894,17 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            console.log("maxValue", maxValue)
+            // console.log("maxValue", maxValue)
 
-            var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
-            console.log("getBuyBookSummary", getBuyBookSummary)
-            console.log("getBuyBookOrderSummary.total > maxValue.buy_min_total", getBuyBookOrderSummary.total > maxValue.buy_min_total)
+            // var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
+            // console.log("getBuyBookSummary", getBuyBookSummary)
+            // console.log("getBuyBookOrderSummary.total > maxValue.buy_min_total", getBuyBookOrderSummary.total > maxValue.buy_min_total)
 
-            if (maxValue.bot_status == true && getBuyBookOrderSummary.total > maxValue.buy_min_total) {
+            if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 // console.log("now", now)
-                let { crypto, currency } = await Currency.get_currencies(pair);
+                // let { crypto, currency } = await Currency.get_currencies(pair);
                 // console.log(`UPDATE activity_table SET is_cancel = true
                 // WHERE id IN ( SELECT activity_id FROM buy_book
                 //             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
@@ -979,8 +975,8 @@ class DashboardController extends AppController {
     async deleteSellPendingOrder(pair) {
         try {
 
-            let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
-            let { crypto, currency } = await Currency.get_currencies(pair);
+            // let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
+            // let { crypto, currency } = await Currency.get_currencies(pair);
 
             var maxValue = await PairsModel
                 .query()
@@ -990,17 +986,17 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            console.log("maxValue", maxValue)
+            // console.log("maxValue", maxValue)
 
-            var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
+            // var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
 
-            console.log("bookData", bookData)
-            console.log("bookData.total > maxValue.sell_min_total", bookData.total > maxValue.sell_min_total)
+            // console.log("bookData", bookData)
+            // console.log("bookData.total > maxValue.sell_min_total", bookData.total > maxValue.sell_min_total)
 
-            if (maxValue.bot_status == true && bookData.total > maxValue.sell_min_total) {
+            if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
-                let { crypto, currency } = await Currency.get_currencies(pair);
+                // let { crypto, currency } = await Currency.get_currencies(pair);
                 // var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
                 //                                                     FROM sell_book
                 //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
