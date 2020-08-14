@@ -229,6 +229,9 @@ io.on('connection', async function (socket) {
     socket.join(data.symbol); //Join to new  Room
     console.log("data.symbol", data.symbol)
     console.log("user_id", user_id)
+    if (data.amount && data.amount == null) {
+      data.amount = 0.0;
+    }
     socket.join(data.symbol + user_id); // Join to new Room with Userid
     data.user_id = user_id
     socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
