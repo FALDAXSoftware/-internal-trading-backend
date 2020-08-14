@@ -4190,11 +4190,15 @@ class TradeController extends AppController {
 
       if ((userData.account_tier > 0) || (getTier0Data != undefined && getTier0Data.tier_flag && getTier0Data.tier_flag == true && getTier0Data.leftFlag == true)) {
 
+        console.log("userData.account_tier", userData.account_tier)
+
         if (userData.account_tier == 0) {
           var tradeDataChecking = await userProfileLegalityCheck.tradeStatus(user_id);
         } else {
           var tradeDataChecking = await TradeStatusChecking.tradeStatus(user_id);
         }
+
+        console.log("tradeDataChecking", tradeDataChecking)
 
         if ((tradeDataChecking.response == true || tradeDataChecking.response == "true" || (userData != undefined && (userData.account_tier == 4))) && (tradeDataChecking.status == false || tradeDataChecking.status == "false")) {
 
