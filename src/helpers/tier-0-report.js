@@ -82,6 +82,11 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         const element = getTradeHistoryQuery.rows[index];
                         userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
                     }
+
+                    console.log("userTradeHistorySum", userTradeHistorySum)
+
+                    console.log("userTradeHistorySum", userTradeHistorySum)
+
                     var userTotalUSDSum = 0.0;
 
                     var getCurrenctConversionValue = await CurrencyConversionModel
@@ -143,7 +148,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
                             "current_left_limit": (parseFloat(subtractValue) > 0) ? (subtractValue) : (0.0),
-                            "amount_left_after_trade": (leftAmount < 0) ? (0.0) : (leftAmount)
+                            "amount_left_after_trade": (amount == 0) ? (0.0) : ((leftAmount < 0) ? (0.0) : (leftAmount))
                         }
                         data.valueObject = value;
                         data.completedFlag = false;
@@ -156,7 +161,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
                             "current_left_limit": (parseFloat(subtractValue) > 0) ? (subtractValue) : (0.0),
-                            "amount_left_after_trade": parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue))
+                            "amount_left_after_trade": (amount == 0) ? (0.0) : (parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue)))
                         }
                         data.valueObject = value;
                         data.completedFlag = false;
