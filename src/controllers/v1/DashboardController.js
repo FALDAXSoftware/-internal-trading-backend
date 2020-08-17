@@ -275,7 +275,7 @@ class DashboardController extends AppController {
                 .query()
                 .select("quantity", "side", "created_at", "symbol", "fix_quantity")
                 .where("user_id", user_id)
-                .andWhere('is_market', false)
+                // .andWhere('is_market', false)
                 .andWhere("is_cancel", false)
                 .andWhere('deleted_at', null)
                 .orderBy('id', 'DESC')
@@ -300,7 +300,7 @@ class DashboardController extends AppController {
                 "message": i18n.__("activity data").message,
                 "data": data
             }
-            redis_client.setex(`${user_id}-activity`, 3600, JSON.stringify(dataValue));
+            redis_client.setex(`${user_id}-activity`, 10, JSON.stringify(dataValue));
 
             return res
                 .status(200)
