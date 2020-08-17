@@ -59,7 +59,7 @@ var getSocketValueData = async (pair) => {
             await TradeHistoryModel
                 .query()
                 .select("trade_history.fill_price", "coins.coin_name", "coins.coin_icon", "trade_history.side")
-                .leftJoin('coins', "coins.coin", "trade_history.settle_currency")
+                .leftJoin('coins', "coins.coin", "trade_history.currency")
                 .where("trade_history.deleted_at", null)
                 .andWhere("trade_history.symbol", pair)
                 .andWhere("trade_history.created_at", ">=", yesterday)

@@ -286,13 +286,6 @@
 		"message_english": "Order Quantity should be less than 0.",
 		"message": "Order quantity should be less than 0."
 	},
-	"Invalid Quantity for Minimum": {
-		"page": "Invalid quantity",
-		"context": "Invalid Order Quantity",
-		"message_type": "error",
-		"message_english": "Order Quantity should be greater than",
-		"message": "Order quantity should be greater than"
-	},
 	"Unable to place order": {
 		"page": "Trade Page",
 		"context": "Market order trying to place when already place",
@@ -341,5 +334,40 @@
 		"message_type": "error",
 		"message_english": "System Health is Not Good.",
 		"message": "System Health is Not Good."
+	},
+	"Invalid Quantity for Minimum": {
+		"page": "Invalid quantity",
+		"context": "Invalid Order Quantity",
+		"message_type": "error",
+		"message_english": "Order Quantity should be greater than",
+		"message": "Order quantity should be greater than"
+	},
+	"30 days completed. Please verify your Identity Verfication": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 checking",
+		"message_type": "error",
+		"message_english": "Maximum Allowable days for trade are completed. Please complete your Identity Verificaton to do trades further",
+		"message": "Maximum Allowable days for trade are completed. Please complete your Identity Verificaton to do trades further"
+	},
+	"User Cannot Do trade because he has reached daily limit": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 Trade checking",
+		"message_type": "error",
+		"message_english": "Maximum Allowable trade for today has been completed. Please try tommorrow for more trades.",
+		"message": "Maximum Allowable trade for today has been completed. Please try tommorrow for more trades."
+	},
+	"User Cannot Do trade because he has reached daily limit using this amount": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 Trade checking",
+		"message_type": "error",
+		"message_english": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades.",
+		"message": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades."
+	},
+	"Tier Inactive. Complete ID verification": {
+		"page": "Tier 0 trade",
+		"context": "Tier 0 Trade checking",
+		"message_type": "error",
+		"message_english": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade",
+		"message": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade"
 	}
 }
