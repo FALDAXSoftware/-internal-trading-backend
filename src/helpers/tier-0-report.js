@@ -71,8 +71,8 @@ var userTier0Report = async (user_id, amount, crypto) => {
                             WHERE user_id = ${user_id} AND created_at >= '${after1Day}' AND created_at <= '${now}' GROUP BY user_coin) a1
                             FULL JOIN (SELECT requested_coin, 
                                 SUM((CASE
-                                    WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_1_usd' as double precision))
-                                    WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                    WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                    WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
                                 END)) as sum
                                 FROM trade_history
                                 WHERE requested_user_id = ${user_id} AND created_at >= '${after1Day}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
