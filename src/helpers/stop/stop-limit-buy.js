@@ -25,7 +25,7 @@ var stopLimitBuy = async (now, pending_order_book) => {
             currency_coin_id = coinData[i].id;
         }
     }
-    lastPrice = 0.00002557
+    // lastPrice = 0.00002557
     console.log("lastPrice", lastPrice);
     console.log("order.stop_price", order.stop_price);
     console.log("lastPrice >= order.stop_price", lastPrice >= order.stop_price)
