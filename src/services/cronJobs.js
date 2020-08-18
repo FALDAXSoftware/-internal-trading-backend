@@ -5,7 +5,7 @@ var dashBoardUpdate = require("../controllers/v1/DashboardController");
 var cardDataController = require("../controllers/v1/UserFavourites")
 
 // // // // On Every Minute
-cron.schedule('*/15 * * * * *', async (req, res, next) => {
+cron.schedule('*/30 * * * * *', async (req, res, next) => {
     console.log("Started cron....");
     await cronData.executeStopLimit();
 });
