@@ -299,7 +299,8 @@ class TradeController extends AppController {
       user_id,
       crypto_wallet_data,
       currency_wallet_data,
-      userIds
+      userIds,
+      is_checkbox_enabled
     } = alldata;
     // console.log("alldata", alldata);
     // console.log("userIds", userIds)
@@ -311,13 +312,19 @@ class TradeController extends AppController {
       originalQuantityValue = orderQuantity
     }
 
-    if (buy_book_data[0].user_id == user_id) {
+    var selfExecutionFlag = false;
+
+    if (user_id == process.env.TRADEDESK_USER_ID && is_checkbox_enabled == true) {
+      selfExecutionFlag = true;
+    }
+
+    if (buy_book_data[0].user_id == user_id && selfExecutionFlag == true) {
       await logger.info({
         "module": "Market Sell Execution",
         "user_id": "user_" + alldata.user_id,
         "url": "Trade Function",
         "type": "Success"
-      }, "Order Book Empty")
+      }, "Self Order Execution")
 
       var userNotification = await UserNotifications.getSingleData({
         user_id: user_id,
@@ -390,7 +397,7 @@ class TradeController extends AppController {
           user_detail: user_data,
           formatData: {
             recipientName: user_data.first_name,
-            reason: i18n.__("Order Book Empty").message
+            reason: i18n.__("Self Order Execution").message
           }
         }
         if (userNotification != undefined) {
@@ -409,9 +416,10 @@ class TradeController extends AppController {
 
       return {
         status: 2,
-        message: 'Order Book Empty'
+        message: 'Self Order Execution'
       }
     }
+
     // Get and check Crypto Wallet details
     let walletData = await WalletHelper.checkWalletStatus(crypto, currency, user_id);
 
@@ -1366,17 +1374,10 @@ class TradeController extends AppController {
   }
 
   // Used for function to make Market Buy order
-  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0) {
+  async makeMarketBuyOrder(symbol, side, order_type, orderQuantity, user_id, res, crypto_coin_id, currency_coin_id, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0, is_checkbox_enabled = false) {
 
     try {
       const checkUser = Helper.checkWhichUser(user_id);
-      // console.log("checkUser", JSON.stringify(checkUser))
-      // console.log(JSON.stringify({
-      //   "module": "Market Buy Execution",
-      //   "user_id": "user_" + user_id,
-      //   "url": "Trade Function",
-      //   "type": "Entry"
-      // }))
       await logger.info({
         "module": "Market Buy Execution",
         "user_id": "user_" + user_id,
@@ -1386,19 +1387,118 @@ class TradeController extends AppController {
       var userIds = [];
       userIds.push(user_id);
       if (allOrderData.length == 0) {
-        // console.log("INSIDE ELSE")
-        var originalQuantityValue;
-        originalQuantityValue = orderQuantity;
+        var originalQuantityValue = orderQuantity;
       }
-      // console.log("userIds", JSON.stringify(userIds))
-      let { crypto, currency } = await Currency.get_currencies(symbol);
-      // console.log("crypto, currency", JSON.stringify({ crypto, currency }))
-      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
-      // console.log("wallet", wallet)
+
+      var checkSelfExecution = false;
+
+      if (user_id == process.env.TRADEDESK_USER_ID && is_checkbox_enabled == true) {
+        checkSelfExecution = true;
+      }
+
       let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
-      // console.log("sellBook[0]", sellBook[0].user_id);
-      // console.log("parseFloat(sellBook[0].price)", parseFloat(sellBook[0].price))
-      // console.log("parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity))", parseFloat(wallet.placed_balance) < (parseFloat(sellBook[0].price) * parseFloat(sellBook[0].quantity)))
+
+      if (sellBook.length > 0 && sellBook[0].user_id == user_id && checkSelfExecution == true) {
+
+        var userNotification = await UserNotifications.getSingleData({
+          user_id: user_id,
+          deleted_at: null,
+          slug: 'trade_execute'
+        })
+        var user_data = await Users.getSingleData({
+          deleted_at: null,
+          id: user_id,
+          is_active: true
+        });
+
+        if (pending_order_id != 0) {
+          var getPendingData = await PendingOrderExecutuionModel
+            .query()
+            .first()
+            .select("is_cancel")
+            .where("id", pending_order_id)
+            .andWhere("deleted_at", null)
+            .orderBy("id", "DESC");
+
+          if (getPendingData != undefined) {
+            var getData = await PendingOrderExecutuionModel
+              .query()
+              .where("id", pending_order_id)
+              .andWhere("deleted_at", null)
+              .patch({
+                is_executed: true
+              })
+          }
+        }
+
+        if (allOrderData.length > 0) {
+          if (user_data != undefined) {
+            var allData = {
+              template: "emails/general_mail.ejs",
+              templateSlug: "trade_execute",
+              email: user_data.email,
+              user_detail: user_data,
+              formatData: {
+                recipientName: user_data.first_name,
+                side: side,
+                pair: symbol,
+                order_type: order_type,
+                quantity: originalQuantityValue,
+                allTradeData: allOrderData
+              }
+
+            }
+            if (userNotification != undefined) {
+              if (userNotification.email == true || userNotification.email == "true") {
+                if (user_data.email != undefined) {
+                  await Helper.SendEmail(res, allData)
+                }
+              }
+              if (userNotification.text == true || userNotification.text == "true") {
+                if (user_data.phone_number != undefined) {
+                  await Helper.sendSMS(allData)
+                }
+              }
+            }
+          }
+        }
+
+        if (user_data != undefined) {
+          var allData = {
+            template: "emails/general_mail.ejs",
+            templateSlug: "order_failed",
+            email: user_data.email,
+            user_detail: user_data,
+            formatData: {
+              recipientName: user_data.first_name,
+              reason: i18n.__("Self Order Execution").message
+            }
+          }
+          if (userNotification != undefined) {
+            if (userNotification.email == true || userNotification.email == "true") {
+              if (user_data.email != undefined) {
+                await Helper.SendEmail(res, allData)
+              }
+            }
+            if (userNotification.text == true || userNotification.text == "true") {
+              if (user_data.phone_number != undefined) {
+                await Helper.sendSMS(allData)
+              }
+            }
+          }
+        }
+
+        return {
+          status: 2,
+          message: 'Self Order Execution'
+        }
+      }
+
+      let { crypto, currency } = await Currency.get_currencies(symbol);
+
+      let wallet = await WalletBalanceHelper.getWalletBalance(crypto, currency, user_id);
+
+
       if (sellBook.length > 0) {
         if (sellBook[0].user_id == user_id && user_id == process.env.TRADEDESK_USER_ID) {
         } else {
@@ -2338,7 +2438,7 @@ class TradeController extends AppController {
   }
 
   // Used to execute Limit Buy Order
-  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], pending_order_id = 0.0) {
+  async limitBuyOrder(symbol, user_id, side, order_type, orderQuantity, limit_price, res = null, flag = false, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], pending_order_id = 0.0, is_checkbox_enabled = false) {
     var userIds = [];
     userIds.push(parseInt(user_id));
     await logger.info({
@@ -2604,7 +2704,7 @@ class TradeController extends AppController {
       var currentPrice = sellBook[0].price;
       if (priceValue >= currentPrice) {
         // console.log("crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id", crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
-        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
+        var limitMatchData = await limitMatch.limitData(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id, is_checkbox_enabled);
         await logger.info({
           "module": "Limit Buy",
           "user_id": "user_" + user_id,
@@ -4191,7 +4291,10 @@ class TradeController extends AppController {
         side,
         order_type,
         orderQuantity,
+        is_checkbox_enabled
       } = req.body;
+
+      is_checkbox_enabled = (is_checkbox_enabled == undefined) ? (false) : (is_checkbox_enabled);
 
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
@@ -4379,7 +4482,8 @@ class TradeController extends AppController {
             res: null,
             crypto: walletData.crypto.coin_id,
             currency: walletData.currency.coin_id,
-            pending_order_id: pendingAdd.id
+            pending_order_id: pendingAdd.id,
+            is_checkbox_enabled: is_checkbox_enabled
           }
           var responseValue = await QueueValue.publishToQueue(queueName, queueData)
           if (responseValue == 0) {
@@ -4446,12 +4550,15 @@ class TradeController extends AppController {
         side,
         order_type,
         orderQuantity,
+        is_checkbox_enabled
         // user_id
       } = req.body;
       // console.log("req.body", req.body)
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
       var quantityTotal = await BuyBookHelper.getBuyBookOrder(crypto, currency);
+
+      is_checkbox_enabled = (is_checkbox_enabled == undefined) ? (false) : (is_checkbox_enabled);
 
       // console.log("quantityTotal", quantityTotal)
       if (quantityTotal.length == 0) {
@@ -4663,7 +4770,8 @@ class TradeController extends AppController {
             orderQuantity: orderQuantity,
             user_id: user_id,
             crypto_wallet_data: walletData.crypto,
-            userIds: userIds
+            userIds: userIds,
+            is_checkbox_enabled: is_checkbox_enabled
           };
 
           // console.log("object", object)
@@ -4746,10 +4854,13 @@ class TradeController extends AppController {
       side,
       order_type,
       orderQuantity,
-      limit_price
+      limit_price,
+      is_checkbox_enabled
     } = req.body;
     let { crypto, currency } = await Currency.get_currencies(symbol);
     const checkUser = Helper.checkWhichUser(user_id);
+
+    is_checkbox_enabled = (is_checkbox_enabled == undefined) ? (false) : (is_checkbox_enabled)
 
     var userData = await Users
       .query()
@@ -4964,7 +5075,8 @@ class TradeController extends AppController {
           flag: false,
           crypto: walletData.crypto.coin_id,
           currency: walletData.currency.coin_id,
-          pending_order_id: pendingAdd.id
+          pending_order_id: pendingAdd.id,
+          is_checkbox_enabled
         }
         var responseValue = await QueueValue.publishToQueue(queueName, queueData)
 

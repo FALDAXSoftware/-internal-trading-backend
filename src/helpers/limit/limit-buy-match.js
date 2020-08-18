@@ -18,6 +18,8 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
+var cancelPendinOrder = require("../pending/cancel-pending-data");
+
 // Influx setup
 const Influx = require('influx');
 const influx = new Influx.InfluxDB({
@@ -42,7 +44,7 @@ const influx = new Influx.InfluxDB({
 })
 
 
-var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
+var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0, is_checkbox_enabled = false) => {
     try {
         // console.log(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         var pairDetails = await PairsModel
@@ -68,6 +70,292 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         }
         let wallet = await WalletBalanceHelper.getWalletBalance(buyLimitOrderData.settle_currency, buyLimitOrderData.currency, buyLimitOrderData.user_id);
         let sellBook = await SellBookHelper.sellOrderBook(crypto, currency);
+
+        var checkSelfExecution = false;
+
+        if (buyLimitOrderData.user_id == process.env.TRADEDESK_USER_ID && is_checkbox_enabled == true) {
+            checkSelfExecution = true;
+        }
+
+        if (sellBook.length > 0 && sellBook[0].user_id == buyLimitOrderData.user_id && checkSelfExecution == true) {
+            if (sellBook[0].quantity > buyLimitOrderData.quantity) {
+                var selfRemainningQuantity = parseFloat(sellBook[0].quantity) - parseFloat(buyLimitOrderData.quantity);
+                var orderData = {
+                    quantity: selfRemainningQuantity
+                }
+                let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
+                let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
+                    quantity: parseFloat(selfRemainningQuantity).toFixed(pairDetails.quantity_precision)
+                });
+
+                if (pending_order_id != 0) {
+                    var getPendingData = await PendingOrderExecutuionModel
+                        .query()
+                        .first()
+                        .select("is_cancel")
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .orderBy("id", "DESC");
+
+                    if (getPendingData != undefined) {
+                        var getData = await PendingOrderExecutuionModel
+                            .query()
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .patch({
+                                is_executed: null
+                            })
+                    }
+                }
+
+                if (allOrderData.length > 0) {
+                    var userData = userIds;
+                    var tradeData = allOrderData;
+                    for (var i = 0; i < userData.length; i++) {
+                        // Notification Sending for users
+                        var userNotification = await UserNotifications.getSingleData({
+                            user_id: userData[i],
+                            deleted_at: null,
+                            slug: 'trade_execute'
+                        })
+                        var user_data = await Users.getSingleData({
+                            deleted_at: null,
+                            id: userData[i],
+                            is_active: true
+                        });
+                        if (user_data != undefined) {
+                            if (userNotification != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "trade_partially_filled",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        side: tradeData[0].side,
+                                        pair: tradeData[0].symbol,
+                                        order_type: tradeData[0].order_type,
+                                        originalQuantity: originalQuantityValue,
+                                        allTradeData: tradeData
+                                    }
+
+                                }
+                                if (userNotification.email == true || userNotification.email == "true") {
+                                    if (user_data.email != undefined) {
+                                        await Helper.SendEmail(res, allData)
+                                    }
+                                }
+                                if (userNotification.text == true || userNotification.text == "true") {
+                                    if (user_data.phone_number != undefined) {
+                                        await Helper.sendSMS(allData)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var userNotification = await UserNotifications.getSingleData({
+                    user_id: buyLimitOrderData.user_id,
+                    deleted_at: null,
+                    slug: 'trade_execute'
+                })
+                var user_data = await Users.getSingleData({
+                    deleted_at: null,
+                    id: buyLimitOrderData.user_id,
+                    is_active: true
+                });
+
+                if (user_data != undefined) {
+                    if (userNotification != undefined) {
+                        var allData = {
+                            template: "emails/general_mail.ejs",
+                            templateSlug: "order_failed",
+                            email: user_data.email,
+                            user_detail: user_data,
+                            formatData: {
+                                recipientName: user_data.first_name,
+                                reason: i18n.__("Self Order Execution").message
+                            }
+                        }
+                        if (userNotification.email == true || userNotification.email == "true") {
+                            if (user_data.email != undefined) {
+                                await Helper.SendEmail(res, allData)
+                            }
+                        }
+                        if (userNotification.text == true || userNotification.text == "true") {
+                            if (user_data.phone_number != undefined) {
+                                await Helper.sendSMS(allData)
+                            }
+                        }
+                    }
+                }
+
+                return {
+                    status: 3,
+                    message: 'Self Order Execution'
+                }
+
+            } else if (sellBook[0].quantity == buyLimitOrderData.quantity) {
+                var selfRemainningQuantity = parseFloat(sellBook[0].quantity) - parseFloat(buyLimitOrderData.quantity);
+                if (selfRemainningQuantity == 0) {
+                    var orderData = {
+                        quantity: selfRemainningQuantity
+                    }
+                    let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
+                    var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id);
+                }
+
+                if (pending_order_id != 0) {
+                    var getPendingData = await PendingOrderExecutuionModel
+                        .query()
+                        .first()
+                        .select("is_cancel")
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .orderBy("id", "DESC");
+
+                    if (getPendingData != undefined) {
+                        var getData = await PendingOrderExecutuionModel
+                            .query()
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .patch({
+                                is_executed: null
+                            })
+                    }
+                }
+
+                if (allOrderData.length > 0) {
+                    var userData = userIds;
+                    var tradeData = allOrderData;
+                    for (var i = 0; i < userData.length; i++) {
+                        // Notification Sending for users
+                        var userNotification = await UserNotifications.getSingleData({
+                            user_id: userData[i],
+                            deleted_at: null,
+                            slug: 'trade_execute'
+                        })
+                        var user_data = await Users.getSingleData({
+                            deleted_at: null,
+                            id: userData[i],
+                            is_active: true
+                        });
+                        if (user_data != undefined) {
+                            if (userNotification != undefined) {
+                                var allData = {
+                                    template: "emails/general_mail.ejs",
+                                    templateSlug: "trade_partially_filled",
+                                    email: user_data.email,
+                                    user_detail: user_data,
+                                    formatData: {
+                                        recipientName: user_data.first_name,
+                                        side: tradeData[0].side,
+                                        pair: tradeData[0].symbol,
+                                        order_type: tradeData[0].order_type,
+                                        originalQuantity: originalQuantityValue,
+                                        allTradeData: tradeData
+                                    }
+
+                                }
+                                if (userNotification.email == true || userNotification.email == "true") {
+                                    if (user_data.email != undefined) {
+                                        await Helper.SendEmail(res, allData)
+                                    }
+                                }
+                                if (userNotification.text == true || userNotification.text == "true") {
+                                    if (user_data.phone_number != undefined) {
+                                        await Helper.sendSMS(allData)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var userNotification = await UserNotifications.getSingleData({
+                    user_id: buyLimitOrderData.user_id,
+                    deleted_at: null,
+                    slug: 'trade_execute'
+                })
+                var user_data = await Users.getSingleData({
+                    deleted_at: null,
+                    id: buyLimitOrderData.user_id,
+                    is_active: true
+                });
+
+                if (user_data != undefined) {
+                    if (userNotification != undefined) {
+                        var allData = {
+                            template: "emails/general_mail.ejs",
+                            templateSlug: "order_failed",
+                            email: user_data.email,
+                            user_detail: user_data,
+                            formatData: {
+                                recipientName: user_data.first_name,
+                                reason: i18n.__("Self Order Execution").message
+                            }
+                        }
+                        if (userNotification.email == true || userNotification.email == "true") {
+                            if (user_data.email != undefined) {
+                                await Helper.SendEmail(res, allData)
+                            }
+                        }
+                        if (userNotification.text == true || userNotification.text == "true") {
+                            if (user_data.phone_number != undefined) {
+                                await Helper.sendSMS(allData)
+                            }
+                        }
+                    }
+                }
+
+                return {
+                    status: 3,
+                    message: 'Self Order Execution'
+                }
+
+            } else if (sellBook[0].quantity < buyLimitOrderData.quantity) {
+                var selfRemainningQuantity = parseFloat(buyLimitOrderData.quantity) - parseFloat(sellBook[0].quantity);
+                var orderData = {
+                    quantity: sellBook[0].quantity
+                }
+                var activityResult = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
+
+                var buyRecurseData = {
+                    ...buyLimitOrderData
+                }
+                delete buyLimitOrderData.quantity;
+                buyRecurseData.quantity = selfRemainningQuantity;
+                var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id);
+
+                if (pending_order_id != 0) {
+                    var getPendingData = await PendingOrderExecutuionModel
+                        .query()
+                        .first()
+                        .select("is_cancel")
+                        .where("id", pending_order_id)
+                        .andWhere("deleted_at", null)
+                        .orderBy("id", "DESC");
+
+                    if (getPendingData != undefined) {
+                        var getData = await PendingOrderExecutuionModel
+                            .query()
+                            .where("id", pending_order_id)
+                            .andWhere("deleted_at", null)
+                            .patch({
+                                is_executed: true
+                            })
+                    }
+                }
+
+                if (selfRemainningQuantity > 0) {
+                    // console.log("++++Order executing with more books");
+                    var responseData = await module.exports.limitData(buyRecurseData, buyRecurseData.settle_currency, buyRecurseData.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id, is_checkbox_enabled);
+                    return responseData;
+                }
+
+            }
+        }
         // console.log("sellBook", sellBook)
         // let fees = await MakerTakerFees.getFeesValue(crypto, currency);
         var tradeOrder;
@@ -390,13 +678,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
 
                         var userNotification = await UserNotifications.getSingleData({
-                            user_id: sellLimitOrderData.user_id,
+                            user_id: buyLimitOrderData.user_id,
                             deleted_at: null,
                             slug: 'trade_execute'
                         })
                         var user_data = await Users.getSingleData({
                             deleted_at: null,
-                            id: sellLimitOrderData.user_id,
+                            id: buyLimitOrderData.user_id,
                             is_active: true
                         });
                         if (user_data != undefined) {
@@ -575,13 +863,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                     } else {
                         var userNotification = await UserNotifications.getSingleData({
-                            user_id: sellLimitOrderData.user_id,
+                            user_id: buyLimitOrderData.user_id,
                             deleted_at: null,
                             slug: 'trade_execute'
                         })
                         var user_data = await Users.getSingleData({
                             deleted_at: null,
-                            id: sellLimitOrderData.user_id,
+                            id: buyLimitOrderData.user_id,
                             is_active: true
                         });
                         if (user_data != undefined) {
@@ -780,13 +1068,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     }
 
                     var userNotification = await UserNotifications.getSingleData({
-                        user_id: sellLimitOrderData.user_id,
+                        user_id: buyLimitOrderData.user_id,
                         deleted_at: null,
                         slug: 'trade_execute'
                     })
                     var user_data = await Users.getSingleData({
                         deleted_at: null,
-                        id: sellLimitOrderData.user_id,
+                        id: buyLimitOrderData.user_id,
                         is_active: true
                     });
                     if (user_data != undefined) {
@@ -983,13 +1271,13 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         })
                 }
                 var userNotification = await UserNotifications.getSingleData({
-                    user_id: sellLimitOrderData.user_id,
+                    user_id: buyLimitOrderData.user_id,
                     deleted_at: null,
                     slug: 'trade_execute'
                 })
                 var user_data = await Users.getSingleData({
                     deleted_at: null,
-                    id: sellLimitOrderData.user_id,
+                    id: buyLimitOrderData.user_id,
                     is_active: true
                 });
                 if (user_data != undefined) {
