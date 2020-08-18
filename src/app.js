@@ -228,12 +228,12 @@ io.on('connection', async function (socket) {
     // var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     socket.join(data.symbol); //Join to new  Room
     console.log("data.symbol", data.symbol)
-    console.log("user_id", user_id)
+    // console.log("user_id", user_id)
     console.log("data.amount", data.amount)
     if (data.amount == null) {
       data.amount = 0.0;
     }
-    socket.join(data.symbol + user_id); // Join to new Room with Userid
+    socket.join(data.symbol + data.user_id); // Join to new Room with Userid
     // data.user_id = user_id
     console.log("data", data)
     socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
