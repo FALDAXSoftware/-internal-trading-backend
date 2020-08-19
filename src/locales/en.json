@@ -339,35 +339,35 @@
 		"page": "Invalid quantity",
 		"context": "Invalid Order Quantity",
 		"message_type": "error",
-		"message_english": "Order Quantity should be greater than",
+		"message_english": "Order quantity should be greater than",
 		"message": "Order quantity should be greater than"
 	},
 	"30 days completed. Please verify your Identity Verfication": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 checking",
 		"message_type": "error",
-		"message_english": "Maximum Allowable days for trade are completed. Please complete your Identity Verificaton to do trades further",
-		"message": "Maximum Allowable days for trade are completed. Please complete your Identity Verificaton to do trades further"
+		"message_english": "Completed maximum allowed duration in Starter Tier. Please complete Identity Verification to Trade further.",
+		"message": "Completed maximum allowed duration in Starter Tier. Please complete Identity Verification to Trade further."
 	},
 	"User Cannot Do trade because he has reached daily limit": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Maximum Allowable trade for today has been completed. Please try tommorrow for more trades.",
-		"message": "Maximum Allowable trade for today has been completed. Please try tommorrow for more trades."
+		"message_english": "Completed maximum Daily Trade limit allowed in Starter Tier. Please try again tomorrow as per the Daily limit.",
+		"message": "Completed maximum Daily Trade limit allowed in Starter Tier. Please try again tomorrow as per the Daily limit."
 	},
 	"User Cannot Do trade because he has reached daily limit using this amount": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades.",
-		"message": "Maximum Allowable trade for today will been completed by traing for this amount. Please try tommorrow for more trades."
+		"message_english": "Trade quantity exceeds the maximum Daily Trade limit allowed in Starter Tier. Please trade a lower quantity or try again tomorrow as per the Daily limit.",
+		"message": "Trade quantity exceeds the maximum Daily Trade limit allowed in Starter Tier. Please trade a lower quantity or try again tomorrow as per the Daily limit."
 	},
 	"Tier Inactive. Complete ID verification": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade",
-		"message": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade"
+		"message_english": "Starter Tier is no longer available. Please complete Identity Verification to Trade further.",
+		"message": "Starter Tier is no longer available. Please complete Identity Verification to Trade further."
 	}
 }
