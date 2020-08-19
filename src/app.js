@@ -160,7 +160,7 @@ io.on('connection', async function (socket) {
 
     // socket.set('transports', ['websocket']);
 
-    // console.log("room", room)
+    console.log("room", room)
 
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     if (room.previous_room) {
@@ -186,11 +186,11 @@ io.on('connection', async function (socket) {
 
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
+      socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
       socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1])),
       socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1])),
-      socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
-      socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol)),
       socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1])),
+      socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol)),
       socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1])),
       socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol))
     ])
@@ -226,14 +226,14 @@ io.on('connection', async function (socket) {
 
 
     // var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
-    socket.join(data.symbol); //Join to new  Room
+    // socket.join(data.symbol); //Join to new  Room
     console.log("data.symbol", data.symbol)
     // console.log("user_id", user_id)
     console.log("data.amount", data.amount)
     if (data.amount == null) {
       data.amount = 0.0;
     }
-    socket.join(data.symbol + data.user_id); // Join to new Room with Userid
+    // socket.join(data.symbol + data.user_id); // Join to new Room with Userid
     // data.user_id = user_id
     console.log("data", data)
     socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
