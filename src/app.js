@@ -153,7 +153,7 @@ io.on('connection', async function (socket) {
   let socket_functions = require("./helpers/sockets/emit-all-data");
 
   socket.on("join", async function (room) {
-    socket.emit("test", { name: "Socket Room Connected" });
+    socket.emit("test", { name: "le bhai" });
     if (authentication.status > 200) {
       socket.emit(constants.USER_LOGOUT, true);
     }
@@ -177,12 +177,12 @@ io.on('connection', async function (socket) {
     socket.join(pair[1]); // Join to new Currency Room
 
     if (authentication.isAdmin == true) {
-      console.log("INSIDE ADMIN");
+      // console.log("INSIDE ADMIN");
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
 
-    console.log("user_id", user_id);
-    console.log("symbol", symbol)
+    // console.log("user_id", user_id);
+    // console.log("symbol", symbol)
 
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
@@ -215,7 +215,6 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
 
-
   socket.on("tier-0-trade-limit", async function (data) {
 
     console.log("data", data)
@@ -239,6 +238,7 @@ io.on('connection', async function (socket) {
     console.log("data", data)
     socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
   })
+
   socket.on("get-limit-stop-latest", async function (data) {
     var socket_headers = socket.request.headers;
     var authentication = await require("./config/authorization")(socket_headers);
