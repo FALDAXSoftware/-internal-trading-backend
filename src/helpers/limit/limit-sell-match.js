@@ -231,6 +231,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
                             quantity: parseFloat(remainningQuantity).toFixed(pairDetails.quantity_precision)
                         });
+                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         if (pending_order_id != 0) {
                             var getPendingData = await PendingOrderExecutuionModel
                                 .query()
@@ -297,13 +298,13 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         return {
                             status: 1,
                             message: 'Order Success'
                         }
                     } else {
                         await buyDelete.deleteOrder(buyBook[0].id);
+                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                         if (pending_order_id != 0) {
                             var getPendingData = await PendingOrderExecutuionModel
                                 .query()
@@ -369,8 +370,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
 
                         //Emit data in rooms
-                        let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds);
-                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
+                        let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
                         return {
                             status: 1,
                             message: 'Order Success'
