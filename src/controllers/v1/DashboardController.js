@@ -157,18 +157,11 @@ class DashboardController extends AppController {
                 var currentPrice = 0.0;
                 var previousPrice = 0.0;
 
-                var fiatValue = 'USD'
-                // console.log("currenctPriceObjcet[coinBalance[i].coin]", currenctPriceObjcet[coinBalance[i].coin].quote[user_data.fiat].price)
-                if (user_data.fiat && user_data.fiat != null) {
-                    fiatValue = user_data.fiat
-                }
-
-
                 console.log("currenctPriceObjcet[coinBalance[i].coin]", currenctPriceObjcet[coinBalance[i].coin])
                 if (currenctPriceObjcet[coinBalance[i].coin] == undefined) {
                     currentPrice = 0;
                 } else {
-                    currentPrice = (currenctPriceObjcet[coinBalance[i].coin].quote != undefined) ? (currenctPriceObjcet[coinBalance[i].coin].quote[fiatValue].price) : (0.0);
+                    currentPrice = currenctPriceObjcet[coinBalance[i].coin].quote.USD.price;
                 }
 
                 average_price = currentPrice
@@ -199,7 +192,7 @@ class DashboardController extends AppController {
                 diffrenceValue = diffrenceValue + diffrence;
                 var portfolio_data = {
                     "name": coinBalance[i].name,
-                    "average_price": (average_price * coinBalance[i].balance).toFixed(2),
+                    "average_price": (average_price * coinBalance[i].balance),
                     "percentchange": percentChange,
                     "Amount": coinBalance[i].balance,
                     'symbol': (coinBalance[i].coin_code).toUpperCase(),
@@ -212,7 +205,7 @@ class DashboardController extends AppController {
             console.log("user_data.total_value", user_data);
             console.log("total", total)
             user_data.total_value = (user_data.total_value == "Infinity") ? 0.0 : (user_data.total_value)
-            var changeValue = total - user_data.total_value;
+            var changeValue = user_data.total_value - total;
             changeValue = changeValue.toFixed(2)
             var totalFiat = total;
             totalFiat = totalFiat.toFixed(2)
@@ -265,7 +258,6 @@ class DashboardController extends AppController {
         // return new Promise(async (resolve, reject) => {
         try {
             var user_id = await Helper.getUserId(req.headers, res);
-            // console.log(user_id)
             await logger.info({
                 "module": "Activity Data",
                 "user_id": "user_" + user_id,
@@ -277,11 +269,15 @@ class DashboardController extends AppController {
                 .query()
                 .select("quantity", "side", "created_at", "symbol", "fix_quantity")
                 .where("user_id", user_id)
-                // .andWhere('is_market', false)
+                .andWhere('is_market', false)
                 .andWhere("is_cancel", false)
                 .andWhere('deleted_at', null)
-                .orderBy('id', 'DESC')
-                .limit(50);
+                .orderBy('id', 'DESC');
+
+            // data.map((value1, i) => {
+            //     value1.percentageChange = 100 - (((value1.quantity) / value1.fix_quantity) * 100);
+            //     delete value1.fix_quantity;
+            // });
 
             await logger.info({
                 "module": "Activity Data",
@@ -289,19 +285,15 @@ class DashboardController extends AppController {
                 "url": "Trade Function",
                 "type": "Success"
             }, i18n.__("activity data").message + " " + data)
-
-            var dataValue = {
-                "status": constants.SUCCESS_CODE,
-                "message": i18n.__("activity data").message,
-                "data": data
-            }
-            redis_client.setex(`${user_id}-activity`, 10, JSON.stringify(dataValue));
-
             return res
                 .status(200)
-                .json(dataValue);
+                .json({
+                    "status": constants.SUCCESS_CODE,
+                    "message": i18n.__("activity data").message,
+                    "data": data
+                });
         } catch (error) {
-            // console.log((error));
+            console.log(JSON.stringify(error));
             await logger.info({
                 "module": "Activity Data",
                 "user_id": "user_" + user_id,
@@ -884,9 +876,6 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
-            // let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-            // let { crypto, currency } = await Currency.get_currencies(pair);
-
             var maxValue = await PairsModel
                 .query()
                 .first()
@@ -895,27 +884,13 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            // var getCryptoValue = await CurrencyConversionModel
-            //     .query()
-            //     .first()
-            //     .select()
-            //     .where("deleted_at", null)
-            //     .andWhere("symbol", "LIKE", '%' + currency + '%')
-            //     .orderBy("id", "DESC");
-
-            // if (getCryptoValue.quote != undefined) {
-            //     var usdValue = getCryptoValue.quote.USD.price
-            // }
-
-            // console.log("usdValue", usdValue)
-
-            // var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
+            // console.log("maxValue", maxValue)
 
             if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 // console.log("now", now)
-                // let { crypto, currency } = await Currency.get_currencies(pair);
+                let { crypto, currency } = await Currency.get_currencies(pair);
                 // console.log(`UPDATE activity_table SET is_cancel = true
                 // WHERE id IN ( SELECT activity_id FROM buy_book
                 //             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
@@ -977,24 +952,14 @@ class DashboardController extends AppController {
                 // var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
                 // var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
-                // let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-                // let { crypto, currency } = await Currency.get_currencies(pair);
-
-                // var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
-                // console.log("getBuyBookSummary", JSON.stringify(getBuyBookSummary))
-
             }
         } catch (error) {
-            // console.log(JSON.stringify(error));
+            console.log(JSON.stringify(error));
         }
     }
 
     async deleteSellPendingOrder(pair) {
         try {
-
-            // let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
-            // let { crypto, currency } = await Currency.get_currencies(pair);
-
             var maxValue = await PairsModel
                 .query()
                 .first()
@@ -1003,26 +968,10 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            // var getCryptoValue = await CurrencyConversionModel
-            //     .query()
-            //     .first()
-            //     .select()
-            //     .where("deleted_at", null)
-            //     .andWhere("symbol", "LIKE", '%' + crypto + '%')
-            //     .orderBy("id", "DESC");
-
-            // if (getCryptoValue.quote != undefined) {
-            //     var usdValue = getCryptoValue.quote.USD.price
-            // }
-
-            // console.log("usdValue", usdValue)
-
-            // var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
-
             if (maxValue.bot_status == true) {
                 var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
-                // let { crypto, currency } = await Currency.get_currencies(pair);
+                let { crypto, currency } = await Currency.get_currencies(pair);
                 // var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total
                 //                                                     FROM sell_book
                 //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND symbol LIKE '%${pair}%'
@@ -1079,14 +1028,9 @@ class DashboardController extends AppController {
 
                 // var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
                 //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
-                // let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
-                // let { crypto, currency } = await Currency.get_currencies(pair);
-                // var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
-
-                // console.log("bookData", JSON.stringify(bookData))
             }
         } catch (error) {
-            // console.log(JSON.stringify(error));
+            console.log(JSON.stringify(error));
         }
     }
 
