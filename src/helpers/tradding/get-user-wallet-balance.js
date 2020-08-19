@@ -46,6 +46,9 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
     var userWalletCurrencyBalance = [];
     var cryptoMessage = '';
     var userWalletCryptoBalance = [];
+    var currencyinactive = false;
+    var cryptoinactive = false;
+
 
     for (var i = 0; i < walletStatusBalance.rows.length; i++) {
         const element = walletStatusBalance.rows[i];
@@ -71,11 +74,11 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .subtract(1, 'months')
         .format();
 
-    var qouteSql = `SELECT coins.coin, currency_conversion.quote
+    var qouteSql = `SELECT coins.coin,coins.is_active, currency_conversion.quote
                         FROM coins
                         LEFT JOIN currency_conversion
                         ON coins.id = currency_conversion.coin_id
-                        WHERE coins.deleted_at IS NULL AND coins.is_active = 'true'
+                        WHERE coins.deleted_at IS NULL
                         AND currency_conversion.deleted_at IS NULL
                         AND (coins.coin = '${currency}' OR coins.coin = '${crypto}');`
 
@@ -86,26 +89,37 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         const element = qouteValue.rows[index];
         if (element.coin == crypto) {
             cryptoUsdValue = element.quote.USD.price
+            if (element.is_active == false) {
+                cryptoinactive = true
+            }
         } else if (element.coin == currency) {
             currencyUsdValue = element.quote.USD.price
+            if (element.is_active == false) {
+                currencyinactive = true;
+            }
         }
     }
-
-    let conversionSQL = `SELECT currency_conversion.quote, currency_conversion.symbol, currency_conversion.coin_id
-                            FROM currency_conversion
-                            WHERE currency_conversion.deleted_at IS NULL`
-
-    let conversionData = await CurrencyConversionModel.knex().raw(conversionSQL)
 
     let userTradeHistorySum = {}
     if (user_id != process.env.TRADEDESK_USER_ID) {
         let userTradesum = await TradeHistoryModel.knex().raw(`SELECT (a1.sum+a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum , a1.user_coin ,a2.requested_coin
-                                                                    FROM(SELECT user_coin, sum(quantity) FROM trade_history
+                                                                    FROM(SELECT user_coin, 
+                                                                        SUM((CASE
+                                                                            WHEN side='Buy' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                            WHEN side='Sell' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                        END)) as sum
+                                                                        FROM trade_history
                                                                     WHERE user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-                                                                    FULL JOIN (SELECT requested_coin, sum(quantity) FROM trade_history
-                                                                    WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-                                                                    ON a1.user_coin = a2.requested_coin`)
+                                                                    FULL JOIN (SELECT requested_coin, 
+                                                                        SUM((CASE
+                                                                            WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_1_usd' as double precision))
+                                                                            WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                                                        END)) as sum
+                                                                        FROM trade_history
+                                                                        WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                        ON a1.user_coin = a2.requested_coin`)
 
+        // console.log("userTradesum", userTradesum.rows.length)
         for (let index = 0; index < userTradesum.rows.length; index++) {
             const element = userTradesum.rows[index];
             userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
@@ -113,15 +127,13 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
     }
 
     let userTotalUSDSum = 0
-    for (let index = 0; index < conversionData.rows.length; index++) {
-        const element = conversionData.rows[index];
-        if (user_id != process.env.TRADEDESK_USER_ID) {
-            if (userTradeHistorySum[element.symbol]) {
-                userTotalUSDSum += (userTradeHistorySum[element.symbol] * element.quote.USD.price)
-            }
-        } else {
-            userTotalUSDSum = 0.0
-        }
+    if (Object.keys(userTradeHistorySum).length != 0) {
+        var entries = Object.entries(userTradeHistorySum);
+        entries.forEach(([key, value]) => {
+            userTotalUSDSum += value
+        });
+    } else {
+        userTotalUSDSum = 0.0;
     }
 
     var totalCurrencyAmount = userTotalUSDSum;
@@ -133,7 +145,8 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .where('deleted_at', null)
         .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
         .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
-    var takerFee = currencyMakerFee.taker_fee
+    var takerFee = currencyMakerFee.taker_fee;
+    var makerFee = currencyMakerFee.maker_fee
 
     let sellBook = await SellBookOrderHelper.sellOrderBook(crypto, currency);
     let buyBook = await BuyBookOrderHelper.getBuyBookOrder(crypto, currency);
@@ -165,7 +178,10 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         'sellPay': sellPay,
         'fees': takerFee,
         'cryptoFiat': cryptoUsdValue,
-        "currencyFiat": currencyUsdValue
+        "currencyFiat": currencyUsdValue,
+        "currencyinactive": currencyinactive,
+        "cryptoinactive": cryptoinactive,
+        "makerFee": makerFee
     };
 
     console.log("userWalletBalance", userWalletBalance)

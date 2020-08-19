@@ -114,7 +114,25 @@ checkPortfolioCache = async (req, res, next) => {
       next();
     }
   });
-}
+};
+
+checkActivityCache = async (req, res, next) => {
+  var user_id = await Helpers.getUserId(req.headers, res);
+  redis_client.get(`${user_id}-activity`, async (err, data) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+    }
+    //if no match found
+    if (data != null) {
+      res.send(JSON.parse(data));
+    } else {
+      //proceed to next middleware function
+      // app.use('/', require('./routes/index'));
+      next();
+    }
+  });
+};
 
 // router.post('/orders/market-sell-create', TradeController.marketSell);
 // router.post('/orders/market-buy-create', TradeController.marketBuy);
@@ -133,7 +151,7 @@ router.post('/orders/pending-sell-order-create', TradeController.stopLimitSellOr
 router.post('/trade/add-favourite-pair', UserFavouritesController.addFavouritesData)
 router.post('/cancel-pending-order', TradeController.cancelPendingOrder)
 router.get('/get-chart-data-graph', UserFavouritesController.getFavouritesData);
-router.get('/get-activity-data', DashboardController.getActivityData)
+router.get('/get-activity-data', checkActivityCache, DashboardController.getActivityData)
 router.get('/get-portfolio-data', checkPortfolioCache, DashboardController.getPortfolioData);
 router.get('/cached-portfolio-details', DashboardController.getCachedPortfolioData);
 router.get('/update-order-book', DashboardController.updateBuyOrderBook);

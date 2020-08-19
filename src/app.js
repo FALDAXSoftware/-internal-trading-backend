@@ -153,7 +153,7 @@ io.on('connection', async function (socket) {
   let socket_functions = require("./helpers/sockets/emit-all-data");
 
   socket.on("join", async function (room) {
-    socket.emit("test", { name: "le bhai" });
+    socket.emit("test", { name: "Socket Room Connected" });
     if (authentication.status > 200) {
       socket.emit(constants.USER_LOGOUT, true);
     }
@@ -186,9 +186,10 @@ io.on('connection', async function (socket) {
 
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
-      socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
       socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1])),
       socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1])),
+      socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
+      socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol)),
       socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1])),
       socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1])),
       socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol))
@@ -214,6 +215,30 @@ io.on('connection', async function (socket) {
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
   })
 
+
+  socket.on("tier-0-trade-limit", async function (data) {
+
+    console.log("data", data)
+    var socket_headers = socket.request.headers;
+    var authentication = await require("./config/authorization")(socket_headers);
+    if (authentication.status > constants.SUCCESS_CODE) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
+
+
+    // var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
+    socket.join(data.symbol); //Join to new  Room
+    console.log("data.symbol", data.symbol)
+    // console.log("user_id", user_id)
+    console.log("data.amount", data.amount)
+    if (data.amount == null) {
+      data.amount = 0.0;
+    }
+    socket.join(data.symbol + data.user_id); // Join to new Room with Userid
+    // data.user_id = user_id
+    console.log("data", data)
+    socket.emit(constants.TRADE_LIMIT, await socket_functions.tier0TradeLimit(data));
+  })
   socket.on("get-limit-stop-latest", async function (data) {
     var socket_headers = socket.request.headers;
     var authentication = await require("./config/authorization")(socket_headers);

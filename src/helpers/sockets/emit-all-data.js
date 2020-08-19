@@ -212,6 +212,19 @@ var getTradePrecision = async (pair) => {
     return data;
 }
 
+var tier0TradeLimit = async (data) => {
+    let helper = require("../tier-0-report");
+    let dataValue = await helper.userTier0Report(data.user_id, data.amount, data.crypto);
+    return dataValue;
+}
+
+var getSpreadValue = async (data) => {
+    let helper = require("../spread-value");
+    let dataValue = await helper.spreadData(data);
+    console.log("dataValue", dataValue)
+    return dataValue;
+}
+
 module.exports = {
     getBuyBookData,
     getSellBookData,
@@ -232,5 +245,7 @@ module.exports = {
     getActivityData,
     getHighInfo,
     getLatestValue,
-    getTradePrecision
+    getTradePrecision,
+    tier0TradeLimit,
+    getSpreadValue
 }
