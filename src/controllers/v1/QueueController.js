@@ -37,7 +37,7 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
         channel.assertQueue(process.env.QUEUE_NAME + '-' + 'Sell', {
             maxPriority: 2
         });
-        channel.prefetch(1)
+        channel.prefetch(3)
         ch = channel;
         // console.log("ch", ch)
         // console.log("process.env.QUEUE_NAME", process.env.QUEUE_NAME)
