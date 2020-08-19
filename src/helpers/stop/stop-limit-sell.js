@@ -31,9 +31,9 @@ var stopLimitSell = async (now, pending_order_book) => {
     // console.log("checkLastPrice <= order.stop_price", checkLastPrice <= order.stop_price)
     if (checkLastPrice <= order.stop_price) {
         var sellMatchResponse = await LimitSellMatch.limitSellData(order, order.settle_currency, order.currency, activityResult, null, crypto_coin_id, currency_coin_id);
-        if (sellMatchResponse) {
-            var pendingOrder = await pendingOrderDelet.deletePendingOrder(order_id)
-        }
+        // if (sellMatchResponse) {
+        var pendingOrder = await pendingOrderDelet.deletePendingOrder(order_id)
+        // }
     }
     // Emit trade event
 }
