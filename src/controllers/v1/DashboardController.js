@@ -883,8 +883,9 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
-            // let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-            // let { crypto, currency } = await Currency.get_currencies(pair);
+
+            let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
+            let { crypto, currency } = await Currency.get_currencies(pair);
 
             var maxValue = await PairsModel
                 .query()
@@ -894,14 +895,28 @@ class DashboardController extends AppController {
                 .andWhere("name", pair)
                 .orderBy("id", 'DESC')
 
-            // console.log("maxValue", maxValue)
+            var getCryptoValue = await CurrencyConversionModel
+                .query()
+                .first()
+                .select()
+                .where("deleted_at", null)
+                .andWhere("symbol", "LIKE", '%' + currency + '%')
+                .orderBy("id", "DESC");
 
-            // var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
-            // console.log("getBuyBookSummary", getBuyBookSummary)
-            // console.log("getBuyBookOrderSummary.total > maxValue.buy_min_total", getBuyBookOrderSummary.total > maxValue.buy_min_total)
+            if (getCryptoValue.quote != undefined) {
+                var usdValue = getCryptoValue.quote.USD.price
+            }
 
-            if (maxValue.bot_status == true) {
-                var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+            console.log("usdValue", usdValue)
+
+            var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
+
+            console.log("parseFloat(parseFloat(getBuyBookSummary.total) * parseFloat(usdValue)) > parseFloat(maxValue.buy_min_total)", parseFloat(parseFloat(getBuyBookSummary.total) * parseFloat(usdValue)) > parseFloat(maxValue.buy_min_total))
+
+            console.log("maxValue", maxValue)
+
+            if (maxValue.bot_status == true && (parseFloat(parseFloat(getBuyBookSummary.total) * parseFloat(usdValue)) > parseFloat(maxValue.buy_min_total))) {
+                var now = moment().utc().subtract(10, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 // console.log("now", now)
                 // let { crypto, currency } = await Currency.get_currencies(pair);
@@ -981,8 +996,8 @@ class DashboardController extends AppController {
     async deleteSellPendingOrder(pair) {
         try {
 
-            // let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
-            // let { crypto, currency } = await Currency.get_currencies(pair);
+            let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
+            let { crypto, currency } = await Currency.get_currencies(pair);
 
             var maxValue = await PairsModel
                 .query()
@@ -990,17 +1005,29 @@ class DashboardController extends AppController {
                 .select()
                 .where("deleted_at", null)
                 .andWhere("name", pair)
-                .orderBy("id", 'DESC')
+                .orderBy("id", 'DESC');
 
-            // console.log("maxValue", maxValue)
+            var getCryptoValue = await CurrencyConversionModel
+                .query()
+                .first()
+                .select()
+                .where("deleted_at", null)
+                .andWhere("symbol", "LIKE", '%' + crypto + '%')
+                .orderBy("id", "DESC");
 
-            // var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
+            if (getCryptoValue.quote != undefined) {
+                var usdValue = getCryptoValue.quote.USD.price
+            }
 
-            // console.log("bookData", bookData)
-            // console.log("bookData.total > maxValue.sell_min_total", bookData.total > maxValue.sell_min_total)
+            console.log("usdValue", usdValue)
 
-            if (maxValue.bot_status == true) {
-                var now = moment().utc().subtract(5, 'minutes').format("YYYY-MM-DD HH:mm:ss");
+            var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
+            console.log("parseFloat(bookData.total) * parseFloat(usdValue)", parseFloat(bookData.total) * parseFloat(usdValue))
+            // console.log("bookData sell book", bookData)
+            console.log("bookData.total > maxValue.sell_min_total", bookData.total > maxValue.sell_min_total)
+
+            if (maxValue.bot_status == true && ((parseFloat(bookData.total) * parseFloat(usdValue)) > maxValue.sell_min_total)) {
+                var now = moment().utc().subtract(10, 'minutes').format("YYYY-MM-DD HH:mm:ss");
                 var today = moment().utc().format("YYYY-MM-DD HH:mm:ss");
                 // let { crypto, currency } = await Currency.get_currencies(pair);
                 // var balanceTotalQuery = await SellBookModel.knex().raw(`SELECT SUM(quantity) as total

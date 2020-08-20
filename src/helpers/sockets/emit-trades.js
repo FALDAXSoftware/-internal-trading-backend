@@ -12,7 +12,6 @@ var AllPendingOrders = require("../../helpers/tradding/get-all-pending-orders");
 var highLevelInfoData = require("../../helpers/tradding/get-socket-value");
 var getLatestValue = require("../../helpers/get-bid-ask-latest");
 var constants = require("../../config/constants");
-var tier0Report = require("../tier-0-report");
 var spreadData = require("../spread-value");
 
 var emitTrades = async (crypto, currency, userIds) => {
@@ -50,6 +49,8 @@ var emitTrades = async (crypto, currency, userIds) => {
     let symbol = crypto + "-" + currency
     let socketInfoData = await highLevelInfoData.getSocketValueData(symbol);
     global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_HIGH_LEVEL_INFO, socketInfoData)
+
+    global.io.sockets.to(crypto + "-" + currency).emit(constants.TRADE_SPREAD_VALUE, await spreadData.spreadData(symbol))
 
     let latesValue = await getLatestValue.getLatestVaue(symbol);
     global.io.sockets.to(crypto + '-' + currency).emit(constants.LATEST_TRADEVALUE, latesValue)
