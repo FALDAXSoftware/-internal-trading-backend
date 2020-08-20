@@ -4390,7 +4390,6 @@ class TradeController extends AppController {
         }
       }
 
-
       // For checking if previous market order exist
       var getPendingDetails = await PendingOrderExecutuionModel
         .query()
@@ -4416,27 +4415,9 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Unable to place order").message, []);
       }
 
-
-      // var pairDetails = await PairsModel
-      //   .query()
-      //   .first()
-      //   .select("name", "order_maximum")
-      //   .where("deleted_at", null)
-      //   .andWhere("name", symbol)
-      //   .orderBy("id", "DESC")
-
-      // var USDPriceValue = await CurrencyConversionModel
-      //   .query()
-      //   .first()
-      //   .select("quote")
-      //   .where("deleted_at", null)
-      //   .andWhere("symbol", "LIKE", '%' + crypto + '%')
-      //   .orderBy("id", "DESC");
-      // var usdValue = USDPriceValue.quote.USD.price
       var maxDataValue = await getBidAskPriceHelper.getLatestVaue(symbol);
       var maximumValue = (maxDataValue.sellMaximumValue)
-      // var maximumValue = (pairDetails.order_maximum) / (usdValue)
-      // console.log("maximumValue", maximumValue)
+
       if (parseFloat(orderQuantity) <= 0) {
         await logger.info({
           "module": "Market Buy",
@@ -4617,7 +4598,6 @@ class TradeController extends AppController {
           return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__(tradeDataChecking.msg).message, []);
         }
       }
-
 
     } catch (err) {
       // console.log("err", JSON.stringify(err));
@@ -4845,7 +4825,7 @@ class TradeController extends AppController {
           });
 
         // console.log("pendingAdd", pendingAdd)
-        console.log("pendingAdd.id", pendingAdd.id)
+        // console.log("pendingAdd.id", pendingAdd.id)
 
         var queueName = process.env.PENDING_QUEUE_NAME
         var queueData = {
