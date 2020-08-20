@@ -883,7 +883,6 @@ class DashboardController extends AppController {
 
     async deletePendingOrder(pair) {
         try {
-
             let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
             let { crypto, currency } = await Currency.get_currencies(pair);
 
@@ -981,11 +980,11 @@ class DashboardController extends AppController {
                 // var updatedPlacedBalance = parseFloat(walletBalance.placed_balance) + parseFloat(balance);
                 // var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
                 //                                                             WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
-                let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
-                let { crypto, currency } = await Currency.get_currencies(pair);
+                // let BuyBookHelper = require("../../helpers/buy/get-buy-book-order-summary");
+                // let { crypto, currency } = await Currency.get_currencies(pair);
 
-                var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
-                console.log("getBuyBookSummary", JSON.stringify(getBuyBookSummary))
+                // var getBuyBookSummary = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
+                // console.log("getBuyBookSummary", JSON.stringify(getBuyBookSummary))
 
             }
         } catch (error) {
@@ -1086,11 +1085,11 @@ class DashboardController extends AppController {
 
                 // var balanceUpdateQuery = await WalletModel.knex().raw(`UPDATE wallets SET balance = ${updatedBalance}, placed_balance = ${updatedPlacedBalance}
                 //                                                     WHERE deleted_at IS NULL AND user_id = ${process.env.TRADEDESK_USER_ID} AND coin_id = ${walletBalance.id};`)
-                let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
-                let { crypto, currency } = await Currency.get_currencies(pair);
-                var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
+                // let SellBookHelper = require("../../helpers/sell/get-sell-book-order-summary");
+                // let { crypto, currency } = await Currency.get_currencies(pair);
+                // var bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
 
-                console.log("bookData", JSON.stringify(bookData))
+                // console.log("bookData", JSON.stringify(bookData))
             }
         } catch (error) {
             // console.log(JSON.stringify(error));
