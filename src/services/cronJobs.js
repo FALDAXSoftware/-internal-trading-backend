@@ -16,6 +16,18 @@ cron.schedule('*/30 * * * * *', async (req, res, next) => {
 //     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
 // });
 
+// // // // // On Every Minute
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await cronData.executeStopLimit();
+// });
+
+// Cron for LTC-BTC
+// cron.schedule('*/15 * * * * *', async (req, res, next) => {
+//     console.log("Started cron....");
+//     await dashBoardUpdate.updateBuyOrderBook("LTC-BTC");
+// });
+
 // cron.schedule('*/15 * * * * *', async (req, res, next) => {
 //     console.log("Started cron....");
 //     await dashBoardUpdate.updateSellOrderBook("LTC-BTC");

@@ -367,7 +367,15 @@
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Starter Tier is no longer available. Please complete Identity Verification to Trade further.",
-		"message": "Starter Tier is no longer available. Please complete Identity Verification to Trade further."
-	}
+		"message_english": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade",
+		"message": "Currently Tier 0 is Inactive. So you need to upgrade tier 1 to do trade"
+	},
+	"Self Order Execution": {
+		"page": "Self Order Execution",
+		"context": "User Trade Self Execution",
+		"message_type": "error",
+		"message_english": "Order cannot be placed because it is potential self match",
+		"message": "Order cannot be placed because it is potential self match"
+	},
+	"Campaign Offer invalid": "Campaign Offer invalid"
 }
