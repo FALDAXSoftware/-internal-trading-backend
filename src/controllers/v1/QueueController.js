@@ -29,6 +29,12 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
     // console.log("---------------------------------");
     // console.log("---------------------------------");
     conn.createChannel(function (err, channel) {
+
+        if (err) {
+            conn.createChannel(function (err, channel1) {
+                channel = channel1;
+            })
+        }
         // ch.chequeQueue(queueName);
         channel.assertQueue(process.env.PENDING_QUEUE_NAME)
         channel.assertQueue(process.env.QUEUE_NAME + '-' + 'Buy', {
@@ -207,7 +213,14 @@ amqp.connect(CONN_URL, opt, (err, conn) => {
             }
             // }
         }, { noAck: false })
-        // conn.close();
+        conn.on("close", (err) => {
+            if (err) {
+                conn = null;
+                conn.createChannel(function (err, channel1) {
+                    channel = channel1;
+                })
+            }
+        });
     });
 });
 
@@ -261,5 +274,6 @@ module.exports = {
 
 process.on('exit', (code) => {
     ch.close();
+    ch.re
     // console.log(`Closing rabbitmq channel`);
 });
