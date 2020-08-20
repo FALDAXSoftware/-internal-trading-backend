@@ -374,8 +374,8 @@
 		"page": "Self Order Execution",
 		"context": "User Trade Self Execution",
 		"message_type": "error",
-		"message_english": "Self Order Execution so order cannot be executed",
-		"message": "Self Order Execution so order cannot be executed"
+		"message_english": "Order cannot be placed because it is potential self match",
+		"message": "Order cannot be placed because it is potential self match"
 	},
 	"Campaign Offer invalid": "Campaign Offer invalid"
 }
