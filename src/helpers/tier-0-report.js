@@ -18,6 +18,8 @@ var userTier0Report = async (user_id, amount, crypto) => {
 
         console.log("usersData", usersData)
 
+        console.log("usersData.account_tier", usersData.account_tier)
+
         if (usersData.account_tier == 0) {
 
             var getTierDetails = await TierModel
@@ -69,8 +71,8 @@ var userTier0Report = async (user_id, amount, crypto) => {
                             WHERE user_id = ${user_id} AND created_at >= '${after1Day}' AND created_at <= '${now}' GROUP BY user_coin) a1
                             FULL JOIN (SELECT requested_coin, 
                                 SUM((CASE
-                                    WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_1_usd' as double precision))
-                                    WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                    WHEN side='Buy' THEN ((quantity*fill_price)*Cast(fiat_values->>'asset_2_usd' as double precision))
+                                    WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
                                 END)) as sum
                                 FROM trade_history
                                 WHERE requested_user_id = ${user_id} AND created_at >= '${after1Day}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
@@ -80,6 +82,11 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         const element = getTradeHistoryQuery.rows[index];
                         userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
                     }
+
+                    console.log("userTradeHistorySum", userTradeHistorySum)
+
+                    console.log("userTradeHistorySum", userTradeHistorySum)
+
                     var userTotalUSDSum = 0.0;
 
                     var getCurrenctConversionValue = await CurrencyConversionModel
@@ -141,7 +148,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
                             "current_left_limit": (parseFloat(subtractValue) > 0) ? (subtractValue) : (0.0),
-                            "amount_left_after_trade": (leftAmount < 0) ? (0.0) : (leftAmount)
+                            "amount_left_after_trade": (amount == 0) ? (0.0) : ((leftAmount < 0) ? (0.0) : (leftAmount))
                         }
                         data.valueObject = value;
                         data.completedFlag = false;
@@ -154,7 +161,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         var value = {
                             "available_trade_limit_actual": getTierDetails[0].max_trade_amount,
                             "current_left_limit": (parseFloat(subtractValue) > 0) ? (subtractValue) : (0.0),
-                            "amount_left_after_trade": parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue))
+                            "amount_left_after_trade": (amount == 0) ? (0.0) : (parseFloat(getTierDetails[0].max_trade_amount) - (parseFloat(userTotalUSDSum) + parseFloat(usdValue)))
                         }
                         data.valueObject = value;
                         data.completedFlag = false;
@@ -178,9 +185,6 @@ var userTier0Report = async (user_id, amount, crypto) => {
         } else {
             data.account_tier_flag = false;
         }
-
-        // data.response_flag = true;
-        // data.msg = "30 days completed. Please verify your Identity Verfication";
 
         console.log("data", data)
 

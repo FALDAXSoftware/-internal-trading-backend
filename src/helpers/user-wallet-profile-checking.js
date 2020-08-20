@@ -23,7 +23,7 @@ var tradeStatus = async (user_id) => {
             .andWhere('id', user_id)
             .orderBy('id', 'DESC');
 
-        // console.log("userKYC", JSON.stringify(userKYC))
+        console.log("userKYC", (userKYC))
 
         var countryData;
         var stateData;
@@ -33,12 +33,12 @@ var tradeStatus = async (user_id) => {
 
         countryData = await CountryModel
             .query()
-            .select("legality")
+            .select("legality", "id")
             .where('deleted_at', null)
             .andWhere('name', userKYC.country)
             .orderBy('id', 'DESC');
 
-        // console.log("countryData", JSON.stringify(countryData))
+        console.log("countryData", JSON.stringify(countryData))
 
         if (countryData != undefined && countryData.length > 0) {
             if (countryData[0].legality == 1) {

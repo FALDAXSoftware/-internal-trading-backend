@@ -115,7 +115,25 @@ checkPortfolioCache = async (req, res, next) => {
       next();
     }
   });
-}
+};
+
+checkActivityCache = async (req, res, next) => {
+  var user_id = await Helpers.getUserId(req.headers, res);
+  redis_client.get(`${user_id}-activity`, async (err, data) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send(err);
+    }
+    //if no match found
+    if (data != null) {
+      res.send(JSON.parse(data));
+    } else {
+      //proceed to next middleware function
+      // app.use('/', require('./routes/index'));
+      next();
+    }
+  });
+};
 
 checkActivityCache = async (req, res, next) => {
   var user_id = await Helpers.getUserId(req.headers, res);
@@ -186,5 +204,6 @@ router.get("/delete-influx-data", InfluxController.deleteInfluxData);
 
 router.get("/get-user-trade-value", InfluxController.getUserTradeData);
 router.get("/get-user-tier-0-report", InfluxController.getTier0Report);
+router.get("/get-user-trade-history-data", InfluxController.getUserTier0DataReport);
 
 module.exports = router;
