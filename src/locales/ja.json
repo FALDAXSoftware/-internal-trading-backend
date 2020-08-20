@@ -334,5 +334,40 @@
         "message_type": "error",
         "message_english": "System Health is Not Good.",
         "message": "\u30b7\u30b9\u30c6\u30e0\u30d8\u30eb\u30b9\u306f\u826f\u304f\u3042\u308a\u307e\u305b\u3093\u3002"
+    },
+    "Invalid Quantity for Minimum": {
+        "page": "Invalid quantity",
+        "context": "Invalid Order Quantity",
+        "message_type": "error",
+        "message_english": "Order quantity should be greater than",
+        "message": "受注数量がより大きくなければなりません"
+    },
+    "30 days completed. Please verify your Identity Verfication": {
+        "page": "Tier 0 trade",
+        "context": "Tier 0 checking",
+        "message_type": "error",
+        "message_english": "Completed maximum allowed duration in Starter Tier. Please complete Identity Verification to Trade further.",
+        "message": "完成した最大値はスターター層での持続を可能にしました。さらに貿易の識別情報の検証を完了してください。"
+    },
+    "User Cannot Do trade because he has reached daily limit": {
+        "page": "Tier 0 trade",
+        "context": "Tier 0 Trade checking",
+        "message_type": "error",
+        "message_english": "Completed maximum Daily Trade limit allowed in Starter Tier. Please try again tomorrow as per the Daily limit.",
+        "message": "スターターティアで許可され完成した最大の毎日の貿易制限。毎日の制限に従って、明日もう一度試してください。"
+    },
+    "User Cannot Do trade because he has reached daily limit using this amount": {
+        "page": "Tier 0 trade",
+        "context": "Tier 0 Trade checking",
+        "message_type": "error",
+        "message_english": "Trade quantity exceeds the maximum Daily Trade limit allowed in Starter Tier. Please trade a lower quantity or try again tomorrow as per the Daily limit.",
+        "message": "取引量はスターターティアに許容される最大の毎日の取引限度を超えます。下量を取引するか、毎日の限界あたりとして明日、もう一度試してください。"
+    },
+    "Tier Inactive. Complete ID verification": {
+        "page": "Tier 0 trade",
+        "context": "Tier 0 Trade checking",
+        "message_type": "error",
+        "message_english": "Starter Tier is no longer available. Please complete Identity Verification to Trade further.",
+        "message": "スターターティアは使用できなくなりました。さらに貿易の識別情報の検証を完了してください。"
     }
 }

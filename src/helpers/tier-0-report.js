@@ -186,9 +186,6 @@ var userTier0Report = async (user_id, amount, crypto) => {
             data.account_tier_flag = false;
         }
 
-        // data.response_flag = true;
-        // data.msg = "30 days completed. Please verify your Identity Verfication";
-
         console.log("data", data)
 
         return (data);
