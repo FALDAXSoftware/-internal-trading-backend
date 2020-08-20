@@ -161,6 +161,8 @@ var getAmount = async (trade_object, user_id, transaction_id) => {
                     .insertAndFetch({
                         ...addRefferalAddData
                     })
+            } else {
+                return 0;
             }
         } else {
             return 0;
