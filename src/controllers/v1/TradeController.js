@@ -3747,9 +3747,9 @@ class TradeController extends AppController {
       const checkUser = Helper.checkWhichUser(user_id);
       let { crypto, currency } = await Currency.get_currencies(symbol);
       var quantityTotal = await SellBookHelper.sellOrderBook(crypto, currency);
-      if (quantityTotal.length == 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
-      }
+      // if (quantityTotal.length == 0) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      // }
 
       var userData = await Users
         .query()
@@ -3906,7 +3906,7 @@ class TradeController extends AppController {
         }
       }
     } catch (error) {
-      // console.log(JSON.stringify(error));
+      console.log((error));
       await logger.info({
         "module": "Stop Limit Buy",
         "user_id": "user_" + user_id,
@@ -3944,9 +3944,9 @@ class TradeController extends AppController {
 
       // console.log("quantityTotal", quantityTotal)
 
-      if (quantityTotal.length == 0) {
-        return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
-      }
+      // if (quantityTotal.length == 0) {
+      //   return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Order Book Empty").message, []);
+      // }
 
       var userData = await Users
         .query()
@@ -3989,7 +3989,11 @@ class TradeController extends AppController {
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity").message + " " + crypto, []);
       }
 
-      if (parseFloat(orderQuantity) < (maxDataValue.minimumValue)) {
+      console.log("orderQuantity", orderQuantity);
+      console.log("maxDataValue.minimumValue", maxDataValue.minimumValue)
+      console.log("parseFloat(orderQuantity) < parseFloat(maxDataValue.minimumValue)", parseFloat(orderQuantity) < parseFloat(maxDataValue.minimumValue))
+
+      if (parseFloat(orderQuantity) < parseFloat(maxDataValue.minimumValue)) {
         await logger.info({
           "module": "Market Buy",
           "user_id": "user_" + user_id,
@@ -3998,6 +4002,9 @@ class TradeController extends AppController {
         }, i18n.__("Invalid Quantity").message);
         return Helper.jsonFormat(res, constants.SERVER_ERROR_CODE, i18n.__("Invalid Quantity for Minimum").message + " " + parseFloat((maxDataValue.minimumValue)).toFixed(8) + " " + crypto, []);
       }
+
+      console.log("maximumValue", maximumValue);
+      console.log("parseFloat(orderQuantity)", parseFloat(orderQuantity))
 
       if (parseFloat(orderQuantity) > maximumValue) {
         await logger.info({
