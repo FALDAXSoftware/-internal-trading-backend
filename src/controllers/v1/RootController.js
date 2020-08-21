@@ -266,7 +266,7 @@ class InfluxController extends AppController {
                                                                             WHERE requested_user_id = ${user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                             ON a1.user_coin = a2.requested_coin`)
 
-            // console.log("userTradesum", userTradesum.rows.length)
+            console.log("userTradesum", userTradesum.rows)
             for (let index = 0; index < userTradesum.rows.length; index++) {
                 const element = userTradesum.rows[index];
                 userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
@@ -330,12 +330,22 @@ class InfluxController extends AppController {
                 user_id
             } = req.query;
 
+            var now = moment().format();
+            var yesterday = moment(now)
+                .subtract(1, 'months')
+                .format();
+
             var getUserTradeHistory = await TradeHistoryModel
                 .query()
                 .select("fiat_values", "quantity", "fill_price", "side")
-                .where("user_id", user_id)
+                .where(builder => {
+                    builder.where('user_id', user_id)
+                        .orWhere('requested_user_id', user_id)
+                })
+                // .where("user_id", user_id)
+                .andWhere("created_at", '>=', yesterday)
                 .orderBy("id", "DESC")
-                .limit(100);
+            // .limit(100);
 
             return res
                 .status(200)
