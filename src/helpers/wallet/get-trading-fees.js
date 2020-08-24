@@ -72,7 +72,7 @@ var getTraddingFees = async (inputs) => {
                                                                                 WHEN side = 'Sell' THEN((quantity) * Cast(fiat_values ->> 'asset_1_usd' as double precision))
                                                                             END)) as sum
                                                                         FROM trade_history
-                                                                        WHERE requested_user_id = ${ user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                        WHERE requested_user_id = ${ user_id} AND user_id != requested_user_id AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                         ON a1.user_coin = a2.requested_coin`)
 
             // console.log("userTradesum", userTradesum.rows.length)
@@ -100,7 +100,7 @@ var getTraddingFees = async (inputs) => {
                                                                                 WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_2_usd' as double precision))
                                                                             END)) as sum
                                                                             FROM trade_history
-                                                                            WHERE requested_user_id = ${requested_user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                                                            WHERE requested_user_id = ${requested_user_id} AND user_id != requested_user_id AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                                                             ON a1.user_coin = a2.requested_coin`)
             for (let index = 0; index < requestedTradesum.rows.length; index++) {
                 const element = requestedTradesum.rows[index];
