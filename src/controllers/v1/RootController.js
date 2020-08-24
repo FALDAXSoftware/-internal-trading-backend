@@ -337,7 +337,7 @@ class InfluxController extends AppController {
 
             var getUserTradeHistory = await TradeHistoryModel
                 .query()
-                .select("fiat_values", "quantity", "fill_price", "side")
+                .select("fiat_values", "quantity", "fill_price", "side", "user_id", "requested_user_id")
                 .where(builder => {
                     builder.where('user_id', user_id)
                         .orWhere('requested_user_id', user_id)
@@ -346,6 +346,7 @@ class InfluxController extends AppController {
                 .andWhere("created_at", '>=', yesterday)
                 .orderBy("id", "DESC")
             // .limit(100);
+            console.log("getUserTradeHistory", getUserTradeHistory)
 
             return res
                 .status(200)
