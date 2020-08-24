@@ -48,6 +48,27 @@ const influx = new Influx.InfluxDB({
 
 var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0, is_checkbox_enabled = false) => {
     try {
+
+        if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
+                .query()
+                .first()
+                .select("is_cancel")
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+                var getData = await PendingOrderExecutuionModel
+                    .query()
+                    .where("id", pending_order_id)
+                    .andWhere("deleted_at", null)
+                    .patch({
+                        is_executed: true
+                    })
+            }
+        }
+
         // console.log(buyLimitOrderData, crypto, currency, activity, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         var pairDetails = await PairsModel
             .query()
