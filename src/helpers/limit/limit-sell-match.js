@@ -45,7 +45,7 @@ const influx = new Influx.InfluxDB({
     ]
 })
 
-var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
+var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0, is_checkbox_enabled = false) => {
     try {
 
         if (pending_order_id != 0) {
@@ -209,11 +209,11 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
             checkSelfExecution = true;
         }
 
-        console.log("buyBook[0].user_id", buyBook[0].user_id);
-        console.log("sellLimitOrderData.user_id", sellLimitOrderData.user_id);
-        console.log("checkSelfExecution", checkSelfExecution)
 
         if (buyBook.length > 0 && buyBook[0].user_id == sellLimitOrderData.user_id && checkSelfExecution == false && ((buyBook[0].order_type == "Limit") ? (buyBook[0].price >= sellLimitOrderData.limit_price) : (buyBook[0].price <= sellLimitOrderData.stop_price && buyBook[0].price >= sellLimitOrderData.limit_price))) {
+            console.log("buyBook[0].user_id", buyBook[0].user_id);
+            console.log("sellLimitOrderData.user_id", sellLimitOrderData.user_id);
+            console.log("checkSelfExecution", checkSelfExecution)
             console.log("INSIDE IF")
             console.log("buyBook[0].quantity > sellLimitOrderData.quantity", buyBook[0].quantity > sellLimitOrderData.quantity)
             console.log("buyBook[0].quantity == sellLimitOrderData.quantity", buyBook[0].quantity == sellLimitOrderData.quantity)
@@ -247,7 +247,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         })
                 }
 
-                let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
+                let updateBuyBook = await buyUpdate.updateBuyBook(buyBook[0].id, {
                     quantity: parseFloat(selfRemainningQuantity).toFixed(pairDetails.quantity_precision)
                 });
 
@@ -969,7 +969,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     resendDataLimit.activity_id = activityResult.id;
 
                     if (remainningQuantity > 0) {
-                        var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id);
+                        var responseData = await module.exports.limitSellData(resendDataLimit, resendDataLimit.settle_currency, resendDataLimit.currency, activityResult, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id, is_checkbox_enabled);
                         return responseData
                     }
                 }
