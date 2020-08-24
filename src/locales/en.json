@@ -346,28 +346,28 @@
 		"page": "Tier 0 trade",
 		"context": "Tier 0 checking",
 		"message_type": "error",
-		"message_english": "Completed maximum allowed duration in Starter Tier. Please complete Identity Verification to Trade further.",
-		"message": "Completed maximum allowed duration in Starter Tier. Please complete Identity Verification to Trade further."
+		"message_english": "Maximum Allowable days for trade have been met. Please complete your Identity Verification to continue trading.",
+		"message": "Maximum Allowable days for trade have been met. Please complete your Identity Verification to continue trading."
 	},
 	"User Cannot Do trade because he has reached daily limit": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Completed maximum Daily Trade limit allowed in Starter Tier. Please try again tomorrow as per the Daily limit.",
-		"message": "Completed maximum Daily Trade limit allowed in Starter Tier. Please try again tomorrow as per the Daily limit."
+		"message_english": "Daily trade limit met. Your daily trade limit will refresh tomorrow. If you want to increase the daily trade limit, please complete your Identity Verification.",
+		"message": "Daily trade limit met. Your daily trade limit will refresh tomorrow. If you want to increase the daily trade limit, please complete your Identity Verification."
 	},
 	"User Cannot Do trade because he has reached daily limit using this amount": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Trade quantity exceeds the maximum Daily Trade limit allowed in Starter Tier. Please trade a lower quantity or try again tomorrow as per the Daily limit.",
-		"message": "Trade quantity exceeds the maximum Daily Trade limit allowed in Starter Tier. Please trade a lower quantity or try again tomorrow as per the Daily limit."
+		"message_english": "Daily trade limit will be met with this trade. Your daily trade limit will refresh tomorrow. If you want to increase the daily trade limit, please complete your Identity Verification.",
+		"message": "Daily trade limit will be met with this trade. Your daily trade limit will refresh tomorrow. If you want to increase the daily trade limit, please complete your Identity Verification."
 	},
 	"Tier Inactive. Complete ID verification": {
 		"page": "Tier 0 trade",
 		"context": "Tier 0 Trade checking",
 		"message_type": "error",
-		"message_english": "Starter Tier is no longer available. Please complete Identity Verification to Trade further.",
-		"message": "Starter Tier is no longer available. Please complete Identity Verification to Trade further."
+		"message_english": "Currently Account Tier 0 is inactive. You need to upgrade to Account Tier 1 to trade.",
+		"message": "Currently Account Tier 0 is inactive. You need to upgrade to Account Tier 1 to trade."
 	}
 }
