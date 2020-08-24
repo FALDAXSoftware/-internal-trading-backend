@@ -75,7 +75,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                                     WHEN side='Sell' THEN ((quantity)*Cast(fiat_values->>'asset_1_usd' as double precision))
                                 END)) as sum
                                 FROM trade_history
-                                WHERE requested_user_id = ${user_id} AND created_at >= '${after1Day}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+                                WHERE requested_user_id = ${user_id} AND user_id != requested_user_id AND created_at >= '${after1Day}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
                                 ON a1.user_coin = a2.requested_coin`);
 
                     for (let index = 0; index < getTradeHistoryQuery.rows.length; index++) {
