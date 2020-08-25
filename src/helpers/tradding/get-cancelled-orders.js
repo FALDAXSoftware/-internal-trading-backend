@@ -41,7 +41,7 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 200) =
         .andWhere('user_id', user_id)
         .orderBy('id', 'DESC')
         .limit(limit);
-    console.log("cancelDetails", cancelDetails)
+    // console.log("cancelDetails", cancelDetails)
 
     var pendingCancelDetails = await PendingOrdersExecutionModel
         .query()
@@ -53,9 +53,14 @@ var getCancelledOrders = async (user_id, crypto, currency, month, limit = 200) =
             'created_at',
             'deleted_at',
             'limit_price',
-            "placed_by")
-        .where('deleted_at', null)
-        .andWhere('is_cancel', true)
+            "placed_by",
+            "reason")
+        .where(builder => {
+            builder.whereNotNull('reason')
+                .orWhere('is_cancel', true)
+        })
+        .andWhere('deleted_at', null)
+        // .andWhere('is_cancel', true)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
         .andWhere('created_at', ">=", yesterday)
