@@ -9,6 +9,9 @@ var updateActivityData = async (id, orderData) => {
         .andWhere('id', id)
         .orderBy('id', 'DESC');
 
+    console.log("orderData", orderData);
+    console.log("activityData.quantity", activityData.quantity)
+
     var quantityValue = parseFloat(activityData.quantity) - parseFloat(orderData.quantity)
 
     var updateActivityHistory = await ActivityTableModel
