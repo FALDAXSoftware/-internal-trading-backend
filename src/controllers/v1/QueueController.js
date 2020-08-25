@@ -8,6 +8,7 @@ var createConnection = amqp.connect(CONN_URL, opt, async (err, conn) => {
     console.log("-------------------", err)
     if (err) {
         await module.exports.createConnection();
+        return 1
     }
     console.log("conn", conn);
     await module.exports.createConnectionChannel(conn);
@@ -43,7 +44,8 @@ var createConnectionChannel = async (conn) => {
     conn.createChannel(async function (err, channel) {
         console.log("err", err)
         if (err) {
-            await module.exports.createConnectionChannel(conn)
+            await module.exports.createConnectionChannel(conn);
+            return 1;
         }
         // ch.chequeQueue(queueName);
         await module.exports.createAssertQueue(channel, process.env.PENDING_QUEUE_NAME, false);
