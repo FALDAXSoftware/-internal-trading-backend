@@ -194,7 +194,8 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         "currencyFiat": currencyUsdValue,
         "currencyinactive": currencyinactive,
         "cryptoinactive": cryptoinactive,
-        "makerFee": makerFee
+        "makerFee": makerFee,
+        "user_id": user_id
     };
 
     // console.log("userWalletBalance", userWalletBalance)
