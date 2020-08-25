@@ -279,7 +279,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         }
                         console.log("orderData", orderData)
                         let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
-                        var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id);
+                        var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id, true);
 
                         console.log("cancelPendingOrder", cancelPendingOrder)
 
@@ -404,6 +404,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     console.log("buyLimitOrderData.quantity", buyLimitOrderData.quantity);
                     console.log("sellBook[0].quantity", sellBook[0].quantity)
                     var selfRemainningQuantity = parseFloat(buyLimitOrderData.quantity) - parseFloat(sellBook[0].quantity);
+                    console.log("selfRemainningQuantity", selfRemainningQuantity)
                     var orderData = {
                         quantity: sellBook[0].quantity
                     }
@@ -417,7 +418,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     delete buyLimitOrderData.quantity;
                     buyRecurseData.quantity = selfRemainningQuantity;
                     console.log("buyRecurseData", buyRecurseData)
-                    var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id);
+                    var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id, true);
                     console.log("cancelPendingOrder", cancelPendingOrder)
                     console.log("pending_order_id", pending_order_id)
 
@@ -531,7 +532,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         if (sellBook[0].is_stop_limit == true) {
                             trade_history_data.is_stop_limit = true;
                         }
-                        // console.log("trade_history_data", JSON.stringify(trade_history_data))
+                        console.log("trade_history_data", JSON.stringify(trade_history_data))
                         let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, trade_history_data);
 
                         userIds.push(parseInt(trade_history_data.requested_user_id));
@@ -671,7 +672,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
 
                             //Emit data in rooms
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
                             // console.log("referredData", referredData)
                             return {
                                 status: 1,
@@ -750,7 +751,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             }
                             //Emit data in rooms
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
                             return {
                                 status: 1,
                                 message: 'Order Success'
