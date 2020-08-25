@@ -227,21 +227,24 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                 console.log("orderData", orderData)
                 console.log("sellBook[0].activity_id", buyBook[0].activity_id)
                 let updatedActivity = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, orderData);
+                console.log("currency_coin_id", currency_coin_id)
                 var updateUserBalance = await WalletModel
                     .query()
                     .first()
                     .select()
                     .where("deleted_at", null)
-                    .andWhere("user_id", sellLimitOrderData.user_id)
+                    .andWhere("user_id", buyBook[0].user_id)
                     .andWhere("coin_id", currency_coin_id)
                     .orderBy("id", "DESC");
+
+                console.log("updateUserBalance", updateUserBalance)
 
                 if (updateUserBalance != undefined) {
                     var updateBalance = await WalletModel
                         .query()
                         .where("deleted_at", null)
                         .andWhere("user_id", sellLimitOrderData.user_id)
-                        .andWhere("coin_id", crypto_coin_id)
+                        .andWhere("coin_id", currency_coin_id)
                         .patch({
                             'placed_balance': parseFloat(updateUserBalance.placed_balance) + (parseFloat(sellLimitOrderData.quantity) * parseFloat(buyBook[0].limit_price))
                         })
