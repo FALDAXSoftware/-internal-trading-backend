@@ -7,7 +7,7 @@ var ActivityTableModel = require("../../models/Activity");
 var SellBookModel = require("../../models/SellBook");
 var socketHelper = require("../sockets/emit-trades");
 
-var cancelPendingOrder = async (side, type, id) => {
+var cancelPendingOrder = async (side, type, id, flag = false) => {
     try {
         var deletePending;
         var now = moment().format();
@@ -71,7 +71,8 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('deleted_at', null)
                 .andWhere('id', pendingBookDetailsBuy.activity_id)
                 .patch({
-                    is_cancel: true
+                    is_cancel: true,
+                    reason: (flag == true) ? ("Self Order Execution") : (" ")
                 })
 
             var updateSql = `UPDATE buy_book
@@ -136,7 +137,8 @@ var cancelPendingOrder = async (side, type, id) => {
                 .where('id', pendingBookDetailsSell.activity_id)
                 .andWhere('deleted_at', null)
                 .patch({
-                    is_cancel: true
+                    is_cancel: true,
+                    reason: (flag == true) ? ("Self Order Execution") : (" ")
                 })
 
             var updateSql = `UPDATE sell_book

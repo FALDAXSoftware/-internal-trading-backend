@@ -392,7 +392,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                         }
                         console.log("orderData", orderData)
                         let updatedActivity = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, orderData);
-                        var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Buy", "Limit", buyBook[0].id);
+                        var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Buy", "Limit", buyBook[0].id, true);
 
                         console.log("cancelPendingOrder", cancelPendingOrder)
 
@@ -530,7 +530,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     delete sellLimitOrderData.quantity;
                     buyRecurseData.quantity = selfRemainningQuantity;
                     console.log("buyRecurseData", buyRecurseData)
-                    var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Buy", "Limit", buyBook[0].id);
+                    var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Buy", "Limit", buyBook[0].id, true);
                     console.log("cancelPendingOrder", cancelPendingOrder)
                     console.log("pending_order_id", pending_order_id)
 
@@ -764,7 +764,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-                        let referredData = await RefferalHelper.getAmount(tradeOrder, sellLimitOrderData.user_id, tradeOrder.id);
+                        let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
                         return {
                             status: 1,
                             message: 'Order Success'
@@ -837,7 +837,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
 
                         //Emit data in rooms
                         let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
-                        let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
+                        let referredData = await RefferalHelper.getAmount(tradeOrder, tradeOrder.user_id, tradeOrder.id);
                         return {
                             status: 1,
                             message: 'Order Success'
