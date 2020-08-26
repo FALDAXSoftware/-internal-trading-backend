@@ -160,7 +160,7 @@ io.on('connection', async function (socket) {
 
     // socket.set('transports', ['websocket']);
 
-    // console.log("room", room)
+    console.log("room", room)
 
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     if (room.previous_room) {
@@ -177,16 +177,16 @@ io.on('connection', async function (socket) {
     socket.join(pair[1]); // Join to new Currency Room
 
     if (authentication.isAdmin == true) {
-      // console.log("INSIDE ADMIN");
+      console.log("INSIDE ADMIN");
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
 
-    // console.log("user_id", user_id);
-    // console.log("symbol", symbol)
+    console.log("user_id", user_id);
+    console.log("symbol", symbol)
 
     await Promise.all([
       socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
-      socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1])),
+      socket.emit(constants.TRADE_USER_WALLET_BALANCE, true),
       socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1])),
       socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
       socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol)),
@@ -214,6 +214,17 @@ io.on('connection', async function (socket) {
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     data.user_id = user_id
     socket.emit(constants.TRADE_GET_USERS_ALL_TRADE_DATA, await socket_functions.getUserOrdersData(data));
+  })
+
+  socket.on("user_wallet_data", async function (data) {
+    console.log("data", data)
+    var socket_headers = socket.request.headers;
+    var authentication = await require("./config/authorization")(socket_headers);
+    if (authentication.status > constants.SUCCESS_CODE) {
+      socket.emit(constants.USER_LOGOUT, true);
+    }
+
+    socket.emit(constants.USER_AFTER_WALLET_BALANCE, await socket_functions.getUserBalance(data.user_id, data.crypto, data.currency));
   })
 
   socket.on("tier-0-trade-limit", async function (data) {
