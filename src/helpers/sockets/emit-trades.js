@@ -72,8 +72,8 @@ var emitTrades = async (crypto, currency, userIds) => {
         // console.log(JSON.stringify(filteredUsers))
         const element = filteredUsers[index];
         // console.log("element", element)
-        let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
-        global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", userBalanceDetails)
+        // let userBalanceDetails = await UserWalletBalanceHelper.getUserWalletBalance(element, currency, crypto);
+        global.io.sockets.to(crypto + "-" + currency + element).emit("user-wallet-balance", true)
         console.log("crypto + " - " + currency + element", crypto + "-" + currency + element)
         // global.io.sockets.to(crypto + "-" + currency + element).emit(constants.TRADE_LIMIT, await tier0Report.userTier0Report(element, 0, crypto))
 
