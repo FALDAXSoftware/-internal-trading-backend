@@ -184,23 +184,23 @@ io.on('connection', async function (socket) {
     console.log("user_id", user_id);
     console.log("symbol", symbol)
 
-    await Promise.all([
-      socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true),
-      socket.emit(constants.TRADE_USER_WALLET_BALANCE, true),
-      socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1])),
-      socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol)),
-      socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol)),
-      socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1])),
-      socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol)),
-      socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1])),
-      socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol))
-    ])
+    socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
+    socket.emit(constants.TRADE_USER_WALLET_BALANCE, true);
+    socket.emit(constants.TRADE_TRADE_HISTORY_EVENT, await socket_functions.getTradeHistoryData(pair[0], pair[1]));
+    socket.emit(constants.TRADE_HIGH_LEVEL_INFO, await socket_functions.getHighInfo(symbol));
+    socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol));
+    socket.emit(constants.TRADE_BUY_BOOK_EVENT, await socket_functions.getBuyBookDataSummary(pair[0], pair[1]));
+    socket.emit(constants.TRADE_SPREAD_VALUE, await socket_functions.getSpreadValue(symbol));
+    socket.emit(constants.TRADE_SELL_BOOK_EVENT, await socket_functions.getSellBookDataSummary(pair[0], pair[1]));
+    socket.emit(constants.LATEST_TRADEVALUE, await socket_functions.getLatestValue(symbol))
+    // await Promise.all([
+    // ])
 
     socket.on("change-instrument-data", async function (data) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
 
-    // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]), 0 );
+    // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]); 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
 
   })
