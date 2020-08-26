@@ -32,6 +32,7 @@ module.exports = {
 	"TRADE_PRECISION": "trade-data-precision",
 	"USER_LOGOUT": "user-logout",
 	"TRADE_LIMIT": "trade-user-limit-availability",
+	"USER_AFTER_WALLET_BALANCE": "user-after-wallet-balance",
 	"TRADE_SPREAD_VALUE": "spread-values",
 
 	"SECRET_KEY": process.env.SECRET_KEY,
