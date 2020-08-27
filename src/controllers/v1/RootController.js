@@ -1,6 +1,6 @@
 const Influx = require('influx');
 var { AppController } = require('./AppController');
-var TradeHistoryModel = require("../../models/TradeHistory");
+var TradeHistoryModel = require("../../models/TradeHistoryInflux");
 var CoinsModel = require("../../models/Coins");
 var Fees = require("../../models/Fees");
 var moment = require('moment');
@@ -99,6 +99,61 @@ const influx = new Influx.InfluxDB({
             tags: [
                 'pair'
             ]
+        },
+        {
+            measurement: 'trade_history_btc_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_eth_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_ltc_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_xrp_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_bch_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
         }
     ]
 })
@@ -111,6 +166,8 @@ class InfluxController extends AppController {
 
     async writeInfluxData(req, res) {
         try {
+
+            console.log("influx", influx)
 
             // var pair_name = "xrpbtc";
             var {
@@ -127,12 +184,14 @@ class InfluxController extends AppController {
                 limit,
                 offset,
                 table_name)
+
+
             var tradeData = await TradeHistoryModel
                 .query()
                 .select()
                 .where("deleted_at", null)
                 .andWhere("symbol", pair)
-                .andWhere("created_at", "<=", "2020-07-21T18:50:00")
+                .andWhere("created_at", "<=", "2020-08-27T00:00:00")
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
