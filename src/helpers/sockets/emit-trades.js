@@ -55,7 +55,7 @@ var emitTrades = async (crypto, currency, userIds) => {
     let latesValue = await getLatestValue.getLatestVaue(symbol);
     global.io.sockets.to(crypto + '-' + currency).emit(constants.LATEST_TRADEVALUE, latesValue)
 
-    // global.io.sockets.to(symbol).emit(constants.TRADE_SPREAD_VALUE, await spreadData.spreadData(symbol))
+    global.io.sockets.to(symbol).emit(constants.TRADE_SPREAD_VALUE, await spreadData.spreadData(symbol))
 
     // console.log("userIds", userIds)
 
