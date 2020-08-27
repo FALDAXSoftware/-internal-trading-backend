@@ -202,13 +202,13 @@ io.on('connection', async function (socket) {
       socket.emit(constants.TRADE_INSTRUMENT_EVENT, await socket_functions.getInstrumentData(data.coin));
     })
 
-    socket.on('disconnect', function () {
-      // this returns a list of all rooms this user is in
-      var rooms = io.sockets.manager.roomClients[socket.id];
-      for (var room in rooms) {
-        socket.leave(room);
-      }
-    });
+    // socket.on('disconnect', function () {
+    //   // this returns a list of all rooms this user is in
+    //   var rooms = io.sockets.manager.roomClients[socket.id];
+    //   for (var room in rooms) {
+    //     socket.leave(room);
+    //   }
+    // });
 
     // socket.emit(constants.TRADE_USERS_CANCELLED_ORDERS_EVENT, await socket_functions.getCancelledOrdersData( user_id, pair[0], pair[1]); 0 );
     // socket.emit(constants.TRADE_USERS_PENDING_ORDERS_EVENT, await socket_functions.getPendingOrdersData( user_id, pair[0], pair[1]), 0 );
