@@ -1,6 +1,7 @@
 const Influx = require('influx');
 var { AppController } = require('./AppController');
-var TradeHistoryModel = require("../../models/TradeHistoryInflux");
+var TradeHistoryModel = require("../../models/TradeHistory");
+var TradeHistoryModelInflux = require("../../models/TradeHistoryInflux");
 var CoinsModel = require("../../models/Coins");
 var Fees = require("../../models/Fees");
 var moment = require('moment');
@@ -186,7 +187,7 @@ class InfluxController extends AppController {
                 table_name)
 
 
-            var tradeData = await TradeHistoryModel
+            var tradeData = await TradeHistoryModelInflux
                 .query()
                 .select()
                 .where("deleted_at", null)
