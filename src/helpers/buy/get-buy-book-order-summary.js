@@ -74,7 +74,8 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
     var buyTotal = {
         "data": buyBookOrders,
         "total": totalQuantityFill,
-        "total_quantity": totalQuantity
+        "total_quantity": totalQuantity,
+        "name": crypto + "-" + currency
     }
 
     return (buyTotal)
