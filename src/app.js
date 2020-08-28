@@ -216,6 +216,7 @@ io.on('connection', async function (socket) {
   })
 
   socket.on("trade_users_history_event", async function (data) {
+    console.log("data", data)
     var socket_headers = socket.request.headers;
     var authentication = await require("./config/authorization")(socket_headers);
     if (authentication.status > constants.SUCCESS_CODE) {

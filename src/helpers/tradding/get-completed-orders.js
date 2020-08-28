@@ -4,7 +4,9 @@ Get Completed Orders of Users
 var moment = require('moment');
 var TradeHistoryModel = require("../../models/TradeHistory");
 
-var getCompletedOrders = async (user_id, crypto, currency, month, limit = 500) => {
+var getCompletedOrders = async (user_id, crypto, currency, month, limit = 50, offset = 0) => {
+
+    console.log(user_id, crypto, currency, month)
 
     // Redis
     const redis = require("redis");
@@ -23,6 +25,19 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 500) =
         .utc()
         .subtract(month, 'months')
         .format();
+
+    // var totalTradeData = await TradeHistoryModel
+    //     .query()
+    //     .count(id)
+    //     .where('deleted_at', null)
+    //     .andWhere('settle_currency', crypto)
+    //     .andWhere('currency', currency)
+    //     .andWhere('created_at', '>=', yesterday)
+    //     .andWhere(builder => {
+    //         builder.where('user_id', user_id)
+    //             .orWhere('requested_user_id', user_id)
+    //     })
+    //     .orderBy('id', 'DESC')
 
     var tradeData = await TradeHistoryModel
         .query()
@@ -53,10 +68,15 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 500) =
                 .orWhere('requested_user_id', user_id)
         })
         .orderBy('id', 'DESC')
-        .limit(limit);
+        .page(parseInt(offset - 1), limit);
+
+    console.log("tradeData", tradeData)
 
     // redis_client.setex(`${user_id}-${crypto}-${currency}-${month}-completed-orders`, 3000, JSON.stringify(tradeData));
-    return tradeData;
+    return {
+        data: tradeData.results,
+        total: tradeData.total
+    };
 }
 
 var getUserCompletedOrders = async (user_id, crypto, currency, limit = 2000, page, fromDate = '', toDate = '') => {
