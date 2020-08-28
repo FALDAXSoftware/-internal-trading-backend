@@ -5,12 +5,12 @@ let ch = null;
 // console.log("CONN_URL", CONN_URL)
 
 var createConnection = amqp.connect(CONN_URL, opt, async (err, conn) => {
-    console.log("-------------------", err)
+    // console.log("-------------------", err)
     if (err) {
         await module.exports.createConnection();
         return 1
     }
-    console.log("conn", conn);
+    // console.log("conn", conn);
     await module.exports.createConnectionChannel(conn);
     // console.log("---------------------------------");
     // console.log("---------------------------------");
@@ -40,9 +40,9 @@ var createConnection = amqp.connect(CONN_URL, opt, async (err, conn) => {
 });
 
 var createConnectionChannel = async (conn) => {
-    console.log("INSIDE CREATE CONNECTION CHANNEL", conn)
+    // console.log("INSIDE CREATE CONNECTION CHANNEL", conn)
     conn.createChannel(async function (err, channel) {
-        console.log("err", err)
+        // console.log("err", err)
         if (err) {
             await module.exports.createConnectionChannel(conn);
             return 1;
@@ -77,8 +77,8 @@ var createAssertQueue = async (channel, queuename, flag) => {
 
 var consumeBuyQueue = async (ch, conn) => {
     ch.consume(process.env.QUEUE_NAME + '-' + 'Buy', async (msg, err) => {
-        console.log("err", err);
-        console.log("msg", msg)
+        // console.log("err", err);
+        // console.log("msg", msg)
         if (msg == null) {
             await module.exports.createConnectionChannel(conn)
             return 1;
@@ -115,10 +115,10 @@ var consumeBuyQueue = async (ch, conn) => {
         switch (type) {
             case "Market":
                 if (dataValue.side == "Buy" && pendingDataStatus.is_cancel == false) {
-                    console.log("INSIDE BY")
+                    // console.log("INSIDE BY")
                     tradeData.makeMarketBuyOrder(dataValue.symbol, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.user_id, dataValue.res, dataValue.crypto, dataValue.currency, [], 0.0, dataValue.pending_order_id, dataValue.is_checkbox_enabled)
                         .then((orderDataResponse) => {
-                            console.log("orderDataResponse", orderDataResponse)
+                            // console.log("orderDataResponse", orderDataResponse)
                             ch.ack(msg)
                         })
                         .catch((err) => {
@@ -129,7 +129,7 @@ var consumeBuyQueue = async (ch, conn) => {
                 }
             case "Limit":
                 if (dataValue.side == "Buy" && (dataValue.pending_order_id == undefined || pendingDataStatus.is_cancel == false)) {
-                    console.log("dataValue", dataValue)
+                    // console.log("dataValue", dataValue)
                     tradeData.limitBuyOrder(dataValue.symbol, dataValue.user_id, dataValue.side, dataValue.order_type, dataValue.orderQuantity, dataValue.limit_price, dataValue.res, dataValue.flag, dataValue.crypto, dataValue.currency, [], dataValue.pending_order_id, dataValue.is_checkbox_enabled)
                         .then((orderDataResponse) => {
                             // console.log("orderDataResponse", orderDataResponse)

@@ -125,11 +125,13 @@ var getUserOrdersData = async (data) => {
     var currency = pair[1];
     var month = data.month;
     var limit = data.limit
+    var offset = data.page;
     if (data.flag == 1) {
         // var value = await client.get(`${user_id}-${crypto}-${currency}-${month}-completed-orders`);
         // if (value == null) {
         let helper = require("../../helpers/tradding/get-completed-orders");
-        var value = await helper.getCompletedOrders(user_id, crypto, currency, month);
+        console.log(user_id, crypto, currency, month, limit, offset)
+        var value = await helper.getCompletedOrders(user_id, crypto, currency, month, limit, offset);
         // } else {
         //     value = JSON.parse(value);
         //     value.flag = true;
@@ -140,7 +142,7 @@ var getUserOrdersData = async (data) => {
         // var value = await client.get(`${user_id}-${crypto}-${currency}-${month}-pending-orders`);
         // if (value == null) {
         let helper = require("../../helpers/tradding/get-pending-orders");
-        var value = await helper.getPendingOrders(user_id, crypto, currency, month, limit);
+        var value = await helper.getPendingOrders(user_id, crypto, currency, month, limit, offset);
         // } else {
         //     value = JSON.parse(value);
         //     value.flag = true;
