@@ -19,7 +19,7 @@ var moment = require('moment');
 
 var i18n = require("i18n");
 var WalletModel = require("../../models/Wallet");
-// var addCancel = require("../activity/add-cancel-activity");
+var addCancel = require("../activity/add-cancel-activity");
 
 var cancelPendinOrder = require("../pending/cancel-pending-data");
 
@@ -233,7 +233,12 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var orderValue = {
                         ...sellLimitOrderData
                     }
-                    // var addCancelActivity = await addCancel.addActivityData(orderValue)
+
+                    orderValue.quantity = sellLimitOrderData.quantity;
+                    orderValue.is_cancel = true;
+                    orderValue.reason = "Self Execution Order"
+
+                    var addCancelActivity = await addCancel.addActivityData(orderValue)
                     var updateUserBalance = await WalletModel
                         .query()
                         .first()
@@ -527,7 +532,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     }
 
                     console.log("orderData", orderData)
-                    var activityResult = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, orderData);
+                    var activityResult = await ActivityUpdateHelper.updateActiv
+                    ityData(buyBook[0].activity_id, orderData);
 
                     var buyRecurseData = {
                         ...sellLimitOrderData
