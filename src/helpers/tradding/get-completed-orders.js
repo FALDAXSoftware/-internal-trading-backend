@@ -68,15 +68,17 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 50, of
                 .orWhere('requested_user_id', user_id)
         })
         .orderBy('id', 'DESC')
-        .page(parseInt(offset - 1), limit);
+        .limit(limit)
+    // .page(parseInt(offset - 1), limit);
 
     console.log("tradeData", tradeData)
 
     // redis_client.setex(`${user_id}-${crypto}-${currency}-${month}-completed-orders`, 3000, JSON.stringify(tradeData));
-    return {
-        data: tradeData.results,
-        total: tradeData.total
-    };
+    // return {
+    //     data: tradeData.results,
+    //     total: tradeData.total
+    // };
+    return tradeData;
 }
 
 var getUserCompletedOrders = async (user_id, crypto, currency, limit = 2000, page, fromDate = '', toDate = '') => {
