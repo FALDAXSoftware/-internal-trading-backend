@@ -1,7 +1,6 @@
 const Influx = require('influx');
 var { AppController } = require('./AppController');
 var TradeHistoryModel = require("../../models/TradeHistory");
-var TradeHistoryModelInflux = require("../../models/TradeHistoryInflux");
 var CoinsModel = require("../../models/Coins");
 var Fees = require("../../models/Fees");
 var moment = require('moment');
@@ -100,61 +99,6 @@ const influx = new Influx.InfluxDB({
             tags: [
                 'pair'
             ]
-        },
-        {
-            measurement: 'trade_history_btc_pax',
-            // time: Influx.FieldType.STRING,
-            fields: {
-                price: Influx.FieldType.FLOAT,
-                amount: Influx.FieldType.FLOAT
-            },
-            tags: [
-                'pair'
-            ]
-        },
-        {
-            measurement: 'trade_history_eth_pax',
-            // time: Influx.FieldType.STRING,
-            fields: {
-                price: Influx.FieldType.FLOAT,
-                amount: Influx.FieldType.FLOAT
-            },
-            tags: [
-                'pair'
-            ]
-        },
-        {
-            measurement: 'trade_history_ltc_pax',
-            // time: Influx.FieldType.STRING,
-            fields: {
-                price: Influx.FieldType.FLOAT,
-                amount: Influx.FieldType.FLOAT
-            },
-            tags: [
-                'pair'
-            ]
-        },
-        {
-            measurement: 'trade_history_xrp_pax',
-            // time: Influx.FieldType.STRING,
-            fields: {
-                price: Influx.FieldType.FLOAT,
-                amount: Influx.FieldType.FLOAT
-            },
-            tags: [
-                'pair'
-            ]
-        },
-        {
-            measurement: 'trade_history_bch_pax',
-            // time: Influx.FieldType.STRING,
-            fields: {
-                price: Influx.FieldType.FLOAT,
-                amount: Influx.FieldType.FLOAT
-            },
-            tags: [
-                'pair'
-            ]
         }
     ]
 })
@@ -187,7 +131,7 @@ class InfluxController extends AppController {
                 table_name)
 
 
-            var tradeData = await TradeHistoryModelInflux
+            var tradeData = await TradeHistoryModel
                 .query()
                 .select()
                 .where("deleted_at", null)

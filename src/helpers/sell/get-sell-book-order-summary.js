@@ -5,7 +5,7 @@ const {
 var sellOrderBookSummary = async (crypto, currency) => {
     var sellBookOrder = await SellBookModel
         .query()
-        .select('price')
+        .select('price', 'quantity')
         .sum('quantity as quantity')
         .where('deleted_at', null)
         .andWhere('quantity', '>', 0)
