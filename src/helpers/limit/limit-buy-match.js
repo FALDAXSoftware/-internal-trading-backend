@@ -17,8 +17,11 @@ var Users = require("../../models/UsersModel");
 var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
+
 var i18n = require("i18n");
 var WalletModel = require("../../models/Wallet");
+var addCancel = require("../activity/add-cancel-activity");
+
 
 var cancelPendinOrder = require("../pending/cancel-pending-data");
 
@@ -120,6 +123,17 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     console.log("orderData", orderData)
                     console.log("sellBook[0].activity_id", sellBook[0].activity_id)
                     let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
+
+                    var orderValue = {
+                        ...buyLimitOrderData
+                    }
+
+                    orderValue.quantity = sellLimitOrderData.quantity;
+                    orderValue.is_cancel = true;
+                    orderValue.reason = "Self Execution Order"
+
+                    var addCancelActivity = await addCancel.addActivityData(orderValue)
+
                     var updateUserBalance = await WalletModel
                         .query()
                         .first()
@@ -301,7 +315,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                     .andWhere("deleted_at", null)
                                     .patch({
                                         is_executed: true,
-                                        reason: "Self Order Execution"
+                                        reason: "Self Execution Order"
                                     })
                             }
 
@@ -438,7 +452,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                 .andWhere("deleted_at", null)
                                 .patch({
                                     is_executed: true,
-                                    reason: "Self Order Execution"
+                                    reason: "Self Execution Order"
                                 })
                         }
                     }

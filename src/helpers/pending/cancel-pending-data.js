@@ -72,7 +72,7 @@ var cancelPendingOrder = async (side, type, id, flag = false) => {
                 .andWhere('id', pendingBookDetailsBuy.activity_id)
                 .patch({
                     is_cancel: true,
-                    reason: (flag == true) ? ("Self Order Execution") : (" ")
+                    reason: (flag == true) ? ("Self Execution Order") : (" ")
                 })
 
             var updateSql = `UPDATE buy_book
@@ -138,7 +138,7 @@ var cancelPendingOrder = async (side, type, id, flag = false) => {
                 .andWhere('deleted_at', null)
                 .patch({
                     is_cancel: true,
-                    reason: (flag == true) ? ("Self Order Execution") : (" ")
+                    reason: (flag == true) ? ("Self Execution Order") : (" ")
                 })
 
             var updateSql = `UPDATE sell_book
