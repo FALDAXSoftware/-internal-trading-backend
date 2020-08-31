@@ -37,7 +37,7 @@ var getBuyBookDataSummary = async (crypto, currency) => {
     var value = await client.get(`buy-book-${pair}`);
     var data;
 
-    console.log("value", value)
+    // console.log("value", value)
 
     if (value != null) {
         data = JSON.parse(value);
