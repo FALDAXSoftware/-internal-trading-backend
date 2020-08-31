@@ -848,7 +848,7 @@ class DashboardController extends AppController {
                                 await SellAdd.SellOrderAdd(limitOrderData);
                             }
                             // }
-                            let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
+                            // let emit_socket = await socketHelper.emitTrades(crypto, currency, [process.env.TRADEDESK_USER_ID])
                         }
                         // }, i * 800)
                     }
