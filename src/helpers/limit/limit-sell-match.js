@@ -532,8 +532,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     }
 
                     console.log("orderData", orderData)
-                    var activityResult = await ActivityUpdateHelper.updateActiv
-                    ityData(buyBook[0].activity_id, orderData);
+                    var activityResult = await ActivityUpdateHelper.updateActivityData(buyBook[0].activity_id, orderData);
 
                     var buyRecurseData = {
                         ...sellLimitOrderData
