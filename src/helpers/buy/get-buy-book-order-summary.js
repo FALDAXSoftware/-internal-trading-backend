@@ -17,7 +17,7 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         .orderBy('price', 'DESC')
         .limit(100);
 
-    // console.log("BUY BOK", buyBookOrders)
+    console.log("BUY BOK", buyBookOrders)
 
     // var buyBookOrdersObjection = await BuyBookModel
     //     .query()
@@ -71,10 +71,14 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
     // var totalQuanityData = await BuyBookModel.knex().raw(totalQuantitySql);
     // console.log("totalQuantitySql", totalQuantitySql)
 
+    var pair = `${crypto}-${currency}`
+    console.log("pair", pair)
+
     var buyTotal = {
         "data": buyBookOrders,
         "total": totalQuantityFill,
-        "total_quantity": totalQuantity
+        "total_quantity": totalQuantity,
+        "name": pair
     }
 
     return (buyTotal)

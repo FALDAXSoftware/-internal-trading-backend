@@ -47,9 +47,12 @@ var sellOrderBookSummary = async (crypto, currency) => {
     // var totalData = await SellBookModel.knex().raw(totalSql)
     // console.log("totalData", totalData)
 
+    var pair = `${crypto}-${currency}`
+
     var sellTotal = {
         "data": sellBookOrder,
-        "total": totalQuantity
+        "total": totalQuantity,
+        "name": pair
     }
 
 
