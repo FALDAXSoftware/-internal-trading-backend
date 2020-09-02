@@ -292,7 +292,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             quantity: selfRemainningQuantity
                         }
                         console.log("orderData", orderData)
-                        let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
+                        let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData, true);
                         var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id, true);
 
                         console.log("cancelPendingOrder", cancelPendingOrder)
@@ -424,7 +424,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     }
 
                     console.log("orderData", orderData)
-                    var activityResult = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
+                    var activityResult = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData, true);
 
                     var buyRecurseData = {
                         ...buyLimitOrderData
