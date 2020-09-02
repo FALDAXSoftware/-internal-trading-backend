@@ -612,7 +612,7 @@ class DashboardController extends AppController {
             var now = new Date();
 
             await request({
-                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=50`,
+                url: `https://api.binance.com/api/v3/depth?symbol=${pair}&limit=5`,
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
@@ -621,6 +621,7 @@ class DashboardController extends AppController {
             }, async function (err, httpResponse, body) {
                 var bidValue = body.bids;
                 var askValue = body.asks;
+                // console.log("body", body)
                 let { crypto, currency } = await Currency.get_currencies(pair_name);
                 var maxValue = await PairsModel
                     .query()
@@ -629,6 +630,8 @@ class DashboardController extends AppController {
                     .where("deleted_at", null)
                     .andWhere("name", pair_name)
                     .orderBy("id", 'DESC');
+
+                // console.log("maxValue", maxValue)
 
                 if (maxValue.bot_status == true) {
 
@@ -644,6 +647,8 @@ class DashboardController extends AppController {
                     var min = (maxValue.crypto_minimum) / (usdValue);
                     var max = (maxValue.crypto_maximum) / (usdValue);
                     var mergedArray = [];
+                    // console.log("min", min)
+                    // console.log("max", max);
                     for (var i = 0; i < bidValue.length; i++) {
                         bidValue[i][2] = "Buy"
                         if (bidValue[i][1] > max) {
@@ -700,9 +705,12 @@ class DashboardController extends AppController {
                         if (mergedArray[i][2] == 'Buy') {
                             bookData = await SellBookHelper.sellOrderBookSummary(crypto, currency);
                             if (bookData.data.length > 0) {
-                                // console.log("priceValue", priceValue);
-                                // console.log("bookData.data[0].price", bookData.data[0].price);
-                                // console.log("priceValue >= bookData.data[0].price", priceValue >= bookData.data[0].price)
+                                var percentValue = (bookData.total * (maxValue.order_maximum / 100));
+                                if (percentValue < mergedArray[i][1]) {
+
+                                    mergedArray[i][1] = Math.random() * (percentValue - min) + min;
+                                }
+
                                 if (priceValue >= bookData.data[0].price) {
                                     flagValue = true
                                 } else {
@@ -713,9 +721,13 @@ class DashboardController extends AppController {
                         if (mergedArray[i][2] == 'Sell') {
                             bookData = await BuyBookHelper.getBuyBookOrderSummary(crypto, currency);
                             if (bookData.data.length > 0) {
-                                // console.log("priceValue", priceValue);
-                                // console.log("bookData.data[0].price", bookData.data[0].price);
-                                // console.log("priceValue <= bookData.data[0].price", priceValue <= bookData.data[0].price)
+
+                                var percentValue = (bookData.total_quantity * (maxValue.order_maximum / 100));
+                                if (percentValue < mergedArray[i][1]) {
+
+                                    mergedArray[i][1] = Math.random() * (percentValue - min) + min;
+                                }
+
                                 if (priceValue <= bookData.data[0].price) {
                                     flagValue = true;
                                 } else {
@@ -723,18 +735,10 @@ class DashboardController extends AppController {
                                 }
                             }
                         }
-                        // console.log("bookData", bookData)
-                        // console.log("flagValue", flagValue)
-                        // console.log("bookData.data.length", bookData.data.length)
-                        // console.log("bookData.data.length > 0 && flagValue == true", bookData.data.length > 0 && flagValue == true)
+
                         // Check if book data found
                         if (bookData.data.length > 0 && flagValue == true) {
-                            // console.log("UNDER Execution----------------------------------------------------------------------");
-                            // Check if quantity is greater than maximum crypto set by admin
-                            // var availableQuantity = bookData[0].quantity;
-                            // console.log('availableQuantity < max', availableQuantity < max);
-                            // if ( availableQuantity < max ) {
-                            // quantityValue = parseFloat(max)-parseFloat(availableQuantity);
+
                             var buyLimitOrderData = {
                                 'user_id': process.env.TRADEDESK_USER_ID,
                                 'symbol': pair_name,
@@ -776,33 +780,8 @@ class DashboardController extends AppController {
                                 currency: currency_coin_id.id,
                             }
                             QueueValue.cronPublishToQueue(queueName, queueData)
-                            // }
+
                         } else {
-                            // console.log("Book is empty under addittion ......");
-                            let bookData;
-                            // if (mergedArray[i][2] == 'Buy') {
-                            //     bookData = await BuyBookHelperAdd.BuyBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
-                            // }
-                            // if (mergedArray[i][2] == 'Sell') {
-                            //     bookData = await SellBookHelperAdd.SellBookOrderData(crypto, currency, parseFloat(mergedArray[i][0]));
-                            // }
-
-                            // console.log("bookData", bookData.length)
-
-                            // var flag = false;
-                            // if (bookData.length > 0) {
-                            //     var availableQuantity = bookData[0].quantity;
-                            //     // console.log('availableQuantity < max', availableQuantity < max);
-                            //     // console.log("bookData", bookData);
-                            //     if (availableQuantity < max) {
-                            //         quantityValue = parseFloat(parseFloat(max) - parseFloat(availableQuantity)).toFixed(8);
-                            //         flag = true;
-                            //     }
-                            // } else {
-                            //     flag = true;
-                            // }
-                            // console.log("flag", flag)
-                            // if (flag == true) {
                             var limitOrderData = {
                                 'user_id': process.env.TRADEDESK_USER_ID,
                                 'symbol': pair_name,
