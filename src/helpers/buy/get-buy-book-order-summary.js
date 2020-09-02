@@ -93,7 +93,7 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         "name": crypto + "-" + currency
     }
 
-    console.log("buyTotal", buyTotal)
+    // console.log("buyTotal", buyTotal)
 
     var pair = `${crypto}-${currency}`;
 
