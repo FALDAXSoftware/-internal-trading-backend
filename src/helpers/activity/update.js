@@ -1,6 +1,6 @@
 var ActivityTableModel = require("../../models/Activity")
 
-var updateActivityData = async (id, orderData) => {
+var updateActivityData = async (id, orderData, flag = false) => {
     var activityData = await ActivityTableModel
         .query()
         .first()
@@ -13,6 +13,10 @@ var updateActivityData = async (id, orderData) => {
     console.log("activityData.quantity", activityData.quantity)
 
     var quantityValue = parseFloat(activityData.quantity) - parseFloat(orderData.quantity)
+
+    if (flag == true) {
+        quantityValue = orderData.quantity
+    }
 
     var updateActivityHistory = await ActivityTableModel
         .query()
