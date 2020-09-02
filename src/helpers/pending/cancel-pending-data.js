@@ -92,7 +92,8 @@ var cancelPendingOrder = async (side, type, id, flag = false) => {
                 .select()
                 .where('deleted_at', null)
                 .andWhere('id', id)
-                .orderBy('id', 'DESC')
+                .orderBy('id', 'DESC');
+
             if (pendingBookDetailsSell == undefined) {
                 return (1);
             }
