@@ -14,7 +14,12 @@ var updateActivityData = async (id, orderData, flag = false) => {
 
     var quantityValue = parseFloat(activityData.quantity) - parseFloat(orderData.quantity)
 
-    if (flag == true) {
+    console.log("flag", flag);
+    console.log("quantityValue", quantityValue)
+
+    if (flag == true && orderData.quantity == 0) {
+        quantityValue = parseFloat(activityData.quantity)
+    } else if (flag == true) {
         quantityValue = orderData.quantity
     }
 
