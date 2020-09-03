@@ -4,6 +4,8 @@ var TradeHistoryModel = require("../../models/TradeHistory");
 var CoinsModel = require("../../models/Coins");
 var Fees = require("../../models/Fees");
 var moment = require('moment');
+var databaseInflux = require("../../config/database_influx");
+// var TradeHistoryInfluxModel = TradeHistoryModel.bindKnex(databaseInflux);
 
 const influx = new Influx.InfluxDB({
     host: process.env.INFLUX_HOST,
@@ -99,6 +101,61 @@ const influx = new Influx.InfluxDB({
             tags: [
                 'pair'
             ]
+        },
+        {
+            measurement: 'trade_history_btc_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_eth_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_ltc_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_xrp_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        },
+        {
+            measurement: 'trade_history_bch_pax',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
         }
     ]
 })
@@ -128,12 +185,17 @@ class InfluxController extends AppController {
             console.log(pair_name,
                 limit,
                 offset,
-                table_name)
+                table_name);
+
+            console.log("databaseInflux", databaseInflux)
+
+            var db = new databaseInflux();
+            var knex = db.connect("pre_faldax");
 
 
-            var tradeData = await TradeHistoryModel
-                .query()
+            var tradeData = await knex
                 .select()
+                .from('trade_history')
                 .where("deleted_at", null)
                 .andWhere("symbol", pair)
                 .andWhere("created_at", "<=", "2020-08-27T00:00:00")
