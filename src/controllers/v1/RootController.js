@@ -8,11 +8,11 @@ var databaseInflux = require("../../config/database_influx");
 // var TradeHistoryInfluxModel = TradeHistoryModel.bindKnex(databaseInflux);
 
 const influx = new Influx.InfluxDB({
-    host: process.env.INFLUX_HOST,
-    port: process.env.INFLUX_PORT,
-    database: process.env.INFLUX_DATABASE,
-    username: process.env.INFLUX_USERNAME,
-    password: process.env.INFLUX_PASSWORD,
+    host: process.env.PROD_INFLUX_HOST,
+    port: process.env.PROD_INFLUX_PORT,
+    database: process.env.PROD_INFLUX_DATABASE,
+    username: process.env.PROD_INFLUX_USERNAME,
+    password: process.env.PROD_INFLUX_PASSWORD,
     schema: [
         {
             measurement: 'trade_history_xrp_btc',
