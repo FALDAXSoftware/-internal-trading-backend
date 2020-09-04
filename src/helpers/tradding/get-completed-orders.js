@@ -71,7 +71,7 @@ var getCompletedOrders = async (user_id, crypto, currency, month, limit = 50, of
         .limit(limit)
     // .page(parseInt(offset - 1), limit);
 
-    console.log("tradeData", tradeData)
+    // console.log("tradeData", tradeData)
 
     // redis_client.setex(`${user_id}-${crypto}-${currency}-${month}-completed-orders`, 3000, JSON.stringify(tradeData));
     // return {
