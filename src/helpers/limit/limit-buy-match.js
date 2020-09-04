@@ -72,7 +72,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             }
         }
 
-        console.log(buyLimitOrderData, crypto, currency, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
+        console.log("buyLimitOrderData", buyLimitOrderData);
+
+        // console.log(buyLimitOrderData, crypto, currency, res, crypto_coin_id, currency_coin_id, allOrderData, originalQuantityValue, pending_order_id)
         var pairDetails = await PairsModel
             .query()
             .first()
@@ -103,25 +105,28 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             checkSelfExecution = true;
         }
 
-        // console.log("sellBook.length", sellBook.length)
+        console.log("sellBook.length", sellBook.length)
         // console.log("sellBook[0].user_id == buyLimitOrderData.user_id", sellBook[0].user_id == buyLimitOrderData.user_id)
-        // console.log("checkSelfExecution", checkSelfExecution)
+        console.log("checkSelfExecution", checkSelfExecution)
 
         if (sellBook && sellBook.length > 0) {
-            if (sellBook[0].user_id == buyLimitOrderData.user_id && checkSelfExecution == false && (buyLimitOrderData.order_type == "Limit") ? (sellBook[0].limit_price >= buyLimitOrderData.limit_price) : (sellBook[0].limit_price >= buyLimitOrderData.stop_price && sellBook[0].limit_price <= buyLimitOrderData.limit_price)) {
-                // console.log("INSIDE IF")
-                // console.log("sellBook[0].quantity > buyLimitOrderData.quantity", sellBook[0].quantity > buyLimitOrderData.quantity)
-                // console.log("sellBook[0].quantity == buyLimitOrderData.quantity", sellBook[0].quantity == buyLimitOrderData.quantity)
-                // console.log("sellBook[0].quantity < buyLimitOrderData.quantity", sellBook[0].quantity < buyLimitOrderData.quantity)
+            console.log("sellBook[0].user_id == buyLimitOrderData.user_id", sellBook[0].user_id == buyLimitOrderData.user_id)
+            console.log(buyLimitOrderData.order_type == "Limit")
+            console.log("(sellBook[0].limit_price >= buyLimitOrderData.limit_price)", (sellBook[0].price <= buyLimitOrderData.limit_price))
+            if (sellBook[0].user_id == buyLimitOrderData.user_id && checkSelfExecution == false && ((buyLimitOrderData.order_type == "Limit") ? (sellBook[0].price <= buyLimitOrderData.limit_price) : (sellBook[0].price >= buyLimitOrderData.stop_price && sellBook[0].price <= buyLimitOrderData.limit_price))) {
+                console.log("INSIDE IF")
+                console.log("sellBook[0].quantity > buyLimitOrderData.quantity", sellBook[0].quantity > buyLimitOrderData.quantity)
+                console.log("sellBook[0].quantity == buyLimitOrderData.quantity", sellBook[0].quantity == buyLimitOrderData.quantity)
+                console.log("sellBook[0].quantity < buyLimitOrderData.quantity", sellBook[0].quantity < buyLimitOrderData.quantity)
                 if (sellBook[0].quantity > buyLimitOrderData.quantity) {
-                    // console.log("INSIDE FIRST IF")
+                    console.log("INSIDE FIRST IF")
                     var selfRemainningQuantity = parseFloat(sellBook[0].quantity) - parseFloat(buyLimitOrderData.quantity);
-                    // console.log("selfRemainningQuantity", selfRemainningQuantity)
+                    console.log("selfRemainningQuantity", selfRemainningQuantity)
                     var orderData = {
                         quantity: selfRemainningQuantity
                     }
-                    // console.log("orderData", orderData)
-                    // console.log("sellBook[0].activity_id", sellBook[0].activity_id)
+                    console.log("orderData", orderData)
+                    console.log("sellBook[0].activity_id", sellBook[0].activity_id)
                     let updatedActivity = await ActivityUpdateHelper.updateActivityData(sellBook[0].activity_id, orderData);
 
                     var orderValue = {
@@ -131,10 +136,11 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     orderValue.quantity = buyLimitOrderData.quantity;
                     orderValue.is_cancel = true;
                     orderValue.reason = "Self Execution Order";
-                    orderValue.order_type = 'Sell';
+                    orderValue.order_type = 'Limit';
+                    // orderValue
                     delete orderValue.activity_id;
 
-                    // console.log("orderValue", orderValue)
+                    console.log("orderValue", orderValue)
 
                     var addCancelActivity = await addCancel.addActivityData(orderValue)
 
@@ -439,6 +445,9 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                     var cancelPendingOrder = await cancelPendinOrder.cancelPendingOrder("Sell", "Limit", sellBook[0].id, true);
                     // console.log("cancelPendingOrder", cancelPendingOrder)
                     // console.log("pending_order_id", pending_order_id)
+
+                    delete buyRecurseData.fill_price;
+                    buyRecurseData.fill_price = 0.0;
 
                     if (pending_order_id != 0) {
                         var getPendingData = await PendingOrderExecutuionModel
