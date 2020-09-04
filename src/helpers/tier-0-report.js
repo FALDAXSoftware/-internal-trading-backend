@@ -16,9 +16,9 @@ var userTier0Report = async (user_id, amount, crypto) => {
             .andWhere("id", user_id)
             .orderBy("id", "DESC");
 
-        console.log("usersData", usersData)
+        // console.log("usersData", usersData)
 
-        console.log("usersData.account_tier", usersData.account_tier)
+        // console.log("usersData.account_tier", usersData.account_tier)
 
         if (usersData.account_tier == 0) {
 
@@ -30,16 +30,16 @@ var userTier0Report = async (user_id, amount, crypto) => {
                 .andWhere("tier_step", usersData.account_tier)
                 .orderBy("id", "DESC");
 
-            console.log("getTierDetails", getTierDetails)
+            // console.log("getTierDetails", getTierDetails)
 
             if (getTierDetails != undefined && getTierDetails.length > 0) {
                 var now = moment()
                     .local()
                     .format();
 
-                console.log("now", now)
+                // console.log("now", now)
 
-                console.log("getTierDetails[0].max_allowed_days", getTierDetails[0].max_allowed_days)
+                // console.log("getTierDetails[0].max_allowed_days", getTierDetails[0].max_allowed_days)
 
                 var unlimitedFlag = false;
                 if (getTierDetails[0].max_allowed_days != "Unlimited") {
@@ -51,7 +51,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
                     unlimitedFlag = true;
                 }
 
-                console.log("unlimitedFlag", unlimitedFlag)
+                // console.log("unlimitedFlag", unlimitedFlag)
 
                 if (unlimitedFlag == true || (moment(now).isBefore(after30Days))) {
                     var after1Day = moment(now)
@@ -83,9 +83,9 @@ var userTier0Report = async (user_id, amount, crypto) => {
                         userTradeHistorySum[element.user_coin ? element.user_coin : element.requested_coin] = element.total ? element.total : (element.user_sum ? element.user_sum : element.requested_sum)
                     }
 
-                    console.log("userTradeHistorySum", userTradeHistorySum)
+                    // console.log("userTradeHistorySum", userTradeHistorySum)
 
-                    console.log("userTradeHistorySum", userTradeHistorySum)
+                    // console.log("userTradeHistorySum", userTradeHistorySum)
 
                     var userTotalUSDSum = 0.0;
 
@@ -186,7 +186,7 @@ var userTier0Report = async (user_id, amount, crypto) => {
             data.account_tier_flag = false;
         }
 
-        console.log("data", data)
+        // console.log("data", data)
 
         return (data);
 
