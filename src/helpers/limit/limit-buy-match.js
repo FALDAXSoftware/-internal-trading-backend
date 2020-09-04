@@ -108,7 +108,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
         // console.log("checkSelfExecution", checkSelfExecution)
 
         if (sellBook && sellBook.length > 0) {
-            if (sellBook[0].user_id == buyLimitOrderData.user_id && checkSelfExecution == false && (buyLimitOrderData.order_type == "Limit") ? (sellBook[0].limit_price >= buyLimitOrderData.limit_price) : (sellBook[0].limit_price <= buyLimitOrderData.stop_price && sellBook[0].limit_price <= buyLimitOrderData.limit_price)) {
+            if (sellBook[0].user_id == buyLimitOrderData.user_id && checkSelfExecution == false && (buyLimitOrderData.order_type == "Limit") ? (sellBook[0].limit_price >= buyLimitOrderData.limit_price) : (sellBook[0].limit_price >= buyLimitOrderData.stop_price && sellBook[0].limit_price <= buyLimitOrderData.limit_price)) {
                 // console.log("INSIDE IF")
                 // console.log("sellBook[0].quantity > buyLimitOrderData.quantity", sellBook[0].quantity > buyLimitOrderData.quantity)
                 // console.log("sellBook[0].quantity == buyLimitOrderData.quantity", sellBook[0].quantity == buyLimitOrderData.quantity)
