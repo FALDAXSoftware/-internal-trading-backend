@@ -169,7 +169,7 @@ class InfluxController extends AppController {
     async writeInfluxData(req, res) {
         try {
 
-            console.log("influx", influx)
+            // console.log("influx", influx)
 
             // var pair_name = "xrpbtc";
             var {
