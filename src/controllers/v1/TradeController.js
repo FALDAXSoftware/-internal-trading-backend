@@ -4130,7 +4130,7 @@ class TradeController extends AppController {
     var now = moment();
     // console.log(now);
     var pendingData = await getPendingOrderDetails.getPendingOrderDetails();
-    // console.log(pendingData.length)
+    console.log(pendingData.length)
     for (var i = 0; i < pendingData.length; i++) {
       var {
         order_type,

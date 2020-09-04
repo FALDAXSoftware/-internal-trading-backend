@@ -96,22 +96,22 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
     let userTradeHistorySum = {}
     if (user_id != process.env.TRADEDESK_USER_ID) {
         // console.log("INSIDE IF USEr")
-        console.log(`SELECT(a1.sum + a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum, a1.user_coin, a2.requested_coin
-        FROM(SELECT user_coin,
-            SUM((CASE
-                WHEN side = 'Buy' THEN((quantity) * Cast(fiat_values ->> 'asset_1_usd' as double precision))
-                WHEN side = 'Sell' THEN((quantity * fill_price) * Cast(fiat_values ->> 'asset_2_usd' as double precision))
-            END)) as sum
-        FROM trade_history
-        WHERE user_id = ${ user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
-        FULL JOIN(SELECT requested_coin,
-            SUM((CASE
-                WHEN side = 'Buy' THEN((quantity * fill_price) * Cast(fiat_values ->> 'asset_2_usd' as double precision))
-                WHEN side = 'Sell' THEN((quantity) * Cast(fiat_values ->> 'asset_1_usd' as double precision))
-            END)) as sum
-        FROM trade_history
-        WHERE requested_user_id = ${ user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
-        ON a1.user_coin = a2.requested_coin`)
+        // console.log(`SELECT(a1.sum + a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum, a1.user_coin, a2.requested_coin
+        // FROM(SELECT user_coin,
+        //     SUM((CASE
+        //         WHEN side = 'Buy' THEN((quantity) * Cast(fiat_values ->> 'asset_1_usd' as double precision))
+        //         WHEN side = 'Sell' THEN((quantity * fill_price) * Cast(fiat_values ->> 'asset_2_usd' as double precision))
+        //     END)) as sum
+        // FROM trade_history
+        // WHERE user_id = ${ user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY user_coin) a1
+        // FULL JOIN(SELECT requested_coin,
+        //     SUM((CASE
+        //         WHEN side = 'Buy' THEN((quantity * fill_price) * Cast(fiat_values ->> 'asset_2_usd' as double precision))
+        //         WHEN side = 'Sell' THEN((quantity) * Cast(fiat_values ->> 'asset_1_usd' as double precision))
+        //     END)) as sum
+        // FROM trade_history
+        // WHERE requested_user_id = ${ user_id} AND created_at >= '${yesterday}' AND created_at <= '${now}' GROUP BY requested_coin) as a2
+        // ON a1.user_coin = a2.requested_coin`)
         let userTradesum = await TradeHistoryModel.knex().raw(`SELECT(a1.sum + a2.sum) as total, a1.sum as user_sum, a2.sum as requested_sum, a1.user_coin, a2.requested_coin
                                                                 FROM(SELECT user_coin,
                                                                     SUM((CASE
@@ -148,7 +148,7 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
 
     var totalCurrencyAmount = userTotalUSDSum;
 
-    console.log("totalCurrencyAmount", totalCurrencyAmount)
+    // console.log("totalCurrencyAmount", totalCurrencyAmount)
 
     var currencyMakerFee = await Fees
         .query()
@@ -157,7 +157,7 @@ var getUserWalletBalance = async (user_id, currency, crypto) => {
         .where('deleted_at', null)
         .andWhere('min_trade_volume', '<=', parseFloat(totalCurrencyAmount))
         .andWhere('max_trade_volume', '>=', parseFloat(totalCurrencyAmount));
-    console.log("currencyMakerFee", currencyMakerFee)
+    // console.log("currencyMakerFee", currencyMakerFee)
     var takerFee = currencyMakerFee.taker_fee
     var makerFee = currencyMakerFee.maker_fee
 

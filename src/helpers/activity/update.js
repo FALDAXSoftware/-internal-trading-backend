@@ -9,13 +9,13 @@ var updateActivityData = async (id, orderData, flag = false) => {
         .andWhere('id', id)
         .orderBy('id', 'DESC');
 
-    console.log("orderData", orderData);
-    console.log("activityData.quantity", activityData.quantity)
+    // console.log("orderData", orderData);
+    // console.log("activityData.quantity", activityData.quantity)
 
     var quantityValue = parseFloat(activityData.quantity) - parseFloat(orderData.quantity)
 
-    console.log("flag", flag);
-    console.log("quantityValue", quantityValue)
+    // console.log("flag", flag);
+    // console.log("quantityValue", quantityValue)
 
     if (flag == true && orderData.quantity == 0) {
         quantityValue = parseFloat(activityData.quantity)
