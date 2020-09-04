@@ -8,7 +8,9 @@ var stopLimitBuy = async (now, pending_order_book) => {
     var order = pending_order_book;
     var order_id = pending_order_book.id
     var lastPrice = await lastTradePrice.getLastTradePrice(order.settle_currency, order.currency);
+    console.log("lastPrice", lastPrice)
     var getActivityDetails = await activityDetails.getActivityDataId(order.activity_id);
+    console.log("getActivityDetails", getActivityDetails)
     var coinSql = `SELECT id, coin
                         FROM coins
                         WHERE is_active = 'true' AND deleted_at IS NULL
