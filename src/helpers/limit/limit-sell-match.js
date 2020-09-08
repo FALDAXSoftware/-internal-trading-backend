@@ -237,7 +237,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     orderValue.quantity = sellLimitOrderData.quantity;
                     orderValue.is_cancel = true;
                     orderValue.reason = "Self Execution Order";
-                    orderValue.order_type = 'Buy';
+                    // orderValue.order_type = 'Buy';
                     delete orderValue.activity_id;
 
                     var addCancelActivity = await addCancel.addActivityData(orderValue)
