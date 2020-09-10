@@ -224,7 +224,7 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                     var selfRemainningQuantity = parseFloat(buyBook[0].quantity) - parseFloat(sellLimitOrderData.quantity);
                     // console.log("selfRemainningQuantity", selfRemainningQuantity)
                     var orderData = {
-                        quantity: selfRemainningQuantity
+                        quantity: sellLimitOrderData.quantity
                     }
                     // console.log("orderData", orderData)
                     // console.log("sellBook[0].activity_id", buyBook[0].activity_id)
