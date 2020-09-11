@@ -32,35 +32,35 @@ var getSellBookData = async (crypto, currency) => {
 // Get Buy Book Data
 var getBuyBookDataSummary = async (crypto, currency) => {
     var pair = `${crypto}-${currency}`;
-    console.log("pair", pair)
-    var value = await client.get(`buy-book-${pair}`);
+    // console.log("pair", pair)
+    // var value = await client.get(`buy-book-${pair}`);
     var data;
 
-    // console.log("value", value)
+    // // console.log("value", value)
 
-    if (value != null) {
-        data = JSON.parse(value);
-    } else {
+    // if (value != null) {
+    //     data = JSON.parse(value);
+    // } else {
 
-        let helper = require("../../helpers/buy/get-buy-book-order-summary");
-        data = await helper.getBuyBookOrderSummary(crypto, currency);
-    }
+    let helper = require("../../helpers/buy/get-buy-book-order-summary");
+    data = await helper.getBuyBookOrderSummary(crypto, currency);
+    // }
     return data;
 
 
 }
 // Get Sell Book Data
 var getSellBookDataSummary = async (crypto, currency) => {
-    var pair = `${crypto}-${currency}`
-    var value = await client.get(`sell-book-${pair}`);
+    // var pair = `${crypto}-${currency}`
+    // var value = await client.get(`sell-book-${pair}`);
     var data;
 
-    if (value != null) {
-        data = JSON.parse(value);
-    } else {
-        let helper = require("../../helpers/sell/get-sell-book-order-summary");
-        data = await helper.sellOrderBookSummary(crypto, currency);
-    }
+    // if (value != null) {
+    //     data = JSON.parse(value);
+    // } else {
+    let helper = require("../../helpers/sell/get-sell-book-order-summary");
+    data = await helper.sellOrderBookSummary(crypto, currency);
+    // }
 
     return data;
 }

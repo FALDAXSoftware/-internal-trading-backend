@@ -50,7 +50,7 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         "name": pair
     }
 
-    redis_client.setex(`buy-book-${pair}`, 10, JSON.stringify(buyTotal));
+    // redis_client.setex(`buy-book-${pair}`, 10, JSON.stringify(buyTotal));
 
     return (buyTotal)
 }
