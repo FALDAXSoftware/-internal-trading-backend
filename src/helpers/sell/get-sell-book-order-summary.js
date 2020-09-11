@@ -70,9 +70,9 @@ var sellOrderBookSummary = async (crypto, currency) => {
         "name": pair
     }
 
-    redis_client.setex(`sell-book-${pair}`, 10, JSON.stringify(buyTotal));
+    redis_client.setex(`sell-book-${pair}`, 10, JSON.stringify(sellTotal));
 
-    return (buyTotal)
+    return (sellTotal)
 }
 
 module.exports = {
