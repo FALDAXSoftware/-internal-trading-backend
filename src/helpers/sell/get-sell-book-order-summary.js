@@ -2,6 +2,21 @@ var SellBookModel = require("../../models/SellBook");
 const {
     raw
 } = require('objection');
+
+// Redis
+const redis = require("redis");
+const axios = require("axios");
+const port_redis = 6379;
+const { promisify } = require("util");
+
+const asyncRedis = require("async-redis");
+const redis_client = asyncRedis.createClient({
+    port: process.env.REDIS_PORT,               // replace with your port
+    host: process.env.REDIS_HOST,        // replace with your hostanme or IP address
+    password: process.env.REDIS_PASSWORD   // replace with your password
+});
+
+
 var sellOrderBookSummary = async (crypto, currency) => {
     var sellBookOrder = await SellBookModel
         .query()
@@ -55,8 +70,9 @@ var sellOrderBookSummary = async (crypto, currency) => {
         "name": pair
     }
 
+    redis_client.setex(`sell-book-${pair}`, 10, JSON.stringify(buyTotal));
 
-    return (sellTotal);
+    return (buyTotal)
 }
 
 module.exports = {
