@@ -12,12 +12,8 @@ var getBuyBookOrder = async (crypto, currency) => {
         .andWhere('limit_price', '>', 0)
         .andWhere('settle_currency', crypto)
         .andWhere('currency', currency)
-        .orderBy(
-            {
-                'price': 'DESC',
-                'created_at': 'ASC'
-            }
-        )
+        .orderBy('price', 'DESC')
+        .orderBy('created_at', 'ASC')
         .limit(1);
     // var buyBookOrders = await BuyBookModel.knex().raw(`SELECT * FROM buy_book
     //                                                     WHERE deleted_at IS NULL AND quantity > 0 AND limit_price > 0
