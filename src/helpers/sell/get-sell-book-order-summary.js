@@ -3,6 +3,8 @@ const {
     raw
 } = require('objection');
 
+var logger = require("../../controllers/v1/logger");
+
 // Redis
 const redis = require("redis");
 const axios = require("axios");
@@ -18,6 +20,12 @@ const redis_client = asyncRedis.createClient({
 
 
 var sellOrderBookSummary = async (crypto, currency) => {
+    await logger.info({
+        "module": "Sell Order Book Query Started",
+        "user_id": "user_" + crypto, currency,
+        "url": "Sell Function",
+        "type": "info"
+    }, new Date());
     var sellBookOrder = await SellBookModel
         .query()
         .select('price')
@@ -69,6 +77,13 @@ var sellOrderBookSummary = async (crypto, currency) => {
         "total": totalQuantity,
         "name": pair
     }
+
+    await logger.info({
+        "module": "Sell Order Book Query Ended",
+        "user_id": "user_" + crypto, currency,
+        "url": "Sell Function",
+        "type": "info"
+    }, new Date());
 
     // redis_client.setex(`sell-book-${pair}`, 10, JSON.stringify(sellTotal));
 

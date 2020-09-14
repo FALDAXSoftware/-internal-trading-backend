@@ -9,6 +9,8 @@ const axios = require("axios");
 const port_redis = 6379;
 const { promisify } = require("util");
 
+var logger = require("../../controllers/v1/logger");
+
 const asyncRedis = require("async-redis");
 const redis_client = asyncRedis.createClient({
     port: process.env.REDIS_PORT,               // replace with your port
@@ -18,6 +20,13 @@ const redis_client = asyncRedis.createClient({
 
 
 var getBuyBookOrderSummary = async (crypto, currency) => {
+
+    await logger.info({
+        "module": "Buy Order Book Query Started",
+        "user_id": "user_" + crypto, currency,
+        "url": "Buy Function",
+        "type": "info"
+    }, new Date());
 
     var buyBookOrders = await BuyBookModel
         .query()
@@ -49,6 +58,13 @@ var getBuyBookOrderSummary = async (crypto, currency) => {
         "total_quantity": totalQuantity,
         "name": pair
     }
+
+    await logger.info({
+        "module": "Buy Order Book Query Ended",
+        "user_id": "user_" + crypto, currency,
+        "url": "Buy Function",
+        "type": "info"
+    }, new Date());
 
     // redis_client.setex(`buy-book-${pair}`, 10, JSON.stringify(buyTotal));
 
