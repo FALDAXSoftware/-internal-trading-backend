@@ -160,7 +160,7 @@ io.on('connection', async function (socket) {
 
     // socket.set('transports', ['websocket']);
 
-    console.log("room", room)
+    // console.log("room", room)
 
     var user_id = ((authentication.isAdmin == true) ? process.env.TRADEDESK_USER_ID : authentication.user_id);
     if (room.previous_room) {
@@ -181,10 +181,10 @@ io.on('connection', async function (socket) {
       socket.emit(constants.TRADE_PRECISION, await socket_functions.getTradePrecision(symbol));
     }
 
-    console.log("user_id", user_id);
-    console.log("symbol", symbol)
-    console.log("socket", socket)
-    console.log("socket.id", socket.id)
+    // console.log("user_id", user_id);
+    // console.log("symbol", symbol)
+    // console.log("socket", socket)
+    // console.log("socket.id", socket.id)
 
     socket.emit(constants.TRADE_USERS_COMPLETED_ORDERS_EVENT_FLAG, true);
     socket.emit(constants.TRADE_USER_WALLET_BALANCE, await socket_functions.getUserBalance(user_id, pair[0], pair[1]));
