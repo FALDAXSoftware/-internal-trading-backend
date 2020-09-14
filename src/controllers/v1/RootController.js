@@ -198,7 +198,8 @@ class InfluxController extends AppController {
                 .from('trade_history')
                 .where("deleted_at", null)
                 .andWhere("symbol", pair)
-                .andWhere("created_at", "<=", "2020-08-27T00:00:00")
+                .andWhere("created_at", ">=", "2020-08-27T00:00:00")
+                .andWhere("created_at", "<=", "2020-09-14T00:00:00")
                 .orderBy("id", "DESC")
                 .offset(offset)
                 .limit(limit);
