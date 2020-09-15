@@ -18,12 +18,57 @@ var socketHelper = require("../../helpers/sockets/emit-trades");
 var RefferalHelper = require("../get-refffered-amount");
 var fiatValueHelper = require("../get-fiat-value");
 
+// Influx setup
+const Influx = require('influx');
+const influx = new Influx.InfluxDB({
+    host: process.env.INFLUX_HOST,
+    port: process.env.INFLUX_PORT,
+    database: process.env.INFLUX_DATABASE,
+    username: process.env.INFLUX_USERNAME,
+    password: process.env.INFLUX_PASSWORD,
+    schema: [
+        {
+            measurement: 'trade_history_xrp_btc',
+            // time: Influx.FieldType.STRING,
+            fields: {
+                price: Influx.FieldType.FLOAT,
+                amount: Influx.FieldType.FLOAT
+            },
+            tags: [
+                'pair'
+            ]
+        }
+    ]
+})
+
+
 var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null, crypto_coin_id = null, currency_coin_id = null, allOrderData = [], originalQuantityValue = 0, pending_order_id = 0.0) => {
     try {
+
+        if (pending_order_id != 0) {
+            var getPendingData = await PendingOrderExecutuionModel
+                .query()
+                .first()
+                .select("is_cancel")
+                .where("id", pending_order_id)
+                .andWhere("deleted_at", null)
+                .orderBy("id", "DESC");
+
+            if (getPendingData != undefined) {
+                var getData = await PendingOrderExecutuionModel
+                    .query()
+                    .where("id", pending_order_id)
+                    .andWhere("deleted_at", null)
+                    .patch({
+                        is_executed: true
+                    })
+            }
+        }
+
         var pairDetails = await PairsModel
             .query()
             .first()
-            .select("name", "quantity_precision", "price_precision")
+            .select("name", "quantity_precision", "price_precision", "influx_table_name", "influx_pair_name")
             .where("deleted_at", null)
             .andWhere("name", buyLimitOrderData.symbol)
             .orderBy("id", "DESC");
@@ -128,6 +173,23 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         // console.log("BELOW DELETED")
                         // tradeHistory.txn_group_id = txnGroupId;
                         var tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+                        if (pairDetails.influx_pair_name != null) {
+                            await influx.writePoints([
+                                {
+                                    measurement: pairDetails.influx_table_name,
+                                    tags: { pair: pairDetails.influx_pair_name },
+                                    timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                                    fields: {
+                                        price: parseFloat(request.fill_price),
+                                        amount: parseFloat(request.quantity)
+                                    }
+                                }])
+                                .then(() => {
+                                    // console.log('Added data to the Db');
+                                });
+                        }
+
                         // console.log("tradeHistory", tradeHistory)
                         allOrderData.push(tradeHistory)
                         tradeOrder = tradeHistory;
@@ -137,7 +199,6 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             let updatedSellBook = await sellUpdate.updateSellBook(sellBook[0].id, {
                                 quantity: parseFloat(remainigQuantity).toFixed(pairDetails.quantity_precision)
                             });
-                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             var userData = userIds;
                             var tradeData = allOrderData;
 
@@ -206,6 +267,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
 
                             //Emit data in rooms
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             return {
                                 status: 1,
                                 message: 'Order Success',
@@ -216,7 +278,6 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             }
                         } else {
                             await sellDelete.deleteSellOrder(sellBook[0].id);
-                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             var userData = userIds;
                             var tradeData = allOrderData;
 
@@ -282,6 +343,8 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                                     }
                                 }
                             }
+
+                            let referredData = await RefferalHelper.getAmount(tradeOrder, user_id, tradeOrder.id);
                             //Emit data in rooms
                             let emit_socket = await socketHelper.emitTrades(crypto, currency, userIds)
                             return {
@@ -470,6 +533,23 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                         // console.log("trade_history_data", JSON.stringify(trade_history_data))
                         // tradeHistory.txn_group_id = txnGroupId;
                         let tradeHistory = await TradeAdd.addTradeHistory(trade_history_data);
+
+                        if (pairDetails.influx_pair_name != null) {
+                            await influx.writePoints([
+                                {
+                                    measurement: pairDetails.influx_table_name,
+                                    tags: { pair: pairDetails.influx_pair_name },
+                                    timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
+                                    fields: {
+                                        price: parseFloat(request.fill_price),
+                                        amount: parseFloat(request.quantity)
+                                    }
+                                }])
+                                .then(() => {
+                                    // console.log('Added data to the Db');
+                                });
+                        }
+
                         allOrderData.push(tradeHistory)
                         tradeOrder = tradeHistory;
 
