@@ -278,8 +278,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                 tags: { pair: pairDetails.influx_pair_name },
                                 timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
                                 fields: {
-                                    price: parseFloat(request.fill_price),
-                                    amount: parseFloat(request.quantity)
+                                    price: parseFloat(request.fill_price).toFixed(pairDetails.price_precision),
+                                    amount: parseFloat(request.quantity).toFixed(pairDetails.quantity_precision)
                                 }
                             }])
                             .then(() => {
@@ -529,8 +529,8 @@ var limitSellData = async (sellLimitOrderData, crypto, currency, activity, res =
                                 tags: { pair: pairDetails.influx_pair_name },
                                 timestamp: moment(tradeHistory.created_at).valueOf() * 1000000,
                                 fields: {
-                                    price: parseFloat(request.fill_price),
-                                    amount: parseFloat(request.quantity)
+                                    price: parseFloat(request.fill_price).toFixed(pairDetails.price_precision),
+                                    amount: parseFloat(request.quantity).toFixed(pairDetails.quantity_precision)
                                 }
                             }])
                             .then(() => {

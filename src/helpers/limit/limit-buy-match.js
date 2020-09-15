@@ -72,7 +72,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
             .where("deleted_at", null)
             .andWhere("name", buyLimitOrderData.symbol)
             .orderBy("id", "DESC");
-        // console.log("pairDetails", pairDetails)
+        console.log("pairDetails", pairDetails)
 
         var quantityValue = parseFloat(buyLimitOrderData.quantity).toFixed(pairDetails.quantity_precision);
         if (allOrderData.length == 0) {
@@ -141,7 +141,7 @@ var limitData = async (buyLimitOrderData, crypto, currency, activity, res = null
                             side: buyLimitOrderData.side,
                             settle_currency: buyLimitOrderData.settle_currency,
                             quantity: parseFloat(buyLimitOrderData.quantity).toFixed(pairDetails.quantity_precision),
-                            fill_price: parseFloat(buyLimitOrderData.fill_price).toFixed(pairDetails.price_precision3),
+                            fill_price: parseFloat(buyLimitOrderData.fill_price).toFixed(pairDetails.price_precision),
                             crypto_coin_id,
                             currency_coin_id
                         }
