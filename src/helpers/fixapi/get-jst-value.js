@@ -230,6 +230,7 @@ var priceObject = async (value_object) => {
                 // console.log("OUTGOING===", returnData)
             }
         } else if (req_body.original_pair != req_body.order_pair) {
+            console.log("req_body", req_body)
             if (flag == 1) {
                 if (usd_value) {
                     var price_value = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
@@ -294,9 +295,17 @@ var priceObject = async (value_object) => {
                     req_body.OrderQty = price_value_usd;
                 }
                 var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag);
-                if (req_body.Side == 2) {
-                    priceValue = (1 / get_jst_price[0].bid_price);
+                if (get_jst_price[0].coin == null) {
+                    var cryptoUSD = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    var currencyUSD = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    console.log("currencyUSD", currencyUSD)
+                    priceValue = (1 / currencyUSD[0].bid_price);
+                } else {
+                    if (req_body.Side == 2) {
+                        priceValue = (1 / get_jst_price[0].bid_price);
+                    }
                 }
+
                 totalValue = (req_body.OrderQty * priceValue)
                 if (req_body.Side == 2) {
                     feesCurrency = currency;
@@ -319,11 +328,11 @@ var priceObject = async (value_object) => {
                         faldax_fee_value = dataValueOne.faldax_fees_offer
                     }
                 }
-                if (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) {
-                    totalValue = (req_body.OrderQty * priceValue);
-                    usd_price = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
-                    usd_price = (req_body.OrderQty * usd_price[0].bid_price)
-                }
+                // if (!usd_value || usd_value == null || usd_value <= 0 || isNaN(usd_value)) {
+                totalValue = (req_body.OrderQty * priceValue);
+                usd_price = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                usd_price = (req_body.OrderQty * usd_price[0].bid_price)
+                // }
                 totalValue = get_faldax_fee * (priceValue)
                 original_value = totalValue;
 
@@ -332,8 +341,9 @@ var priceObject = async (value_object) => {
                     "faldax_fee": faldax_fee_value,
                     "total_value": get_faldax_fee,
                     "currency": feesCurrency,
+                    "limit_price": priceValue,
                     "price_usd": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? usd_price : totalValue,
-                    "currency_value": original_value,
+                    "currency_value": (usd_price) * (1 / cryptoUSD[0].bid_price),
                     "original_value": (usd_value == null || !usd_value || usd_value == undefined || isNaN(usd_value)) ? req_body.OrderQty : price_value_usd,
                     "orderQuantity": get_faldax_fee,
                     "faldax_fees_actual": faldax_fees_actual

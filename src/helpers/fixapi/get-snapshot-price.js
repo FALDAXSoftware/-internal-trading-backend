@@ -33,7 +33,7 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
                     type_of: (type_of == "create_order" ? "order" : "check")
                 };
 
-                console.log("object_data", object_data)
+                // console.log("object_data", object_data)
 
                 await MarketSnapshotPriceModel
                     .query()
