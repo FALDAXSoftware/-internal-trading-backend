@@ -15,8 +15,8 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
             json: true
         }, async function (err, httpResponse, body) {
             try {
-                // console.log(err)
-                // console.log(body)
+                console.log(err)
+                console.log(body)
                 if (err) {
                     return (err);
                 }
@@ -32,6 +32,8 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
                     md_entries: { MDEntries: body.MDEntries },
                     type_of: (type_of == "create_order" ? "order" : "check")
                 };
+
+                console.log("object_data", object_data)
 
                 await MarketSnapshotPriceModel
                     .query()
@@ -53,7 +55,8 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
 
                 var total_sell = 0.0;
                 var calculate_quantity = 0.0;
-                if (MDEntries.length > 0) {
+                console.log("MDEntries", MDEntries != null)
+                if (MDEntries != null) {
                     var last_price = 0;
                     for (var i = 0; i < MDEntries.length; i++) {
                         if (side == "Buy") {
@@ -131,7 +134,7 @@ var priceValue = async (symbol, side, order_quantity, flag, type_of) => {
                 // console.log("response_data", JSON.stringify(response_data));
                 resolve(response_data)
             } catch (error) {
-                // console.log("error", JSON.stringify(error));
+                console.log("error", (error));
                 return error
             }
         })

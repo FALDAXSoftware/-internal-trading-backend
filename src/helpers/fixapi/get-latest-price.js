@@ -9,7 +9,7 @@ var latestPrice = async (coin, side) => {
             console.log(coin);
 
             get_price = await PriceHistoryModel.knex().raw(`SELECT * FROM price_history WHERE coin = '${coin}' AND type = 1 AND ask_price > 0 ORDER BY id DESC LIMIT 1;`)
-            console.log("get_price", get_price)
+            // console.log("get_price", get_price)
             get_price = get_price.rows;
             // get_price = await PriceHistoryModel
             //     .query()
@@ -20,6 +20,7 @@ var latestPrice = async (coin, side) => {
             //     .andWhere("ask_price", '>', 0)
             //     .orderBy('id', 'DESC');
             console.log("get_price", JSON.stringify(get_price));
+            return get_price
         } else if (side == "Sell") {
 
             get_price = await PriceHistoryModel.knex().raw(`SELECT * FROM price_history WHERE coin = '${coin}' AND type = 0 AND bid_price > 0 ORDER BY id DESC LIMIT 1;`)
@@ -33,11 +34,11 @@ var latestPrice = async (coin, side) => {
             //     .andWhere('type', 0)
             //     .andWhere("bid_price", '>', 0)
             //     .orderBy('id', 'DESC');
+            console.log("get_price", get_price)
+            return get_price
         }
-        console.log("get_price", get_price)
-        return get_price
     } catch (err) {
-        // console.log("err", err);
+        console.log("err", err);
         return err;
     }
 
