@@ -241,9 +241,21 @@ var priceObject = async (value_object) => {
                     req_body.OrderQty = price_value_usd;
                 }
                 var get_jst_price = await snapshotPrice.priceValue(req_body.Symbol, (req_body.Side == 1 ? "Buy" : "Sell"), req_body.OrderQty, flag);
-                if (req_body.Side == 2) {
-                    priceValue = (get_jst_price[0].bid_price);
+
+                if (get_jst_price[0].coin == null) {
+                    var cryptoUSD = await getLatestPrice.latestPrice(crypto + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    var currencyUSD = await getLatestPrice.latestPrice(currency + 'USD', (req_body.Side == 1 ? "Buy" : "Sell"));
+                    console.log("currencyUSD", currencyUSD)
+                    priceValue = (1 / currencyUSD[0].bid_price);
+                } else {
+                    if (req_body.Side == 2) {
+                        priceValue = (1 / get_jst_price[0].bid_price);
+                    }
                 }
+
+                // if (req_body.Side == 2) {
+                //     priceValue = (get_jst_price[0].bid_price);
+                // }
                 totalValue = (req_body.OrderQty * priceValue)
                 if (req_body.Side == 2) {
                     feesCurrency = currency;
